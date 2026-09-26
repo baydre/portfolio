@@ -1,0 +1,9 @@
+packages:
+  - '.'
+allowBuilds:
+  '@tailwindcss/oxide': true
+  esbuild: true
+# pnpm >= 11 no longer reads the "pnpm" field in package.json.
+# Overrides must be declared here to take effect.
+overrides:
+  vite: 6.3.5

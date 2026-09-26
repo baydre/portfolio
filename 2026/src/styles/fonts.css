@@ -1,0 +1,43 @@
+/* Self-hosted variable fonts — no third-party requests at runtime.
+ *
+ * THREE families, THREE distinct roles. The design depends on all three being
+ * visually separable, so none may be an alias of another.
+ *
+ *   Jura     → body and UI copy                              (weights 300–700)
+ *   Fraunces → the wordmark ONLY, loaded with the optical-size axis so the
+ *              180px wordmark renders with display-grade contrast rather than
+ *              the text optical size scaled up.
+ *   Outfit   → section headings, service titles, footer labels
+ *              (weights 100–900)
+ *
+ * WHY FRAUNCES IS *NOT* THE HEADING FACE
+ * The Figma source names "Maison Neue" for the heading role. Maison Neue is a
+ * commercial Klim Type Foundry face and cannot be shipped without a licence, so
+ * it needs a substitute. Fraunces is NOT a valid substitute: the design already
+ * assigns Fraunces to the wordmark, and using it for section headings as well
+ * would render "Work" and "Services" identically to "BaydreAfrica", collapsing
+ * the hierarchy the design is built on. The substitute must be distinct from
+ * BOTH existing faces.
+ *
+ * CHOICE: Outfit (SIL Open Font License 1.1)
+ * - Same broad class as Maison Neue (geometric sans), so it occupies the same
+ *   role without changing the design's texture.
+ * - Separable from Jura at a glance: Outfit is tight, even and low-contrast;
+ *   Jura is wider, rounder and more humanist, so the two do not blur together
+ *   even though both are sans-serif.
+ * - Separable from Fraunces by category (sans vs. soft serif).
+ * - Variable, self-hosted, OFL — ships with no licence obligation.
+ *
+ * Provenance:  DESIGN (Maison Neue) → TEMPORARY SUBSTITUTE (Outfit, OFL).
+ * Decision:    owner-confirmed 2026-09-26; no licence purchase at this stage.
+ * Revisit if:  Maison Neue is ever licensed.
+ *
+ * This is a REPLACEABLE TOKEN, not a hard dependency. To restore the real face,
+ * licence Maison Neue, add its `@font-face` below, and change `--font-heading`
+ * in `theme.css`. No component references a family name directly.
+ * See docs/DESIGN_SYSTEM.md §2.
+ */
+
+@import '@fontsource-variable/jura';
+@import '@fontsource-variable/fraunces/opsz.css';
+@import '@fontsource-variable/outfit';
