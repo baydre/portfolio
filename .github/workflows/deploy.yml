@@ -26,18 +26,12 @@ on:
     branches:
       - master
   workflow_dispatch:
-  # Branches other than `master` are deliberately not listed. The `github-pages`
-  # environment carries branch protection rules, and adding a branch here does
-  # not grant it permission to deploy — the environment's allowlist decides, and
-  # the job is rejected with "not allowed to deploy to github-pages due to
-  # environment protection rules" if the branch is not on it. Widening that
-  # allowlist is a repository setting (Settings → Environments → github-pages →
-  # Deployment branches and tags), not something this file can do.
-  #
-  # The `deploy` job below does not use the environment at all, so deployment
-  # does not depend on those rules. Deploying from a branch still means
-  # publishing unreviewed code to the live site, so master-only is the right
-  # default regardless.
+  # Branches other than `master` are deliberately not listed. Listing one here
+  # does not grant it permission to deploy: the `github-pages` environment's
+  # allowlist decides, and the job is rejected if the branch is not on it.
+  # Deploying from a branch would also publish unreviewed code to the live site,
+  # so master-only is the right default on its own terms, before protection
+  # rules are even considered.
 
 permissions:
   contents: read
@@ -103,16 +97,23 @@ jobs:
     name: Deploy to Pages
     needs: build
     runs-on: ubuntu-latest
-    # No `environment:` here on purpose. GitHub's own Pages starter workflow sets
-    # `environment: github-pages`, which is where the `page_url` output is
-    # normally surfaced — but declaring an environment also subjects the job to
-    # that environment's protection rules, and this repository's `github-pages`
-    # environment does not allow every branch. The environment is not required
-    # for `deploy-pages`: the action authenticates with the job's OIDC token
-    # (`id-token: write` above), not with an environment secret.
+    # `environment: github-pages` is REQUIRED, not decoration. `deploy-pages`
+    # attaches the Pages deployment to this job's environment deployment and
+    # fails with "Missing environment" without it — verified, not assumed. The
+    # earlier revision of this file dropped the environment to avoid the branch
+    # protection rules below, and that was wrong: it does not make the deploy
+    # independent of them, it makes it impossible.
     #
-    # Removing it makes the deploy independent of those rules. The URL is
-    # written to the run summary instead, which is where it is read anyway.
+    # Declaring the environment does subject the job to its protection rules,
+    # which is why `on.push` above is master-only. `github-pages` was created
+    # with an allowlist that covers the default branch, so `master` deploys. A
+    # branch that is not on the allowlist is rejected with "not allowed to
+    # deploy to github-pages due to environment protection rules" — widen it at
+    # Settings → Environments → github-pages → Deployment branches and tags,
+    # which no workflow file can do.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4

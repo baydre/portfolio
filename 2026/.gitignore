@@ -2,6 +2,10 @@ node_modules/
 dist/
 coverage/
 
+# Vite's dependency pre-bundling cache. Regenerated on install and dev; it is
+# machine-local and its hashed filenames change with the lockfile.
+.vite/
+
 .env
 .env.*
 !.env.example
