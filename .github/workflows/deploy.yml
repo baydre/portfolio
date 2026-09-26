@@ -1,0 +1,120 @@
+# Publishes the 2026 portfolio to GitHub Pages.
+#
+# The app lives in `2026/`, so every step is scoped to that directory and the
+# published artifact is `2026/dist`. The 2023 static site in `2023/` is
+# deliberately not published: it was archived to keep it browsable in the
+# repository, and this repository's Pages site is now the 2026 app.
+#
+# ONE-TIME SETUP, because GitHub will not do it from a workflow file:
+#   Settings → Pages → Build and deployment → Source → **GitHub Actions**
+# Until that is set, the `deploy` job fails with "Get Pages site failed" and the
+# artifact is built and uploaded but never published. It can also be set with
+#   gh api -X PUT repos/:owner/:repo/pages -f build_type=workflow
+#
+# The `BASE_PATH` below is the deployment root and the one value that decides
+# where the site actually works. GitHub serves a project site from
+# `https://<user>.github.io/<repo>`, and this repo is `portfolio`, so it is
+# `/portfolio/`. Setting it wrong is quiet — assets 404 from the host root and
+# the page renders blank rather than erroring. If a custom domain is added later,
+# change this single value to `/`; the router basename and every in-page anchor
+# are derived from it in `vite.config.ts`, so nothing else needs touching.
+
+name: Deploy 2026 portfolio to Pages
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+  # Branches other than `master` are deliberately not listed. The `github-pages`
+  # environment carries branch protection rules, and adding a branch here does
+  # not grant it permission to deploy — the environment's allowlist decides, and
+  # the job is rejected with "not allowed to deploy to github-pages due to
+  # environment protection rules" if the branch is not on it. Widening that
+  # allowlist is a repository setting (Settings → Environments → github-pages →
+  # Deployment branches and tags), not something this file can do.
+  #
+  # The `deploy` job below does not use the environment at all, so deployment
+  # does not depend on those rules. Deploying from a branch still means
+  # publishing unreviewed code to the live site, so master-only is the right
+  # default regardless.
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time. A newer push supersedes an in-flight run, so Pages never
+# ends up serving a half-finished or older build.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and verify
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 2026
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          # pnpm-lock.yaml is lockfileVersion 9.0, which pnpm 10 reads and writes
+          # unchanged. The repo has no `packageManager` field, so the version is
+          # pinned here rather than inferred.
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: 2026/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      # The same six gates run locally, in the same order, so a deploy cannot
+      # publish something the test suite would have rejected. `build` already
+      # runs `tsc -b`; the two `verify:` scripts read the built CSS in `dist/`,
+      # so they have to come after it.
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Test
+        run: pnpm test
+      - name: Build
+        run: pnpm build
+        env:
+          BASE_PATH: /portfolio/
+      - name: Verify frame geometry
+        run: pnpm verify:geometry
+      - name: Verify colour contrast
+        run: pnpm verify:contrast
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: 2026/dist
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    # No `environment:` here on purpose. GitHub's own Pages starter workflow sets
+    # `environment: github-pages`, which is where the `page_url` output is
+    # normally surfaced — but declaring an environment also subjects the job to
+    # that environment's protection rules, and this repository's `github-pages`
+    # environment does not allow every branch. The environment is not required
+    # for `deploy-pages`: the action authenticates with the job's OIDC token
+    # (`id-token: write` above), not with an environment secret.
+    #
+    # Removing it makes the deploy independent of those rules. The URL is
+    # written to the run summary instead, which is where it is read anyway.
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Report the published URL
+        run: echo "### Published to ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"

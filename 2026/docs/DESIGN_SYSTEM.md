@@ -1573,6 +1573,54 @@ test suite were all green while `01` sat on `line-height: normal` — which
 AGENTS.md forbids. `sections.test.tsx` now asserts that every custom
 `text-*`/`leading-*` class in the card has a token behind it.
 
+## 8.1 Deployment
+
+Published to GitHub Pages by `.github/workflows/deploy.yml` at the repository
+root, building `2026/` and uploading `2026/dist`. The 2023 static site is not
+published; it was archived to stay browsable in the repository, and this
+repository's Pages site is now the 2026 app.
+
+Three settings make a client-routed app work from a subpath, and **all three fail
+quietly** — none of them throws, and `pnpm build` passes while the site is broken
+in production.
+
+| Setting | Value | Where | If it is wrong |
+| --- | --- | --- | --- |
+| Vite `base` | `BASE_PATH=/portfolio/` | workflow `env` | assets 404 from the host root; page renders blank |
+| Router `basename` | derived from `import.meta.env.BASE_URL` | `src/app/routes.tsx` | app boots, then every deep link falls through to `NotFoundPage` |
+| `404.html` | copy of `index.html` | `scripts/emit-404.mjs`, in `pnpm build` | `/about` and `/projects/:id` are server 404s on refresh or a shared link, while in-app clicks still work |
+
+The subpath is required because Pages serves a project site from
+`https://<user>.github.io/<repo>` and this repo is `portfolio`. **The base is a
+build-time environment value, never a literal in the code**, so adding a custom
+domain is a one-value change in the workflow (`BASE_PATH=/`); the router basename
+and every in-page anchor derive from it and need no edit.
+
+`404.html` is a **copy**, not a redirect: a redirect loses the requested path,
+whereas a copy leaves the URL alone so the app boots at `/portfolio/about` and the
+basename strips the prefix. It is emitted by `pnpm build` rather than by the
+workflow, so a local build is byte-for-byte what ships and the two cannot drift.
+
+### In-page anchors
+
+`SmartLink`, `HireMeButton` and `SiteFooter` resolve their `/#fragment` hrefs
+through `siteUrl()` in `src/lib/site-url.ts`. A raw `href="/#work"` resolves
+against the *host* root, so under `/portfolio/` it would land on the 404 page —
+a link that still looks correct and goes somewhere else. `siteUrl` reads
+`BASE_URL`, so there is no second source of truth to drift, and it returns
+`mailto:`/`tel:`/absolute URLs untouched.
+
+The helper was written after a test caught it prefixing `mailto:`: the first
+guard matched only `scheme://`, and `mailto:` has a scheme but no `//`. The
+About contact card links to both `mailto:` and `tel:`, so that would have been a
+live break, not a theoretical one.
+
+### One manual step
+
+Pages must be set to build from **GitHub Actions** — Settings → Pages → Source.
+A workflow cannot do this for itself; until it is set, the build and upload
+succeed and the deploy job fails.
+
 ## 9. Still open
 
 Content and asset gaps, by provenance. `DESIGN` is from the Figma source,
@@ -1581,6 +1629,8 @@ input from the owner or a new snippet.
 
 | Item | State | Notes |
 | --- | --- | --- |
+| Pages source | **`PENDING`, manual** | The workflow cannot set this itself. Settings → Pages → Source → **GitHub Actions**, or `gh api -X PUT repos/:owner/:repo/pages -f build_type=workflow`. Until then the artifact builds and uploads but `deploy-pages` fails. See §8.1. |
+| Custom domain | `OPEN` | The site currently publishes to `baydre.github.io/portfolio/`, which is why `base` is `/portfolio/`. A domain means changing one value — the workflow's `BASE_PATH` — to `/`. Nothing in the code hardcodes the subpath. |
 | ~~About page structure~~ | **CLOSED** | The About frame was supplied 2026-09-26 and the placeholder page — invented biography, masked `+234**********`, five identical tool tiles, colour swatches for logos, two handler-less `<button>`s — is deleted. See §6.1. |
 | About tools list | `OWNER SUPPLIED` | The frame's Tools row is five identical "React.js" tiles and carries no information. The five entries are the owner's. Only React has a glyph; the other four tiles reserve the icon box and render label-only. Supplying real brand paths is a data change to `TechIcon`. |
 | About tools row | `OWNER SUPPLIED`, `ADAPTED` | Seven owner entries on **one line** (`AI` → `KiCad` 2026-09-26) against the frame's five identical "React.js" placeholders. Required deleting `--size-about-tools` (620px could not hold seven) and `flex-nowrap` above 536px; 811px column gives 95px tiles. `FastAPI` pairs with `Python`, `AI` is last. |

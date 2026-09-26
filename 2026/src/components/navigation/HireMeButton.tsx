@@ -1,5 +1,6 @@
 import { Button } from "../../app/components/ui/button";
 import { hireMeLabel } from "../../content/profile";
+import { siteUrl } from "../../lib/site-url";
 
 /**
  * The "Hire me" call to action: the filled button at the end of the nav's right
@@ -57,7 +58,7 @@ export function HireMeButton({
 }) {
   return (
     <Button asChild className={`h-auto leading-cta ${className ?? ""}`}>
-      <a href="/#contact" onClick={onNavigate}>
+      <a href={siteUrl("/#contact")} onClick={onNavigate}>
         {hireMeLabel}
       </a>
     </Button>

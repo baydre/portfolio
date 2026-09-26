@@ -2,6 +2,7 @@ import { contactBlurb, footerNavItems, profile, socialLinks, viewWorkLabel } fro
 import { ArrowRightIcon } from "./icons";
 import { LocationCopy } from "./LocationCopy";
 import { SmartLink } from "../navigation/SmartLink";
+import { siteUrl } from "../../lib/site-url";
 
 /**
  * The site footer, from the HomePage snippet's Footer frame (728px) and the
@@ -75,7 +76,7 @@ export function SiteFooter() {
           <div className="flex flex-col items-start gap-4 lg:items-end">
             <p className="text-nav leading-nav text-footer-link">{profile.availability}</p>
             <a
-              href="/#work"
+              href={siteUrl("/#work")}
               className="inline-flex items-center gap-2 border-b border-footer-link pb-1 text-nav leading-nav text-foreground transition-opacity hover:opacity-80"
             >
               {viewWorkLabel}
