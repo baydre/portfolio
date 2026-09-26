@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import type { NavItem } from "../../content/types";
+import { siteUrl } from "../../lib/site-url";
 
 /**
  * Renders a `NavItem` as the right kind of link.
@@ -51,7 +52,17 @@ export function SmartLink({
   }
 
   return (
-    <a href={item.to} className={className} onClick={onNavigate} aria-current={ariaCurrent}>
+    // `siteUrl` rather than `item.to` directly: the router's `<Link>` applies
+    // the basename itself, but a raw anchor is just a URL for the browser, so a
+    // deploy under `/portfolio/` would send `/#work` to the host root. Under
+    // `vite dev` and the test run `BASE_URL` is `/`, so this is identical to
+    // `item.to` and the existing href assertions hold unchanged.
+    <a
+      href={siteUrl(item.to)}
+      className={className}
+      onClick={onNavigate}
+      aria-current={ariaCurrent}
+    >
       {children ?? item.label}
     </a>
   );

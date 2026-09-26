@@ -42,4 +42,22 @@ export const routes = [
   },
 ];
 
-export const router = createBrowserRouter(routes);
+/**
+ * The router is mounted under Vite's `base`, not the host root.
+ *
+ * A GitHub Pages build of this repo is served from `/portfolio/`, so
+ * `/portfolio/about` has to resolve to the `about` route. Without a basename the
+ * router would read `about` as the whole path, miss every route, and fall
+ * through to `NotFoundPage` on every deep link.
+ *
+ * `BASE_URL` carries a trailing slash (`/portfolio/`) and react-router wants the
+ * basename without one, hence the strip. It is `""` for a root deployment, which
+ * is react-router's own default.
+ *
+ * Deep links only reach the app at all because the build also emits `404.html`;
+ * see `scripts/emit-404.mjs`. Pages has no SPA fallback, so without it a
+ * hard refresh on `/about` is a server 404 rather than a client render.
+ */
+export const router = createBrowserRouter(routes, {
+  basename: import.meta.env.BASE_URL.replace(/\/$/, ""),
+});

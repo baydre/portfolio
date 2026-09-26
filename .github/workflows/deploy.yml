@@ -1,0 +1,102 @@
+# Publishes the 2026 portfolio to GitHub Pages.
+#
+# The app lives in `2026/`, so every step is scoped to that directory and the
+# published artifact is `2026/dist`. The 2023 static site in `2023/` is
+# deliberately not published: it was archived to keep it browsable in the
+# repository, and this repository's Pages site is now the 2026 app.
+#
+# ONE-TIME SETUP, because GitHub will not do it from a workflow file:
+#   Settings → Pages → Build and deployment → Source → **GitHub Actions**
+# Until that is set, the `deploy` job fails with "Get Pages site failed" and the
+# artifact is built and uploaded but never published. It can also be set with
+#   gh api -X PUT repos/:owner/:repo/pages -f build_type=workflow
+#
+# The `BASE_PATH` below is the deployment root and the one value that decides
+# where the site actually works. GitHub serves a project site from
+# `https://<user>.github.io/<repo>`, and this repo is `portfolio`, so it is
+# `/portfolio/`. Setting it wrong is quiet — assets 404 from the host root and
+# the page renders blank rather than erroring. If a custom domain is added later,
+# change this single value to `/`; the router basename and every in-page anchor
+# are derived from it in `vite.config.ts`, so nothing else needs touching.
+
+name: Deploy 2026 portfolio to Pages
+
+on:
+  push:
+    branches:
+      - master
+      # Lets the deploy be verified before it is merged. Remove once the branch
+      # has served its purpose — every push to it republishes the site.
+      - feat/2026-portfolio-design
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time. A newer push supersedes an in-flight run, so Pages never
+# ends up serving a half-finished or older build.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and verify
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 2026
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          # pnpm-lock.yaml is lockfileVersion 9.0, which pnpm 10 reads and writes
+          # unchanged. The repo has no `packageManager` field, so the version is
+          # pinned here rather than inferred.
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: 2026/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      # The same six gates run locally, in the same order, so a deploy cannot
+      # publish something the test suite would have rejected. `build` already
+      # runs `tsc -b`; the two `verify:` scripts read the built CSS in `dist/`,
+      # so they have to come after it.
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Test
+        run: pnpm test
+      - name: Build
+        run: pnpm build
+        env:
+          BASE_PATH: /portfolio/
+      - name: Verify frame geometry
+        run: pnpm verify:geometry
+      - name: Verify colour contrast
+        run: pnpm verify:contrast
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: 2026/dist
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
