@@ -1615,6 +1615,27 @@ guard matched only `scheme://`, and `mailto:` has a scheme but no `//`. The
 About contact card links to both `mailto:` and `tel:`, so that would have been a
 live break, not a theoretical one.
 
+### `environment: github-pages` is mandatory
+
+The deploy job declares `environment: github-pages`, and it cannot be removed.
+`actions/deploy-pages` attaches the Pages deployment to the job's *environment
+deployment* and fails with `Missing environment` when there is none.
+
+This is recorded because it was got wrong once. The environment was dropped in
+the belief that it was only there to surface the `page_url` output, and that
+`deploy-pages` authenticates purely through the job's OIDC token. The second half
+is true; the first does not follow. Dropping it did not make the deploy
+independent of the environment's protection rules — it made the deploy
+impossible.
+
+The protection rules are real and are the other half of the picture: declaring
+the environment subjects the job to that environment's branch allowlist, so a
+push to a branch not on it is rejected with *"not allowed to deploy to
+github-pages due to environment protection rules"*. `on.push` is therefore
+`master`-only, and widening the allowlist is a repository setting (Settings →
+Environments → github-pages → Deployment branches and tags) that no workflow
+file can perform.
+
 ### One manual step
 
 Pages must be set to build from **GitHub Actions** — Settings → Pages → Source.
