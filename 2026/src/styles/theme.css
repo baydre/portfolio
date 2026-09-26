@@ -1,0 +1,543 @@
+/* Design tokens for the BaydreAfrica site.
+ *
+ * AUTHORITATIVE SOURCE: the Figma HomePage snippet (1440 × 1090 frame).
+ * See docs/DESIGN_SYSTEM.md for the full mapping and for values that are still
+ * marked PENDING. Do not add a raw hex value in a component — add a token here.
+ *
+ * The design is dark-only. There is no light theme in the snippet, so `:root`
+ * *is* the dark theme. The `.dark` class block was removed: because the dark
+ * palette is the default, any `dark:` utility that matches still resolves to
+ * the correct value. See docs/DESIGN_SYSTEM.md §4.
+ */
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* ---- Palette (observed in the HomePage snippet) ---------------------- */
+  --background: #131417; /* page surface                        */
+  --foreground: #e9e9ec; /* body + navigation copy              */
+  --surface: #f0f2f5; /* social icon tile                    */
+  --surface-foreground: #344054; /* icon glyph on that tile          */
+
+  --primary: #e9e9ec; /* "Hire me" fill                      */
+  --primary-foreground: #131417; /* "Hire me" label                 */
+  --secondary: #1c1d22; /* DERIVED — no panel in the snippet   */
+  --secondary-foreground: #e9e9ec;
+  --muted: #1c1d22; /* DERIVED — see above                  */
+  --muted-foreground: #a8a7b0; /* DERIVED — 7.74:1 on --background, VERIFIED  */
+  --accent: #23242a; /* DERIVED — hover state                */
+  --accent-foreground: #f0f2f5;
+  --destructive: #ea4363;
+  /* Not #ffffff. Lightening --destructive to clear 4.5:1 as *text* dropped
+     white-on-red to 3.83:1, so the fill's label had to change with it. A dark
+     label on a light fill is the pattern the design already uses twice (the
+     "Hire me" button and the "View Github Repo" pill), so this follows the
+    * design rather than inventing a third treatment. Caught by
+   * `pnpm verify:contrast`. */
+  --destructive-foreground: #131417;
+  --border: rgb(233 233 236 / 0.14); /* DERIVED                     */
+  --input: #1c1d22; /* DERIVED                              */
+  --input-background: #1c1d22; /* DERIVED                         */
+  --switch-background: #34363f; /* DERIVED                         */
+  --ring: #e9e9ec;
+
+  /* ---- Surfaces introduced by the Work / Services / Footer frames ----------
+     Source: the full HomePage snippet (Work 2562, Services 1962, Footer 728). */
+  --panel: #2d2f33; /* "Built with" + "Project code" panel fill */
+  --panel-foreground: #e9e9ec; /* copy on that panel                    */
+  --panel-border: #7d7b90; /* CORRECTED — see contrast table below     */
+  --code-foreground: #d38689; /* CORRECTED — code sample on --panel    */
+  --tech-tile: #313131; /* stack tile fill (React.js etc.)           */
+  --tech-tile-foreground: #f9f9ff; /* stack tile label                   */
+  /* Tool-mark brand colours, from simple-icons (CC0). Informational: the glyph
+     paths carry their own fill, these exist so verify-contrast can gate them.
+     Three are CORRECTED — the raw brand hex is invisible on `--tech-tile`.
+     Django's #092E20 is 1.13:1 and Python's #3776AB is 2.69:1 on that fill.
+     Each correction raises lightness only and preserves hue, verified by the
+     integrity check in verify-contrast.mjs, same rule as the palette above. */
+  --brand-react: #61dafb; /* simple-icons React, 8.01:1, unchanged       */
+  --brand-python: #458ac3; /* CORRECTED from #3776ab, 2.69 -> 3.52:1  */
+  --brand-django: #1e9769; /* CORRECTED from #092e20, 1.13 -> 3.52:1  */
+  --brand-fastapi: #009688; /* simple-icons FastAPI, 3.54:1, unchanged   */
+  --brand-git: #f14639; /* CORRECTED from #f03c2e, 3.34 -> 3.52:1  */
+  --brand-linux: #fcc624; /* simple-icons Linux/Tux, 8.20:1, unchanged */
+  --brand-kicad: #6a81d5; /* CORRECTED from #314cb0, 1.73 -> 3.54:1  */
+  --brand-raspberrypi: #c83156; /* CORRECTED from #a22846, 2.57 -> 3.53:1
+                                    on --background (NOT --tech-tile): the
+                                    About role tiles have no surface of their
+                                    own, so the mark sits on the page.         */
+  --pill: #f9f9ff; /* "View Github Repo" light pill fill           */
+  --pill-foreground: #0d0a2c; /* its label                             */
+  --pill-outline-label: #2d2f33; /* "View Live Project" text on --pill */
+  --rule: #e9e9ec; /* section dividers (Services/Contact/Footer)    */
+  --rule-work: #706565; /* CORRECTED — see contrast table below      */
+  --field-placeholder: #9795b5; /* contact form placeholder copy        */
+  --field-chevron: #adabc3; /* select indicator                       */
+  --field-border: #676578; /* CORRECTED — see contrast table below     */
+  --footer-label: #88817b; /* CORRECTED — "Navigate"/"Connect"        */
+  --footer-link: #a09a90; /* footer link copy                        */
+
+  /* ---- Palette corrections (ACCESSIBILITY) --------------------------------
+   * The design source specifies four colours that fail WCAG 2.2 AA, plus two
+   * more that only fail once the contact form is a real form. Each was
+   * corrected by raising HSL *lightness only*, preserving hue and saturation, to
+   * the smallest value that clears its requirement with headroom. No hue was
+   * redesigned. Ratios are vs. the background the colour is actually used on.
+   *
+   * token / usage                     from    to        on        was   now   need
+   * --rule-work     Work divider rule  #4c4444 #706565   #131417  1.95  3.28  3.00
+   * --code-foreground  code sample     #b44247 #d38689   #2d2f33  2.43  4.82  4.50
+   * --panel-border  card border        #585667 #7d7b90   #2d2f33  1.88  3.26  3.00
+   * --footer-label  footer col labels  #6b6560 #88817b   #131417  3.21  4.80  4.50
+   * --field-border  form underline     #585667 #676578   #131417  2.58  3.25  3.00
+   * --destructive   error text         #d4183d #ea4363   #131417  3.51  4.81  4.50
+   *
+   * 3.00 = non-text contrast, WCAG 1.4.11. 4.50 = body text, WCAG 1.4.3.
+   * --field-border and --destructive are NOT in the four the owner listed; they
+   * are corrections this implementation requires, because a real form has a real
+   * control boundary and a real error state. Both are same-lightness-only
+   * corrections in the same family as the listed four.
+   * Verified by `pnpm verify:contrast`. See docs/DESIGN_SYSTEM.md §7.
+
+  /* ---- Typography ------------------------------------------------------ */
+  --font-sans: 'Jura Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
+  /* Section headings, service titles, footer labels.
+   * TEMPORARY SUBSTITUTE for "Maison Neue" (commercial, unlicensed). See
+   * src/styles/fonts.css for why this is not --font-display, and
+   * docs/DESIGN_SYSTEM.md §2. Changing this one value re-skins every heading. */
+  --font-heading: 'Outfit Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+
+  /* ---- Radii (observed) ------------------------------------------------ */
+  --radius: 8px; /* nav item, button, social tile          */
+  --radius-image: 24px; /* hero image                            */
+
+  /* ---- Layout ---------------------------------------------------------- */
+  /* 1440 frame − (84 × 2 gutters) = 1272 content, which matches the
+     snippet's hero width exactly.
+
+     Values are in rem so they track the user's font-size preference; at the
+     default 16px root each resolves to exactly the authored px figure.
+
+     AUTHORED SPACING PRIMITIVES. These are the only hand-typed geometry in the
+     system. Everything below derives from them, so changing one cannot silently
+     desynchronise the header from the hero. */
+  --space-header-pad: 1.375rem; /*   22px header block padding  */
+  --space-nav-pad: 0.5rem; /*    8px nav item padding       */
+  --space-nav-gap: 0.75rem; /*   12px between nav items      */
+  --space-cluster-gap: 1rem; /*   16px right cluster, socials */
+  --space-wordmark-gap: 3rem; /*   48px wordmark -> copy      */
+  --space-copy-image-gap: 1.5rem; /*   24px copy -> image         */
+  --space-hero-col-gap: 6.625rem; /*  106px tagline -> body       */
+  --space-hero-image: 26.9375rem; /*  431px image height         */
+  --space-hero-tail: 8.6875rem;  /*  139px below the image      */
+  --size-nav-line: 1.5rem;  /*   24px nav line box           */
+
+  /* About page profile section — the About frame.
+     AUTHORITATIVE: the AboutPage snippet, not the HomePage one, so these are
+     kept as their own block rather than folded into the header/hero group.
+
+     The portrait is 421 × 475. The frame's Tailwind export calls its column
+     `w-96` — 384px — which contradicts the SVG's own `width="421"`. The SVG
+     attribute is the authored value and the utility class is the lossy one
+     (Figma rounds layer bounds to its 4px spacing grid, and 421 is not on it),
+     so the tokens are the SVG's. The two disagree by 37px, which is why the
+     column is sized from these and never from the class name.
+
+     Ratio check: 421 / 475 = 0.886, and 26.3125 / 29.6875 = 0.886. */
+  --size-portrait-w: 26.3125rem; /* 421px portrait                */
+  --size-portrait-h: 29.6875rem; /* 475px portrait                */
+  --space-profile-col-gap: 2.5rem; /*  40px portrait -> copy       */
+  /* 12px portrait -> social row, 16px between social tiles, 48px between the
+     three copy blocks. All three are `gap-3` / `gap-4` / `gap-12` in the export,
+     which is the Tailwind scale resolving to exactly these, so they use the
+     scale directly and are NOT re-declared as primitives. */
+
+  /* ---- The portrait's contact card -----------------------------------------
+     Source: the owner-supplied AboutPage markup, 2026-09-26 — a 304 × 104 panel
+     at `y=371` inside the portrait's own 421 × 475 coordinate space, i.e. flush
+     with the bottom-left corner.
+
+     NOT GATED BY `verify:contrast`, and that is a deliberate exception rather than
+     an oversight. Every other pairing in this file is text on a KNOWN solid
+     background, so its ratio is computable. This card is 10%-opacity white glass
+     over a photograph: the effective backdrop changes with every pixel of the
+     image behind it, so no single ratio exists to assert. A pair added here would
+     be a number that could never fail and would teach the gate nothing. The
+     consequence is stated instead — the text is near-white on glass, which is the
+     same relationship as `--tech-tile-foreground` on `--tech-tile`, and it has not
+     been checked against the rendered photograph because no browser is available
+     in this environment. VERIFY VISUALLY. */
+  --contact-glass: rgb(249 249 255 / 0.1); /* #F9F9FF @ 10% — panel fill  */
+  --contact-glass-border: rgb(239 238 251 / 0.1); /* #EFEEFB @ 10% — 1px   */
+  --contact-foreground: #f9f9ff; /* row labels (same hex as --tech-tile-
+                                       foreground; separate token because the
+                                       surfaces are unrelated)               */
+  --contact-icon: #5d5a88; /* the three row glyphs' stroke                 */
+  /* The panel is 304 / 421 of the portrait's width and 104 / 475 of its height,
+     and its type and glyphs scale with the portrait rather than holding a fixed
+     px size — at a 343px-wide phone the frame's 15px labels would be unreadable
+     if they stayed 15px while the card shrank. So the card is sized in `cqw`
+     against a container on the portrait wrapper, and these two are the authored
+     ratios. They are fractions of a dimension rather than spacings, so they are
+     not `--space-*`; the component reaches them as `w-[var(…)]` /
+     `h-[var(…)]` so the ratio is stated once here and not restated as a literal
+     in the class list. */
+  --contact-card-w: 72.209%; /* 304 / 421 */
+  --contact-card-h: 21.895%; /* 104 / 475 */
+
+  /* Footer lower row: location copy | Navigate | Connect.
+
+     The design places Navigate at 650px and Connect at 866px in a 1440 frame,
+     i.e. inside a 1272px content box starting at the 84px gutter. After the
+     40px gaps that makes the first two tracks 526px and 176px.
+
+     Expressed as FRACTIONS of the content box, not Figma pixels, so they scale
+     with the viewport: a fixed 526px would still fit at 1024px, but a fixed
+     176px track would leave too little room for the Connect links, and neither
+     would reproduce the design's proportions anywhere below 1440. The two sum
+     to 55.19%, and the third track is 1fr, so the row can never overflow.
+
+     526/1272 = 41.352%   176/1272 = 13.836%                          */
+  --footer-locate-col: 41.352%;
+  --footer-nav-col: 13.836%;
+
+  --gutter: 1.5rem; /*   24px */
+  --tagline-col: 29.875rem; /*  478px authored tagline column */
+  --hero-offset: 8.75rem; /*  140px authored frame offset   */
+
+  /* DERIVED GEOMETRY — do not hand-edit these.
+
+     header height  = 22 (block padding ×2) + 8 (item padding ×2) + 24 (line)
+                    = 84px
+     hero clearance = 140 (authored frame offset) − 84 (header)
+                    = 56px
+     wordmark top   = 84 + 56 = 140px, the authored value.
+
+     The clearance is 140 − 84, NOT 140. The header occupies normal flow above
+     the hero, so padding the hero by the full 140 would count the header twice
+     and push the wordmark to 224px. The snippet does not do that because it
+     positions the navbar absolutely over the frame.
+
+     Because --header-height is computed from the same spacing primitives the
+     navbar actually uses, changing the padding or the line box moves the hero
+     with it. It cannot drift. */
+  --header-height: calc(
+    (var(--space-header-pad) * 2) + (var(--space-nav-pad) * 2) + var(--size-nav-line)
+  );
+  --hero-top-pad: calc(var(--hero-offset) - var(--header-height));
+
+  --sidebar: #1c1d22;
+  --sidebar-foreground: #e9e9ec;
+  --sidebar-primary: #e9e9ec;
+  --sidebar-primary-foreground: #131417;
+  --sidebar-accent: #23242a;
+  --sidebar-accent-foreground: #f0f2f5;
+  --sidebar-border: rgb(233 233 236 / 0.14);
+  --sidebar-ring: #e9e9ec;
+
+  --chart-1: #e9e9ec;
+  --chart-2: #f0f2f5;
+  --chart-3: #a8a7b0;
+  --chart-4: #8f8ea0;
+  --chart-5: #6f6e80;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 2.5rem; /* 40px */
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 5.25rem; /* 84px */
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--surface-foreground);
+  --color-popover: var(--secondary);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+
+  /* Work / Services / Contact / Footer surfaces */
+  --color-panel: var(--panel);
+  --color-panel-foreground: var(--panel-foreground);
+  --color-panel-border: var(--panel-border);
+  --color-code-foreground: var(--code-foreground);
+  --color-tech-tile: var(--tech-tile);
+  --color-tech-tile-foreground: var(--tech-tile-foreground);
+  --color-contact-glass: var(--contact-glass);
+  --color-contact-glass-border: var(--contact-glass-border);
+  --color-contact-foreground: var(--contact-foreground);
+  --color-contact-icon: var(--contact-icon);
+  --color-brand-react: var(--brand-react);
+  --color-brand-python: var(--brand-python);
+  --color-brand-django: var(--brand-django);
+  --color-brand-fastapi: var(--brand-fastapi);
+  --color-brand-git: var(--brand-git);
+  --color-brand-linux: var(--brand-linux);
+  --color-brand-kicad: var(--brand-kicad);
+  --color-brand-raspberrypi: var(--brand-raspberrypi);
+  --color-pill: var(--pill);
+  --color-pill-foreground: var(--pill-foreground);
+  --color-pill-outline-label: var(--pill-outline-label);
+  --color-rule: var(--rule);
+  --color-rule-work: var(--rule-work);
+  --color-field-placeholder: var(--field-placeholder);
+  --color-field-chevron: var(--field-chevron);
+  --color-field-border: var(--field-border);
+  --color-footer-label: var(--footer-label);
+  --color-footer-link: var(--footer-link);
+
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-heading: var(--font-heading);
+
+  /* The snippet specifies a single size per breakpoint-free frame, so the
+     display and tagline sizes are fluid between 375px and 1440px. Both resolve
+     to the authored value at 1440px. See docs/DESIGN_SYSTEM.md §3. */
+  --text-display: clamp(2.75rem, 12vw, 11.25rem); /* 180px authored  */
+  --text-tagline: clamp(1.5rem, 3.4vw, 2.5rem); /*   40px authored  */
+  --text-lead: 1.5rem; /*   24px authored  */
+  --text-description: 1.25rem; /*   20px section description  */
+  --text-nav: 1rem; /*   16px authored  */
+  --text-cta: 0.875rem; /*   14px authored  */
+
+  /* Sizes from the Work / Services / Contact / Footer frames. */
+  --text-section: clamp(1.75rem, 3vw, 2.5rem); /*  40px "Work"/"Services" */
+  --text-contact: clamp(2rem, 6.7vw, 6rem); /*   96px contact heading    */
+  --text-footer-mark: clamp(2.5rem, 8.333vw, 7.5rem); /* 40px … 120px BaydreAfrica */
+  --text-service: 1.875rem; /*   30px service card title          */
+  /* Services frame. Its heading is 36px against Work's 40px, and its card and
+     section copy are 24px against Work's 20px — four values differ between the
+     two frames, so `SectionIntro` takes size and gap from the caller rather than
+     assuming a single scale. The 30px card title under the 36px section heading
+     is what keeps a card from out-weighing its own section; both were previously
+     28px, which inverted the hierarchy. See docs/DESIGN_SYSTEM.md §3.2. */
+  --text-section-compact: 2.25rem; /*   36px "Services" heading     */
+  --text-service-body: 1.5rem; /*   24px service card + section copy  */
+  /* Fluid: the card title and its 01 label are DISPLAY type, and a fixed
+     32px title is larger than the fluid --text-section (28px) below 1176px —
+     the card would out-weigh its own section heading. Both clamp to the
+     authored value at 1440px and keep the design's 24/32 = 0.75 ratio at every
+     width. Body and UI sizes below stay fixed; see docs/DESIGN_SYSTEM.md §3.2. */
+  --text-card-title: clamp(1.5rem, 2.3vw, 2rem); /* 32px authored, 24px min  */
+  --text-card-index: clamp(1.125rem, 1.7vw, 1.5rem); /* 24px authored, 18px min */
+  --text-panel-label: 0.75rem; /*  12px "Built with" panel label  */
+  --text-index: 1rem; /*   16px per-item "01" index           */
+                         /*   UNUSED as of 2026-09-26: the About role tiles
+                            moved to `--text-caption` (14px) to match the
+                            frame's `text-sm` indices. Kept because it is a
+                            general step on the scale, not an About token —
+                            WorkSection and ServicesSection size their indices
+                            with `--text-card-index`. Remove it if nothing
+                            claims it. */
+  --text-body: 1rem; /*   16px body copy                      */
+  --text-caption: 0.875rem;  /*   14px labels, footer links        */
+  --text-micro: 0.75rem;  /*   12px copyright line (DESIGN text-xs) */
+
+  /* About page. Only three values here are genuinely new; the rest of the
+     profile section's type reuses the scale above, and re-declaring an existing
+     size under an About-specific name would create a second source for it.
+
+     "About me" is 30px, which is `--text-service`'s value but not its role —
+     that token is named for a service CARD title and is commented as such — so
+     this is a real addition rather than an alias. Its leading reuses
+     `--leading-section` (1.1), which is already the 1.1 ratio headings use.
+
+     The biography is `--text-caption` (14px) on the owner's instruction of
+     2026-09-26, overriding the frame's `text-lg`; it was walked down twice that
+     day, 18 → 16 → 14, and it used to have its own 18px token, which is now
+     deleted rather than left at a value the scale already carries. `--text-caption`
+     is now the 14px step for the biography as well as for labels and footer
+     links. Its 32px line box is `--leading-lead`, reused — same 32px, and
+     inventing `leading-about-bio` at the same value would be a duplicate
+     constant. That leaves the biography at a **2.29 line-height**, against the
+     frame's 1.78, which is airier than the frame intends; `--leading-body` (1.6)
+     is the natural companion if it is tightened.
+
+     The Tools / Technical Skills subheads are 20px / 28px in `--text-about-section`
+     and `--leading-about-section`, raised from 16px on the owner's instruction
+     2026-09-26. They were on `--text-body`, which made them SMALLER than the 20px
+     role titles they introduce — an h2 below its own h3, so the hierarchy read
+     inverted even though the markup was correct. 20px puts the h2 level with the
+     h3 and still clearly under the 30px h1. The tile labels reuse
+     `--text-caption` / `--leading-tile` (as they already do on the Work cards),
+     and the 20px role titles reuse `--text-description`. */
+  --text-about-heading: 1.875rem;  /*   30px "About me"                */
+  --text-about-section: 1.25rem;  /*   20px "Tools" / "Technical      */
+                                    /*        Skills" section heads     */
+  /* `--text-about-bio` is GONE as of 2026-09-26. The frame sets this copy
+     `text-lg` (18px) and it shipped on its own 18px token, but the owner walked
+     it down twice that day to **14px**, which is `--text-caption`.
+     Re-declaring an existing scale value under an About-specific name is a
+     second source for it, so the token is deleted and the biography uses
+     `--text-caption` directly — the same reasoning that removed the frame's
+     620px Tools block width. */
+  /* Tailwind's `tracking-widest` (0.1em) on the biography = 1.4px of letter
+     spacing at 14px. That is unusually loose for a face the design otherwise
+     sets tight. It was once marked UNVERIFIED because the frame had not been
+     seen; the owner then supplied the frame's own markup on 2026-09-26, and it
+     does specify `tracking-widest`, so the value is now CONFIRMED rather than
+     assumed. It is held in its own token so that dropping this one declaration
+     returns the copy to the design's default tracking and nothing else. */
+  --tracking-about-bio: 0.1em;
+
+  --leading-lead: 2rem; /*   32px authored  */
+  --leading-description: 2.5rem; /*   40px authored (200%)  */
+  --leading-cta: 1.45; /* 20.30px authored  */
+  /* Explicit line-heights only — never leave a line box to `normal`, whose
+     height depends on the font file's internal metrics. The header's height,
+     and therefore the hero's 56px clearance, is derived from --leading-nav. */
+  --leading-nav: var(--size-nav-line); /* drives --header-height  */
+  --leading-wordmark: 1; /*   180px wordmark, leading 1.0     */
+  --leading-section: 1.1; /*   40px section headings          */
+  --leading-card-title: 1.1; /*   32px card title (DERIVED)     */
+  /* 32/24 = 1.3333, unitless so it tracks the fluid --text-card-index. An
+     absolute 2rem would leave an 18px label sitting on a 32px line. */
+  --leading-card-index: 1.3333; /* 24px 01 label               */
+  --leading-card-summary: 2rem; /*   32px card summary          */
+  --leading-panel-label: 1.1rem; /*   17.6px "Built with"      */
+  --leading-tile: 1.5rem; /*   24px stack tile label             */
+  --leading-about-section: 1.75rem; /* 28px About section heads    */
+  --leading-contact: 1.05; /*   96px contact heading            */
+  --leading-footer-mark: 1; /*  120px footer wordmark            */
+  --leading-service: 1.2; /*   30px service titles (DERIVED)   */
+  --leading-service-body: 2.5rem; /*   40px authored (leading-10)  */
+  --leading-body: 1.6;
+  --leading-caption: 1.45; /*   14px footer links               */
+  /* The copyright bar's own 16px line box. UNITLESS leading cannot be reused
+     here: --leading-caption is 1.45, which only produced the design's 16px
+     because the copyright happened to be 11px (11 x 1.45 = 15.95). At the
+     frame's authored 12px it would give 17.4px, so the bar needs a length. */
+  --leading-copyright: 1rem; /*   16px both bar lines (leading-4) */
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-image: var(--radius-image);
+
+  --container-site: 90rem; /* 1440px */
+  --spacing-gutter: var(--gutter);
+
+  /* The derived header height, as a size utility. NavBar applies this as a
+     minimum so the row can never come out shorter than the value the hero
+     clearance was computed from — the formula stays load-bearing rather than
+     resting on the nav items happening to be 40px tall. */
+  --height-header: var(--header-height);
+
+  /* Authored spacing primitives, exposed as utilities. Each is a thin alias of
+     the --space-* custom property in :root, so the value has exactly one
+     definition and the derived geometry above cannot drift from what the
+     components actually render. */
+  --spacing-header-pad: var(--space-header-pad);
+  --spacing-nav-pad: var(--space-nav-pad);
+  --spacing-nav-gap: var(--space-nav-gap);
+  --spacing-cluster-gap: var(--space-cluster-gap);
+  --spacing-wordmark-gap: var(--space-wordmark-gap);
+  --spacing-copy-image-gap: var(--space-copy-image-gap);
+  --spacing-hero-col-gap: var(--space-hero-col-gap);
+  --spacing-hero-image: var(--space-hero-image);
+  --spacing-hero-tail: var(--space-hero-tail);
+  --spacing-hero-top: var(--hero-top-pad);
+
+  /* About page profile section. Exposed through `--spacing-*` rather than
+     `--size-*` so these become `w-portrait-w` / `h-portrait-h`, not a `size-*`
+     utility that would set BOTH dimensions to one value. */
+  --spacing-portrait-w: var(--size-portrait-w);
+  --spacing-portrait-h: var(--size-portrait-h);
+  --spacing-profile-col-gap: var(--space-profile-col-gap);
+
+  --tracking-about-bio: var(--tracking-about-bio);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/**
+ * The authored content column: 1440px max, centred, inset by the responsive
+ * gutter. This trio was copy-pasted across four files, which is a bug waiting
+ * to happen — the hero and the header must share one column definition or their
+ * left edges disagree.
+ */
+@utility container-site {
+  margin-inline: auto;
+  width: 100%;
+  max-width: var(--container-site);
+  padding-inline: var(--gutter);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    /* 100% rather than a fixed 16px so the user's browser font-size
+       preference is honoured (WCAG 2.2 AA, 1.4.4 Resize Text). */
+    font-size: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-normal text-balance;
+  }
+
+  h1 {
+    @apply text-display leading-none;
+  }
+
+  h2 {
+    @apply text-tagline leading-tight;
+  }
+
+  h3 {
+    @apply text-lead leading-lead;
+  }
+
+  p {
+    @apply text-lead leading-lead text-pretty;
+  }
+
+  /* Visible, on-brand focus ring. The design specifies no focus style, so this
+     is an accessibility addition rather than a design value. */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+}
