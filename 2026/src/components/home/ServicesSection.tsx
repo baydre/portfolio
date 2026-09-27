@@ -103,12 +103,26 @@ export function ServicesSection() {
         {/* The secondary services, as a single line under the grid rather than as
             a second tier of cards — see `secondaryServices` in the content file
             for why that was tried and withdrawn. It reuses the 48px `gap-12`
-            above, so no spacing token is introduced and the frame's grid, and its
-            one divider, are untouched.
+            above, so no spacing token is introduced and the frame's 3x2 grid is
+            untouched. The rule above it is the SECOND `bg-rule` in this
+            container, matching the one the frame already puts between its rows.
             `font-sans` and deliberately NOT `font-body`: Jura is `--font-sans`,
             and `font-body` is not a class this project defines. */}
+        <div aria-hidden="true" className="h-px w-full bg-rule" />
         <p className="font-sans text-service-body leading-service-body text-foreground">
-          {secondaryServices.label}: {secondaryServices.items.join(", ")}
+          {/* The label is set in the heading face, matching the six service
+              titles above it. The owner asked for "Maison Neue" here; that face
+              is NOT shipped — it is commercial and unlicensed — and
+              `--font-heading` is the project's substitute for exactly this role
+              (Outfit, OFL, owner-confirmed 2026-09-26, marked TEMPORARY). It is
+              the same token the card titles use, so this is the same typeface
+              and not a fourth family. Size is inherited: the label is 24px
+              because the paragraph is.
+              The full stop is here rather than in `items` on purpose — it closes
+              the rendered sentence, and baking it into the last item would carry
+              it anywhere else those items are reused. */}
+          <span className="font-heading">{secondaryServices.label}</span>:{" "}
+          {secondaryServices.items.join(", ")}.
         </p>
       </div>
     </section>

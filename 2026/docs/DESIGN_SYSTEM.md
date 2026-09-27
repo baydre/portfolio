@@ -1001,9 +1001,26 @@ the one 1px rule the frame puts between its rows, with a single paragraph after
 it. No extra grid, no extra divider, no reserved geometry.
 
 The line is owner-supplied copy: "Secondary Services: Digital Marketing,
-Technology Consulting & Training", in **Jura at 24px** — the same
-`--text-service-body` the six card bodies use, at `text-foreground` rather than
-the titles' white, and at `leading-service-body` (40px).
+Technology Consulting & Training.", set **above a 1px `bg-rule`** — the grid
+container now holds two rules, the frame's between its rows and this one — and
+closed with a **full stop**, on owner request 2026-09-27.
+
+It is set in **two faces at one size**: the label in the heading face, the items in
+Jura, both 24px via `--text-service-body`, at `leading-service-body` (40px) and
+`text-foreground` rather than the titles' white.
+
+**The label uses `font-heading`, not Maison Neue — because Maison Neue is not
+shipped.** The owner asked for it here explicitly. It is a commercial Klim Type
+Foundry face and the project substitutes **Outfit** (OFL) for exactly this role,
+owner-confirmed 2026-09-26 and marked `TEMPORARY`; §2 records the substitution.
+`font-heading` is also the token the six service titles already use, so the label
+matches the cards above it rather than introducing a fourth family. If Maison Neue
+is ever licensed, `--font-heading` is the single token to change — no component
+names a family directly.
+
+The full stop lives in the component, not on the last item: it closes the rendered
+sentence, and baking it into the data would carry it into any other use of those
+strings.
 
 **It is set in `font-sans`, and must not be set in `font-body`.** `--font-sans`
 *is* Jura. `font-body` is **not a defined class in this project** — no such
@@ -1709,7 +1726,7 @@ input from the owner or a new snippet.
 | About biography tracking | `CONFIRMED` | The frame sets the biography `tracking-widest` = 0.1em, which is **1.4px at 14px** — unusually loose for a face this design otherwise sets tight. It was long marked `UNVERIFIED` because the frame had not been seen; the owner supplied the frame's own markup on 2026-09-26 and it does specify `tracking-widest`, so the value is confirmed rather than assumed. Held in `--tracking-about-bio`; deleting that one declaration returns the copy to default tracking. |
 | About closing call-to-action | `ASSUMED` | Not in the frame. The previous page's panel, kept on the owner's instruction 2026-09-26 ("keep this for now"). Its heading and body are not transcribed from anything, and its gradient uses `--secondary` and `--accent`, both DERIVED. Its two actions were repaired to real destinations. Treat as unapproved until a frame exists. |
 | ~~Six service descriptions~~ | **SUPERSEDED** | Closed 2026-09-26 by transcribing all six verbatim from the frame, plus the section description. **Superseded 2026-09-27**: all six titles and descriptions are now **OWNER-SUPPLIED** copy and none of them is the frame's. The `index` labels `01`–`06` are the frame's and are unchanged. See "The service copy is the owner's, not the frame's". |
-| Secondary services line | **CLOSED** | Owner-supplied 2026-09-27 as a single line under the grid: "Secondary Services: Digital Marketing, Technology Consulting & Training", Jura at 24px (`font-sans` + `text-service-body`). Rendered as a paragraph, **not** as a second tier of cards — a tiered version was built and withdrawn the same day. Wording note: the owner has written this as both "Technology" and "Technical" Consulting & Training; the later "Technology" is used verbatim pending a correction. |
+| Secondary services line | **CLOSED** | Owner-supplied 2026-09-27, amended twice the same day. Final form: a 1px `bg-rule` above the line (the grid container now holds two `bg-rule`s, the frame's between its rows and this one), the label set in the heading face, and a closing **full stop** added. The label is `font-heading` (**Outfit**), NOT Maison Neue — that face is commercial Klim and unlicensed, and §2 records Outfit as its `TEMPORARY` substitute for this role; it is also the token the six service titles already use, so the label matches the cards rather than adding a fourth family. Items remain Jura at 24px. The full stop is composed in the component, not stored on the last item. |
 | `font-body` is not a defined class | **PARTIAL** | The six Services card indices (`01`–`06`) carry `font-body`, but no such utility is emitted — `@theme inline` maps `--font-sans` and `--font-heading` only. The indices render in Jura by inheritance from `body { @apply font-sans }`, so this is a silent no-op rather than a visible fault. The secondary-services line deliberately uses `font-sans`. Left unfixed as out of scope; the fix is to change `font-body` to `font-sans` in `ServicesSection`. |
 | `servicesSectionDescription` is stale | **PENDING** | Still the frame's verbatim paragraph, and it no longer matches the services it introduces: it offers "Digital experiences, brands, and technical solutions" and there is no longer a brand or digital-experience service. Left as supplied rather than rewritten — inventing marketing prose is not this file's call. Needs one owner decision. |
 | ~~Service illustrations~~ | **CLOSED** | The frame's per-card artwork was **deleted** on owner request 2026-09-26 and replaced by `ServiceIcon`, six lucide marks keyed by title. That set was reviewed the same day as consumer-creative shorthand, re-picked as six "instrument, structure or measurement" marks, and then **removed entirely** on owner request 2026-09-27: six 192px pictograms read as illustration, not as capabilities. Five panels of transcribed `gray-200` geometry and one 12%-opacity holding rect were placeholders, and `01` (Web Design) was a placeholder *by construction*, having no geometry in the frame at all. `ServiceArtwork.tsx` and `ServiceIcon.tsx` are both removed. The 384 × 384 **slot is gone with the mark** — cards are index, title, description, and the suite fails if `aspect-square` or any `svg`/`img` reappears in one. See "There is no per-service mark". |

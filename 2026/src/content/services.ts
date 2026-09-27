@@ -82,9 +82,14 @@ export const services: Service[] = [
  * untouched, and the line sits inside the existing 48px `gap-12` rhythm.
  *
  * Modelled as label + items rather than one opaque string so the label can be set
- * apart from the list without editing prose. The owner wrote "Technology
- * Consulting & Training" here, having earlier written "Technical"; this keeps
- * the later wording verbatim pending a correction — see §9.
+ * apart from the list without editing prose — the label is set in the heading face
+ * and the items in Jura, both at 24px. The owner wrote "Technology Consulting &
+ * Training" here, having earlier written "Technical"; this keeps the later wording
+ * verbatim pending a correction — see §9.
+ *
+ * The items are stored WITHOUT a closing full stop even though the rendered line
+ * ends in one: the period belongs to the sentence, and putting it on the last
+ * item would carry it into any other use of these strings.
  */
 export const secondaryServices = {
   label: "Secondary Services",

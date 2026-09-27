@@ -617,22 +617,29 @@ describe("ServicesSection", () => {
     ]);
   });
 
-  it("prints the secondary services as one line under the grid, in Jura at 24px", () => {
+  it("prints the secondary services under a rule, closing full stop, in Jura at 24px", () => {
     const { container } = renderSection(<ServicesSection />);
 
-    // The wording is the owner's, verbatim. Asserted on the rendered string so
-    // the label, the colon and the comma join are all covered — the line is
-    // composed from `label` + `items.join(", ")` rather than stored as one
-    // opaque string, so this is what actually pins the result.
-    const line = screen.getByText(
-      "Secondary Services: Digital Marketing, Technology Consulting & Training",
-    );
+    const grid = container.querySelector(".mt-16");
+    const line = grid?.lastElementChild as HTMLElement;
     expect(line.tagName).toBe("P");
 
-    // Jura at 24px. `font-sans` IS Jura here (`--font-sans` is Jura Variable).
-    // The assertion is specifically on `font-sans` and NOT `font-body`, which is
-    // not a class this project defines — the card indices above carry it and get
-    // Jura by inheritance regardless, which is how the typo went unnoticed.
+    // The wording is the owner's, verbatim, INCLUDING the closing full stop added
+    // 2026-09-27. Asserted on the located element's own `textContent` rather than
+    // through `getByText`, because the sentence is composed in the component and
+    // is therefore split across the label span and two sibling text nodes —
+    // `getByText` reads only direct text children, so it cannot see a match here
+    // at all. This covers the label, the colon, the space, the comma join and the
+    // terminal period in one string.
+    expect(line.textContent).toBe(
+      "Secondary Services: Digital Marketing, Technology Consulting & Training.",
+    );
+
+    // Jura at 24px for the items. `font-sans` IS Jura here (`--font-sans` is
+    // Jura Variable). The assertion is specifically on `font-sans` and NOT
+    // `font-body`, which is not a class this project defines — the card indices
+    // above carry it and get Jura by inheritance regardless, which is how the
+    // typo went unnoticed.
     expect(line.className).toContain("font-sans");
     expect(line.className).not.toContain("font-body");
     // `--text-service-body` is 1.5rem, the same 24px the six card bodies use.
@@ -643,17 +650,28 @@ describe("ServicesSection", () => {
     expect(line.className).toContain("text-foreground");
     expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(6);
 
+    // The LABEL is in the heading face, on owner request 2026-09-27. The owner
+    // asked for "Maison Neue", which is NOT shipped — commercial Klim face,
+    // unlicensed — so this is `font-heading`, the project's substitute for
+    // exactly that role (Outfit). It is asserted on the span rather than the
+    // paragraph, because the split is the point: heading face for the label, Jura
+    // for the items, one paragraph.
+    const label = line.querySelector("span");
+    expect(label?.textContent).toBe("Secondary Services");
+    expect(label?.className).toContain("font-heading");
+    expect(line.className).not.toContain("font-heading");
+
     // It is a paragraph INSIDE the grid's own rhythm, after both rows — not a
-    // third row, and not a sibling group with its own divider.
-    const grid = container.querySelector(".mt-16");
-    expect(grid?.lastElementChild).toBe(line);
+    // third row, and not a sibling group.
     expect(grid?.querySelectorAll("ul")).toHaveLength(2);
-    // Exactly ONE divider inside the grid: the frame's, between the two rows.
-    // Scoped to the grid rather than the whole section, because `SectionIntro`
-    // renders a second `bg-rule` by default under the heading — counting the
-    // section instead of the grid would make this a false failure, and would not
-    // catch a third rule added for the secondary line, which is what it is for.
-    expect(grid?.querySelectorAll(".bg-rule")).toHaveLength(1);
+    // TWO rules inside the grid: the frame's between its two rows, and the one
+    // added above this line. Scoped to the grid rather than the whole section,
+    // because `SectionIntro` renders a third `bg-rule` by default under the
+    // heading, so a section-wide count would be wrong and would not catch an
+    // extra rule here anyway.
+    expect(grid?.querySelectorAll(".bg-rule")).toHaveLength(2);
+    // And the new rule is directly above the line, not elsewhere in the grid.
+    expect(line.previousElementSibling?.className).toContain("bg-rule");
   });
 
   it("uses two rows of three with the design's rule between them", () => {
