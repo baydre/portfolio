@@ -562,28 +562,39 @@ describe("About page — technical skills", () => {
     }
   });
 
-  it("writes the backend stack as 'Django(DRF)', one entry", () => {
-    // Owner instruction 2026-09-26. DRF used to be its own comma-separated entry,
-    // which read as a second framework rather than the toolkit it is part of —
-    // "Python, Django, DRF, FastAPI" implies four things where there are three.
+  it("writes the backend stack as plain 'Django', with no DRF anywhere", () => {
+    // This entry has been written three ways, and the current one is an owner
+    // reversal rather than an accumulation — so the assertion is on the absence
+    // of DRF in ANY form, not just the absence of a standalone "DRF" entry:
     //
-    // Asserted as DATA, not as rendered text, because the visible string is
-    // identical either way once joined: "Python, Django, DRF, …" and
-    // "Python, Django(DRF), …" are the only way to tell them apart at all, and
-    // that difference has to live in the content file to be checkable.
+    //   1. "Python, Django, DRF, FastAPI"  — separate entries, which read as
+    //      four technologies where there are three.
+    //   2. "Python, Django(DRF), FastAPI"  — owner instruction 2026-09-26,
+    //      merging DRF into Django as the toolkit it is part of.
+    //   3. "Python, Django, FastAPI"       — owner request 2026-09-27: drop
+    //      the "(DRF)" qualifier entirely.
+    //
+    // Checked as DATA, not rendered text, because once joined the visible
+    // strings of (1) and (2) are identical, so only the content file can
+    // distinguish them. The regex is the part that matters: a bare `not
+    // .toContain("DRF")` would still pass on "Django(DRF)", which is exactly
+    // the form this reversal removed.
     const backend = aboutSkillRoles[0];
 
     expect(backend.title).toBe("Backend Engineering");
     expect(backend.stack).toEqual([
       "Python",
-      "Django(DRF)",
+      "Django",
       "FastAPI",
       "REST APIs",
       "PostgreSQL",
     ]);
-    expect(backend.stack).not.toContain("DRF");
+    for (const entry of backend.stack) {
+      expect(entry, `"${entry}" still mentions DRF`).not.toMatch(/DRF/i);
+    }
     // Django is still a Tools tile in its own right — that row is separate data
-    // and keeps its own `siDjango` mark, so merging here must not touch it.
+    // and keeps its own `siDjango` mark, so changing the stack must not touch
+    // it. The role's own mark is `stack[0]`, which is "Python" either way.
     expect(aboutTools).toContain("Django");
   });
 

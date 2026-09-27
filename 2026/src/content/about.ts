@@ -196,7 +196,7 @@ export const aboutSkillRoles: SkillRole[] = [
   {
     index: "01",
     title: "Backend Engineering",
-    stack: ["Python", "Django(DRF)", "FastAPI", "REST APIs", "PostgreSQL"],
+    stack: ["Python", "Django", "FastAPI", "REST APIs", "PostgreSQL"],
   },
   {
     index: "02",
