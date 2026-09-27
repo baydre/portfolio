@@ -66,6 +66,13 @@
                                     on --background (NOT --tech-tile): the
                                     About role tiles have no surface of their
                                     own, so the mark sits on the page.         */
+  --brand-c: #a8b9cc; /* simple-icons C, 9.19:1 on --background, unchanged.
+                         The Backend role's mark since 2026-09-27, when the
+                         owner put C first in that stack and the mark, being
+                         stack[0], followed it off Python. Light enough that
+                         the raw brand hex already clears the 3:1 a graphic
+                         needs, so unlike Python/Django/Git/KiCad it is not a
+                         corrected value.                                     */
   --pill: #f9f9ff; /* "View Github Repo" light pill fill           */
   --pill-foreground: #0d0a2c; /* its label                             */
   --pill-outline-label: #2d2f33; /* "View Live Project" text on --pill */

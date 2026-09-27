@@ -1,4 +1,5 @@
 import {
+  siC,
   siDjango,
   siFastapi,
   siGit,
@@ -159,6 +160,17 @@ const brand: Record<string, Glyph> = {
    * honest: it is a technology the role actually lists, not a metaphor.
    */
   "Raspberry Pi/Compute Module": { d: siRaspberrypi.path, fill: "#c83156" },
+  /**
+   * The Backend role's mark since 2026-09-27, when the owner put C first in that
+   * role's stack and the mark — which is `stack[0]` — followed it. Keyed on the
+   * bare letter because that is the entry's own text, and looked up BY LABEL
+   * like every other key here.
+   *
+   * simple-icons' C hex `#a8b9cc` is UNCHANGED, not one of the corrected brand
+   * values: it is 9.19:1 on `--background`, far above the 3:1 a graphic needs,
+   * so the raw brand colour is used as published. See the `--brand-c` token.
+   */
+  C: { d: siC.path, fill: "#a8b9cc" },
 };
 
 /**

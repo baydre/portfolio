@@ -14,6 +14,7 @@ import {
 } from "../../../content/about";
 import { hasTechIcon } from "../../common/TechIcon";
 import {
+  siC,
   siDjango,
   siFastapi,
   siGit,
@@ -579,23 +580,94 @@ describe("About page — technical skills", () => {
     // distinguish them. The regex is the part that matters: a bare `not
     // .toContain("DRF")` would still pass on "Django(DRF)", which is exactly
     // the form this reversal removed.
+    //
+    // The expected list also carries the owner's 2026-09-27 additions — C first,
+    // Unit testing last — so the assertion pins the whole stack, and a future
+    // reordering or a dropped entry fails here rather than passing silently.
     const backend = aboutSkillRoles[0];
 
     expect(backend.title).toBe("Backend Engineering");
     expect(backend.stack).toEqual([
+      "C",
       "Python",
       "Django",
       "FastAPI",
       "REST APIs",
       "PostgreSQL",
+      "Unit testing",
     ]);
     for (const entry of backend.stack) {
       expect(entry, `"${entry}" still mentions DRF`).not.toMatch(/DRF/i);
     }
     // Django is still a Tools tile in its own right — that row is separate data
     // and keeps its own `siDjango` mark, so changing the stack must not touch
-    // it. The role's own mark is `stack[0]`, which is "Python" either way.
+    // it. The role's own mark is `stack[0]`, which is now "C" and NOT "Python"
+    // (owner request 2026-09-27); Python keeps its own mark as a Tools tile.
     expect(aboutTools).toContain("Django");
+    expect(aboutTools).toContain("Python");
+  });
+
+  it("places C first and Unit testing last, and CI/CD after Linux, on the owner's order", () => {
+    // Owner request 2026-09-27, three positional amendments to two role stacks.
+    // Asserted positionally rather than as whole arrays, because what the owner
+    // specified was *where* each term goes — a bare `toContain` would pass on
+    // C sitting anywhere, including last, which is the opposite of the request.
+    const backend = aboutSkillRoles[0];
+    const devops = aboutSkillRoles[2];
+
+    // "C at the before Python" — C is not merely present, it LEADS.
+    expect(backend.stack[0]).toBe("C");
+    expect(backend.stack[1]).toBe("Python");
+    // "Unit testing at the end" — genuinely last, not merely contained.
+    expect(backend.stack[backend.stack.length - 1]).toBe("Unit testing");
+
+    // "CI/CD after Linux" — immediately after, and Linux still leads. The
+    // DevOps mark is `stack[0]`, so this must NOT disturb Linux's position or
+    // the tile would lose the Tux glyph.
+    expect(devops.stack[0]).toBe("Linux");
+    expect(devops.stack[1]).toBe("CI/CD");
+    // Added, not substituted: GitHub Actions is the tooling behind the practice
+    // and the owner asked for a new term, not for the two to be merged.
+    expect(devops.stack).toContain("GitHub Actions");
+  });
+
+  it("gives the Backend role the C mark, since its mark is stack[0]", () => {
+    // The knock-on effect of putting C first, recorded as its own test because
+    // it is a real coupling rather than an incidental one: `ProfileSection`
+    // renders `<TechIcon tool={role.stack[0]}>`, so the role's logo is whatever
+    // leads its stack. The owner moving C to the front therefore moved the
+    // Backend tile's mark off Python, and the registry needs a matching entry or
+    // the tile renders no glyph at all.
+    const backend = aboutSkillRoles[0];
+    expect(backend.stack[0]).toBe("C");
+    expect(hasTechIcon("C")).toBe(true);
+
+    // The rendered tile must actually draw it, not merely resolve the lookup.
+    // Read from the Skills block's own `<li>` rather than through the `fillFor`
+    // helper above, which is scoped to the Tools block — C has no Tools tile, and
+    // the point here is which mark THIS tile carries.
+    const { container } = render(
+      <MemoryRouter>
+        <AboutPage />
+      </MemoryRouter>,
+    );
+    const skills = container.querySelector(
+      'section[aria-labelledby="about-skills-heading"]',
+    ) as HTMLElement;
+    const tile = skills.querySelectorAll("li")[0];
+    const mark = tile.querySelector("svg") as SVGSVGElement;
+    expect(mark).not.toBeNull();
+    expect(mark.getAttribute("fill")).toBe("#a8b9cc");
+
+    // The mark is C's own simple-icons path, and its UNCORRECTED brand hex:
+    // #a8b9cc is 9.19:1 on --background, so unlike Python, Django, Git and KiCad
+    // this fill is published as-is rather than lightened to clear 3:1. Asserted
+    // against the vendor hex so a future "corrected" C would fail here.
+    expect(mark.innerHTML).toContain(siC.path.slice(0, 40));
+
+    // And Python is no longer this tile's mark, though it remains a Tools tile.
+    expect(aboutTools).toContain("Python");
+    expect(aboutTools).not.toContain("C");
   });
 
   it("applies the owner's supplied frame markup: muted heading, white indices", () => {

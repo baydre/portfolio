@@ -189,14 +189,32 @@ export const aboutHeadings = {
  * — see `aboutHeadings`.
  *
  * Note the frame's stack does not agree with the biography: the biography says
- * TypeScript, and no role lists it. Both are left exactly as supplied. Copy is
- * the owner's to reconcile, not this file's.
+ * TypeScript, and no role lists it. That is still true after the owner's
+ * 2026-09-27 amendments below, and is still left for them to reconcile — copy is
+ * the owner's, not this file's. Those amendments are additions only: no entry
+ * was removed, reordered against the owner's instruction, or reworded.
  */
 export const aboutSkillRoles: SkillRole[] = [
   {
     index: "01",
     title: "Backend Engineering",
-    stack: ["Python", "Django", "FastAPI", "REST APIs", "PostgreSQL"],
+    // **Amended by the owner 2026-09-27**, which has one knock-on effect worth
+    // recording here rather than only in the docs: the role's mark is `stack[0]`
+    // (see `ProfileSection`), so putting C first moves this tile's logo from the
+    // Python mark to the C mark. That is the intended reading of the rule — the
+    // mark is the role's own FIRST technology, so it follows the owner's order
+    // rather than being pinned to Python independently of it. `C` therefore
+    // needs a real entry in the `TechIcon` registry, or the tile loses its
+    // glyph and the "every role's mark resolves" test fails.
+    stack: [
+      "C",
+      "Python",
+      "Django",
+      "FastAPI",
+      "REST APIs",
+      "PostgreSQL",
+      "Unit testing",
+    ],
   },
   {
     index: "02",
@@ -206,7 +224,19 @@ export const aboutSkillRoles: SkillRole[] = [
   {
     index: "03",
     title: "DevOps & Cloud",
-    stack: ["Linux", "GitHub Actions", "NGINX", "Docker", "VPS/cloud deployment"],
+    // CI/CD inserted after Linux, owner 2026-09-27. Unlike the C change this one
+    // does NOT move the mark: `stack[0]` is still Linux, so the DevOps tile keeps
+    // the Tux glyph. "GitHub Actions" is left where it was rather than folded
+    // into the new entry — they are the tooling and the practice, and the owner
+    // asked to add a term, not to merge two.
+    stack: [
+      "Linux",
+      "CI/CD",
+      "GitHub Actions",
+      "NGINX",
+      "Docker",
+      "VPS/cloud deployment",
+    ],
   },
   {
     index: "04",

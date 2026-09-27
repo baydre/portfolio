@@ -134,10 +134,17 @@ const PAIRINGS = [
   // These four are the lead technology of each role in `aboutSkillRoles`, drawn
   // at the frame's 120px in the Technical Skills tiles. Those `<li>`s have no
   // background of their own, so the surface is `--background`, NOT `--tech-tile`
-  // like the six above — which is why Python, React and Linux pass here with
-  // more room than they have on the Tools tiles, and why Raspberry Pi needed its
-  // own correction: simple-icons' `#a22846` is 2.57:1 on the page.
-  ["--brand-python", "--background", "graphic", "Backend role mark"],
+  // like the six above — which is why React and Linux pass here with more room
+  // than they have on the Tools tiles, and why Raspberry Pi needed its own
+  // correction: simple-icons' `#a22846` is 2.57:1 on the page.
+  //
+  // The Backend entry is `--brand-c`, not `--brand-python`, since 2026-09-27: the
+  // role's mark is `stack[0]` and the owner put C first in that stack, so the
+  // tile no longer draws Python here. Python is still gated above, on
+  // `--tech-tile`, where the Tools row actually renders it — so dropping it from
+  // this list loses no coverage, it just stops asserting a pairing that no longer
+  // occurs on the page.
+  ["--brand-c", "--background", "graphic", "Backend role mark"],
   ["--brand-react", "--background", "graphic", "Full-stack role mark"],
   ["--brand-linux", "--background", "graphic", "DevOps role mark"],
   ["--brand-raspberrypi", "--background", "graphic", "IoT role mark"],
