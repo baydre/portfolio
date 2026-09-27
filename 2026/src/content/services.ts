@@ -70,6 +70,28 @@ export const services: Service[] = [
 ];
 
 /**
+ * The secondary-services line, printed under the grid.
+ *
+ * **OWNER-SUPPLIED 2026-09-27** as a single line of text: "Secondary Services:
+ * Digital Marketing, Technology Consulting & Training", in Jura at 24px.
+ *
+ * This is deliberately **not** a second tier of cards. An earlier pass built one
+ * — its own group below the grid, a third row, no index labels — and it was
+ * withdrawn the same day. A single line is what was actually wanted, and it
+ * costs the section no extra geometry: the six-card grid and its one divider are
+ * untouched, and the line sits inside the existing 48px `gap-12` rhythm.
+ *
+ * Modelled as label + items rather than one opaque string so the label can be set
+ * apart from the list without editing prose. The owner wrote "Technology
+ * Consulting & Training" here, having earlier written "Technical"; this keeps
+ * the later wording verbatim pending a correction — see §9.
+ */
+export const secondaryServices = {
+  label: "Secondary Services",
+  items: ["Digital Marketing", "Technology Consulting & Training"],
+} as const;
+
+/**
  * The Services section's own description, beside the heading.
  *
  * Verbatim from the frame. **It is now inconsistent with the six services it

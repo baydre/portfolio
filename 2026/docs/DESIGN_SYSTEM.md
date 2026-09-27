@@ -992,11 +992,30 @@ position. Descriptions are transcribed verbatim from the owner's message,
 including the `&` in titles, the `and`/`&` split in bodies, and the
 capitalisation of "Raspberry Pi/Arduino".
 
-**The list is exactly these six.** Digital Marketing and Technical Consulting &
-Training were offered as secondary services later the same day and then withdrawn,
-so there is no second tier, no unnumbered group below the grid, and no second
-divider — the section is the frame's 3 × 2 grid and the one 1px rule the frame
-puts between its rows.
+**The list is exactly these six.** Digital Marketing and Technology Consulting &
+Training are secondary services, printed as **one line of text under the grid** —
+not as a second tier of cards. An earlier pass built them as a tier (its own
+group, a third row, no index labels) and that was withdrawn the same day; the
+line is what was actually wanted. So the section is the frame's 3 x 2 grid and
+the one 1px rule the frame puts between its rows, with a single paragraph after
+it. No extra grid, no extra divider, no reserved geometry.
+
+The line is owner-supplied copy: "Secondary Services: Digital Marketing,
+Technology Consulting & Training", in **Jura at 24px** — the same
+`--text-service-body` the six card bodies use, at `text-foreground` rather than
+the titles' white, and at `leading-service-body` (40px).
+
+**It is set in `font-sans`, and must not be set in `font-body`.** `--font-sans`
+*is* Jura. `font-body` is **not a defined class in this project** — no such
+utility is emitted, so it is a silent no-op. The six card indices (`01`–`06`)
+still carry it and render in Jura only by inheritance from `body { @apply
+font-sans }`, which is why it went unnoticed. Reported, not fixed: it is outside
+this task's scope, and §9 carries it as a `PARTIAL` gap.
+
+The label is stored separately from the two items rather than as one opaque
+string, so it can be set apart from the list without editing prose. The owner
+wrote "Technology Consulting & Training" here, having earlier written
+"Technical"; the later wording is kept verbatim pending a correction.
 
 This is a change of *register* worth naming: the frame's copy was design-agency
 language ("developing visual identities", "helping teams make better digital
@@ -1690,6 +1709,8 @@ input from the owner or a new snippet.
 | About biography tracking | `CONFIRMED` | The frame sets the biography `tracking-widest` = 0.1em, which is **1.4px at 14px** — unusually loose for a face this design otherwise sets tight. It was long marked `UNVERIFIED` because the frame had not been seen; the owner supplied the frame's own markup on 2026-09-26 and it does specify `tracking-widest`, so the value is confirmed rather than assumed. Held in `--tracking-about-bio`; deleting that one declaration returns the copy to default tracking. |
 | About closing call-to-action | `ASSUMED` | Not in the frame. The previous page's panel, kept on the owner's instruction 2026-09-26 ("keep this for now"). Its heading and body are not transcribed from anything, and its gradient uses `--secondary` and `--accent`, both DERIVED. Its two actions were repaired to real destinations. Treat as unapproved until a frame exists. |
 | ~~Six service descriptions~~ | **SUPERSEDED** | Closed 2026-09-26 by transcribing all six verbatim from the frame, plus the section description. **Superseded 2026-09-27**: all six titles and descriptions are now **OWNER-SUPPLIED** copy and none of them is the frame's. The `index` labels `01`–`06` are the frame's and are unchanged. See "The service copy is the owner's, not the frame's". |
+| Secondary services line | **CLOSED** | Owner-supplied 2026-09-27 as a single line under the grid: "Secondary Services: Digital Marketing, Technology Consulting & Training", Jura at 24px (`font-sans` + `text-service-body`). Rendered as a paragraph, **not** as a second tier of cards — a tiered version was built and withdrawn the same day. Wording note: the owner has written this as both "Technology" and "Technical" Consulting & Training; the later "Technology" is used verbatim pending a correction. |
+| `font-body` is not a defined class | **PARTIAL** | The six Services card indices (`01`–`06`) carry `font-body`, but no such utility is emitted — `@theme inline` maps `--font-sans` and `--font-heading` only. The indices render in Jura by inheritance from `body { @apply font-sans }`, so this is a silent no-op rather than a visible fault. The secondary-services line deliberately uses `font-sans`. Left unfixed as out of scope; the fix is to change `font-body` to `font-sans` in `ServicesSection`. |
 | `servicesSectionDescription` is stale | **PENDING** | Still the frame's verbatim paragraph, and it no longer matches the services it introduces: it offers "Digital experiences, brands, and technical solutions" and there is no longer a brand or digital-experience service. Left as supplied rather than rewritten — inventing marketing prose is not this file's call. Needs one owner decision. |
 | ~~Service illustrations~~ | **CLOSED** | The frame's per-card artwork was **deleted** on owner request 2026-09-26 and replaced by `ServiceIcon`, six lucide marks keyed by title. That set was reviewed the same day as consumer-creative shorthand, re-picked as six "instrument, structure or measurement" marks, and then **removed entirely** on owner request 2026-09-27: six 192px pictograms read as illustration, not as capabilities. Five panels of transcribed `gray-200` geometry and one 12%-opacity holding rect were placeholders, and `01` (Web Design) was a placeholder *by construction*, having no geometry in the frame at all. `ServiceArtwork.tsx` and `ServiceIcon.tsx` are both removed. The 384 × 384 **slot is gone with the mark** — cards are index, title, description, and the suite fails if `aspect-square` or any `svg`/`img` reappears in one. See "There is no per-service mark". |
 | ~~Service artwork sizes~~ | **MOOT** | The `UNVERIFIED` Tailwind-utility size readings only ever described the deleted geometry. Nothing depends on them now — the icon scales from a 24-unit lucide grid. |

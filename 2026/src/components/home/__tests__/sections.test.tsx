@@ -617,6 +617,45 @@ describe("ServicesSection", () => {
     ]);
   });
 
+  it("prints the secondary services as one line under the grid, in Jura at 24px", () => {
+    const { container } = renderSection(<ServicesSection />);
+
+    // The wording is the owner's, verbatim. Asserted on the rendered string so
+    // the label, the colon and the comma join are all covered — the line is
+    // composed from `label` + `items.join(", ")` rather than stored as one
+    // opaque string, so this is what actually pins the result.
+    const line = screen.getByText(
+      "Secondary Services: Digital Marketing, Technology Consulting & Training",
+    );
+    expect(line.tagName).toBe("P");
+
+    // Jura at 24px. `font-sans` IS Jura here (`--font-sans` is Jura Variable).
+    // The assertion is specifically on `font-sans` and NOT `font-body`, which is
+    // not a class this project defines — the card indices above carry it and get
+    // Jura by inheritance regardless, which is how the typo went unnoticed.
+    expect(line.className).toContain("font-sans");
+    expect(line.className).not.toContain("font-body");
+    // `--text-service-body` is 1.5rem, the same 24px the six card bodies use.
+    expect(line.className).toContain("text-service-body");
+    // Body copy, not a heading: it must not add an `h3` to the outline, and it
+    // sits in the foreground gray the card descriptions use, not the white of
+    // the titles.
+    expect(line.className).toContain("text-foreground");
+    expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(6);
+
+    // It is a paragraph INSIDE the grid's own rhythm, after both rows — not a
+    // third row, and not a sibling group with its own divider.
+    const grid = container.querySelector(".mt-16");
+    expect(grid?.lastElementChild).toBe(line);
+    expect(grid?.querySelectorAll("ul")).toHaveLength(2);
+    // Exactly ONE divider inside the grid: the frame's, between the two rows.
+    // Scoped to the grid rather than the whole section, because `SectionIntro`
+    // renders a second `bg-rule` by default under the heading — counting the
+    // section instead of the grid would make this a false failure, and would not
+    // catch a third rule added for the secondary line, which is what it is for.
+    expect(grid?.querySelectorAll(".bg-rule")).toHaveLength(1);
+  });
+
   it("uses two rows of three with the design's rule between them", () => {
     const { container } = renderSection(<ServicesSection />);
     const rows = Array.from(container.querySelectorAll("ul"));

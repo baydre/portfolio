@@ -1,4 +1,8 @@
-import { services, servicesSectionDescription } from "../../content/services";
+import {
+  secondaryServices,
+  services,
+  servicesSectionDescription,
+} from "../../content/services";
 import { SectionIntro } from "../common/SectionIntro";
 
 /**
@@ -96,11 +100,16 @@ export function ServicesSection() {
             gray-200 hex, so it keeps the corrected divider value. */}
         <div aria-hidden="true" className="h-px w-full bg-rule" />
         <ServicesRow services={secondRow} />
-        {/* The secondary tier. The same 1px rule separates it from the primary
-            grid, so the two tiers read as siblings rather than as one list of
-            eight — and the pair is `flex-col` on small screens and two columns
-            from `lg`, matching the primary rows' responsive behaviour without
-            borrowing their three-column geometry. */}
+        {/* The secondary services, as a single line under the grid rather than as
+            a second tier of cards — see `secondaryServices` in the content file
+            for why that was tried and withdrawn. It reuses the 48px `gap-12`
+            above, so no spacing token is introduced and the frame's grid, and its
+            one divider, are untouched.
+            `font-sans` and deliberately NOT `font-body`: Jura is `--font-sans`,
+            and `font-body` is not a class this project defines. */}
+        <p className="font-sans text-service-body leading-service-body text-foreground">
+          {secondaryServices.label}: {secondaryServices.items.join(", ")}
+        </p>
       </div>
     </section>
   );
