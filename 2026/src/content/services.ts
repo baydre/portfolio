@@ -1,74 +1,110 @@
-import type { Service } from "./types";
+import type { SecondaryService, Service } from "./types";
 
 /**
- * Services offered.
+ * The six primary services.
  *
- * Source: the HomePage snippet's Services frame — 1440 × 1962, a 3 × 2 grid of six
- * services with a 1px rule between the two rows.
+ * Source: the HomePage snippet's Services frame — 1440 × 1962, a 3 × 2 grid with a
+ * 1px rule between the two rows. The **layout** is still the frame's and is
+ * unchanged: two rows of three, the 48px gaps, and the `border-r` divider on every
+ * card but the last in its row.
  *
- * The `index` labels and all six `title`s are transcribed from the design, which
- * numbers them `01`–`06`. That numbering is a deliberate motif the Work section
- * shares (`01`–`04`) and is content-controlled, not positional.
+ * The **content is no longer the frame's.** All six titles and descriptions below
+ * are **OWNER-SUPPLIED, 2026-09-27**, replacing the frame's six titles and their
+ * verbatim descriptions in one pass:
  *
- * The frame draws those numbers with a `//` prefix — `//01`–`//06` — and the Work
- * cards did the same. **The slashes are gone as of 2026-09-26, on owner request**,
- * from every number on the site: these six, the four project indices in
- * `ProjectCard`, and the `//01`/`//02` prose in the comments across the Home
- * page's components. The digits are the design's own; `//` was a typographic
- * flourish around them that read as a code comment marker and was being mistaken
- * for one, and the About page's frame never had it, so the two sections now
- * agree. The numbering itself is untouched — these are still the design's labels,
- * still content, still not derived from array position.
+ * | Was (frame)                    | Is (owner copy)                      |
+ * | ------------------------------ | ------------------------------------ |
+ * | `01` Web Design                | `01` Custom Software Development     |
+ * | `02` Web Development           | `02` Backend & API Engineering       |
+ * | `03` Brand Development         | `03` MVP & SaaS Development          |
+ * | `04` Technical Writing         | `04` DevOps & Application Deployment |
+ * | `05` Consultation Services     | `05` AI & Automation                 |
+ * | `06` Marketing Services        | `06` IoT & Embedded Prototyping      |
  *
- * All six `description`s are now transcribed verbatim from the same frame, as is
- * `sectionDescription`. They were previously withheld because inventing marketing
- * copy is worse than publishing none — see docs/DESIGN_SYSTEM.md §9.
+ * The `01`–`06` labels are unchanged and still content, not array position — the
+ * Work section shares the motif at `01`–`04`. The `//` prefix the frame draws is
+ * still dropped, on owner request 2026-09-26, from every number on the site.
+ *
+ * Descriptions are transcribed verbatim from the owner's message, including the
+ * `and`/`&` punctuation and the capitalisation of "Raspberry Pi/Arduino". None
+ * were rewritten, and the owner's wording is not marketing-invented: it reads as
+ * a list of deliverables rather than as a promise, which is the point.
  */
 export const services: Service[] = [
   {
     index: "01",
-    title: "Web Design",
+    title: "Custom Software Development",
     description:
-      "Designing clear, engaging digital experiences that balance visual character with usability and purpose.",
+      "Full-stack web applications, backend systems, APIs, dashboards and internal tools.",
   },
   {
     index: "02",
-    title: "Web Development",
+    title: "Backend & API Engineering",
     description:
-      "Building responsive, functional websites and web applications that are made to work across devices and real-world use cases.",
+      "Python/Django, REST APIs, PostgreSQL, authentication, integrations and business logic.",
   },
   {
     index: "03",
-    title: "Brand Development",
+    title: "MVP & SaaS Development",
     description:
-      "Developing visual identities and brand systems that give ideas a clear, consistent, and recognizable presence.",
+      "Technical planning, architecture, development and deployment of MVPs and SaaS products.",
   },
   {
     index: "04",
-    title: "Technical Writing",
+    title: "DevOps & Application Deployment",
     description:
-      "Turning complex technical ideas into clear, useful documentation and content that people can actually understand and use.",
+      "VPS deployment, Docker, NGINX, CI/CD, staging environments, SSL and production setup.",
   },
   {
     index: "05",
-    title: "Consultation Services",
+    title: "AI & Automation",
     description:
-      "Helping teams and founders make better digital decisions through practical guidance on products, design, technology, and execution.",
+      "AI-powered features, API integrations, workflow automation and intelligent business processes.",
   },
   {
     index: "06",
-    title: "Marketing Services",
+    title: "IoT & Embedded Prototyping",
     description:
-      "Creating digital marketing experiences and content that help brands communicate clearly, reach the right audience, and grow.",
+      "IoT systems, Raspberry Pi/Arduino, sensor integration, edge computing and hardware/software prototypes.",
+  },
+];
+
+/**
+ * The two secondary services, rendered as a quieter tier beneath the primary six.
+ *
+ * **OWNER-SUPPLIED 2026-09-27**, as "Digital Marketing" and "Technical Consulting &
+ * Training". They are deliberately NOT in `services` and deliberately NOT in the
+ * frame's 3 × 2 grid — see `ServicesSection` for why, and for why they carry no
+ * `01`–`06` index.
+ *
+ * **Both descriptions are `PENDING` from the owner.** The owner supplied titles
+ * only. `description` is optional on the type and the section omits the paragraph
+ * when empty rather than rendering a placeholder or inventing marketing copy.
+ * Do not fill these in without being asked — inventing service copy is worse than
+ * publishing none, the same rule that held back the primary descriptions until the
+ * owner supplied them.
+ */
+export const secondaryServices: SecondaryService[] = [
+  {
+    title: "Digital Marketing",
+  },
+  {
+    title: "Technical Consulting & Training",
   },
 ];
 
 /**
  * The Services section's own description, beside the heading.
  *
- * Verbatim from the frame. It sits at 24px in the design against Work's 20px —
- * one of four values that differ between the two frames, which is why
- * `SectionIntro` takes the description size from the caller.
+ * Verbatim from the frame. **It is now inconsistent with the six services it
+ * introduces** and is left as supplied rather than rewritten, because it is the
+ * frame's copy and inventing replacement marketing prose is not this file's call.
+ *
+ * It still offers "Digital experiences, brands, and technical solutions", and
+ * there is no longer a brand or digital-experience service in the list — the six
+ * are now software, backend, MVP, DevOps, AI and IoT. Pending an owner decision;
+ * see docs/DESIGN_SYSTEM.md §9. Note that the copy problem is confined to this
+ * one paragraph: all six card descriptions are owner-supplied and current.
  */
 export const servicesSectionDescription =
   "Digital experiences, brands, and technical solutions built with purpose — from the first idea to the final product.";
