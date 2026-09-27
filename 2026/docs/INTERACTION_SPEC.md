@@ -170,9 +170,21 @@ so the cost below is paid deliberately.
   on a rotation should say. There is now no featured/rotating split, one ordered
   list, and the labels run `01`–`06` straight from the top.
 - **Interval 6s**, chosen by the owner.
-- **WCAG 2.2.2 Pause, Stop, Hide — paid.** The rotation auto-updates, so a stop
-  control is mandatory, and it ships as a visible Pause/Resume button rather than
-  a hover-only affordance.
+- **WCAG 2.2.2 Pause, Stop, Hide — paid by gesture, not by a control.** The
+  rotation auto-updates, so a pause mechanism is required. The owner's directive
+  was that the section read as one automatic slider and that nobody has to click
+  anything to see the work, so a visible Pause/Resume button and the
+  previous/next arrows were **removed** (2026-09-27). What stops it instead:
+  hovering the slider, focusing into it, or pressing and holding it; release
+  starts a full 6s turn of grace. Hover and focus were already required for
+  keyboard parity, and press-and-hold was added because **a phone has no cursor**
+  — without it a touch user had no mechanism at all and the card slid away
+  mid-read.
+
+  Recorded honestly: gestures are a weaker reading of 2.2.2 than a labelled
+  control, because they must be discovered and a screen-reader user has to reach
+  the slider with a pointer to try one. The owner's call, not a claim of full
+  conformance. The dot row is the one always-visible control that remains.
 - **`prefers-reduced-motion` — paid.** Autoplay does not start at all when the
   preference is set, and the fade is gated on `motion-safe:`. Turning the setting
   on mid-session stops the rotation. A visitor who then presses Resume has asked
@@ -381,7 +393,7 @@ content.
 | Contact submit | Four-state machine, never faked | **[D]** |
 | Mobile menu | Disclosure pattern, `aria-expanded`, `Escape`, focus return | **[P]** |
 | Gallery | Static grid unless a carousel is explicitly wanted | **[P]** |
-| Work carousel | Explicitly wanted 2026-09-27, then corrected to a single slider over all six; pause control, reduced-motion, no trap, no `aria-live` | **[D]** |
+| Work carousel | Explicitly wanted 2026-09-27; corrected twice — one slider over all six, buttons removed, pauses on hover/focus/press; reduced-motion, no trap, no `aria-live` | **[D]** |
 | Anything animated | Honours `prefers-reduced-motion` | **[D]** |
 
 ---

@@ -97,28 +97,65 @@ describe("ProjectCarousel", () => {
     }
   });
 
-  it("offers a stop control, because autoplay needs one (WCAG 2.2.2)", () => {
-    // Pause/Stop/Hide: content that updates automatically and runs for more than
-    // five seconds must be pausable. The control is asserted by its role and
-    // accessible name, and it is present while rotating — not only once paused.
+  it("has no play/pause or previous/next controls, on the owner's instruction", () => {
+    // Removed 2026-09-27: the section should read as one automatic slider, and
+    // nobody should have to click anything to see the work. Asserted as an
+    // ABSENCE, which is unusual but the only way to stop a "helpful" control
+    // being re-added by a later change that assumed the others were there.
     renderCarousel();
-    const pause = screen.getByRole("button", {
-      name: "Pause automatic rotation",
-    });
-    expect(pause).toBeInTheDocument();
-    expect(pause).toHaveAttribute("type", "button");
+    for (const name of [
+      "Pause automatic rotation",
+      "Resume automatic rotation",
+      "Previous project",
+      "Next project",
+    ]) {
+      expect(screen.queryByRole("button", { name })).toBeNull();
+    }
+    // The only buttons left are the dots, one per project.
+    expect(screen.getAllByRole("button")).toHaveLength(slider.length);
+  });
 
-    fireEvent.click(pause);
-    expect(
-      screen.getByRole("button", { name: "Resume automatic rotation" }),
-    ).toBeInTheDocument();
+  it("stops on press and holds a full turn after release", () => {
+    // The touch path, and the reason it exists: a phone has no cursor, so hover
+    // gives a touch user nothing and the card would slide away mid-read. Press
+    // stops it. Crucially, release does NOT resume immediately — the visitor
+    // gets a whole 6s turn to finish reading, because nobody reads with a finger
+    // still on the glass.
+    const { container } = renderCarousel();
+    const region = screen.getByRole("region", { name: "More work" });
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Resume automatic rotation" }),
-    );
-    expect(
-      screen.getByRole("button", { name: "Pause automatic rotation" }),
-    ).toBeInTheDocument();
+    fireEvent.pointerDown(region);
+    advance(6000 * 2);
+    expect(visibleIndex(container)).toBe(0);
+
+    // Lifted: still held, on the grace timer.
+    fireEvent.pointerUp(region);
+    advance(5900);
+    expect(visibleIndex(container)).toBe(0);
+
+    // Grace expires and rotation resumes — but the interval is created at that
+    // moment, so the new turn is a full 6s away rather than an instant advance.
+    advance(200);
+    expect(visibleIndex(container)).toBe(0);
+    advance(6000);
+    expect(visibleIndex(container)).toBe(1);
+  });
+
+  it("releases the hold on a cancelled pointer, rather than sticking", () => {
+    // `pointercancel` replaces `pointerup` when a system gesture takes over, so
+    // it has to end the press too. Forget the handler and a cancelled touch
+    // leaves `pressing` true forever — the carousel silently stops for that
+    // visitor with no way to know why. It gets the same grace as a normal lift,
+    // since a cancelled gesture still means someone was reaching in.
+    const { container } = renderCarousel();
+    const region = screen.getByRole("region", { name: "More work" });
+
+    fireEvent.pointerDown(region);
+    fireEvent.pointerCancel(region);
+    advance(6000);
+    // Grace expired: hold released, interval running but not yet due.
+    advance(6000);
+    expect(visibleIndex(container)).toBe(1);
   });
 
   it("advances every 6s, wrapping past the end", () => {
@@ -140,11 +177,10 @@ describe("ProjectCarousel", () => {
     expect(visibleIndex(container)).toBe(0);
   });
 
-  it("does not advance while paused", () => {
+  it("does not advance while the cursor is resting on it", () => {
     const { container } = renderCarousel();
-    fireEvent.click(
-      screen.getByRole("button", { name: "Pause automatic rotation" }),
-    );
+    const region = screen.getByRole("region", { name: "More work" });
+    fireEvent.mouseEnter(region);
 
     advance(6000 * 3);
     expect(visibleIndex(container)).toBe(0);
@@ -164,17 +200,32 @@ describe("ProjectCarousel", () => {
     expect(visibleIndex(container)).toBe(0);
   });
 
-  it("still advances when a reduced-motion visitor asks for it explicitly", () => {
-    // Reduced motion suppresses autoplay; it does not remove the control. A
-    // visitor who has deliberately pressed Resume has asked for the motion.
+  it("leaves the dots working when reduced motion suppresses rotation", () => {
+    // The consequence of removing the Resume button: for a reduced-motion
+    // visitor autoplay is now off permanently, which is the right reading of the
+    // preference. What must not follow is that the content becomes unreachable —
+    // the dots are how they move between projects, with no motion at all.
     stubReducedMotion(true);
     const { container } = renderCarousel();
-    fireEvent.click(
-      screen.getByRole("button", { name: "Resume automatic rotation" }),
-    );
+    advance(6000 * 4);
+    expect(visibleIndex(container)).toBe(0);
 
-    advance(6000);
-    expect(visibleIndex(container)).toBe(1);
+    fireEvent.click(
+      screen.getByRole("button", { name: `Show ${slider[2].title}` }),
+    );
+    expect(visibleIndex(container)).toBe(2);
+
+    // And the fade cannot run: the classes are always on the active slide, and
+    // what suppresses them under reduced motion is the `motion-safe:` variant
+    // prefix — not their absence. Asserting the prefix is the honest check;
+    // asserting the class is missing would pass only if someone deleted the
+    // animation outright, including for visitors who allow motion.
+    const classes = (slides(container)[2].className ?? "").split(/\s+/);
+    const animationClasses = classes.filter((c) => /animate|fade/.test(c));
+    expect(animationClasses.length).toBeGreaterThan(0);
+    for (const cls of animationClasses) {
+      expect(cls.startsWith("motion-safe:")).toBe(true);
+    }
   });
 
   it("stops while the pointer is over it, and resumes on leave", () => {
@@ -197,41 +248,33 @@ describe("ProjectCarousel", () => {
     // focus BETWEEN controls must not resume it — only leaving the region.
     const { container } = renderCarousel();
     const region = screen.getByRole("region", { name: "More work" });
-    const next = screen.getByRole("button", { name: "Next project" });
+    const dot = screen.getByRole("button", { name: `Show ${slider[0].title}` });
 
-    fireEvent.focus(next);
+    fireEvent.focus(dot);
     advance(6000 * 2);
     expect(visibleIndex(container)).toBe(0);
 
     // Between two controls inside the region: still paused.
-    fireEvent.blur(next, { relatedTarget: region });
+    fireEvent.blur(dot, { relatedTarget: region });
     advance(6000);
     expect(visibleIndex(container)).toBe(0);
 
-    // Out of the region entirely: resumes.
+    // Out of the region entirely: resumes on the next turn. One 6s advance is
+    // enough, because the blur is flushed by `act` before the clock moves — the
+    // interval exists for the whole of that window, so its first tick lands on
+    // it. (The press-grace test needs two, because there the release happens
+    // *inside* a timer callback and the interval is created at the end of it.)
     fireEvent.blur(region, { relatedTarget: document.body });
     advance(6000);
     expect(visibleIndex(container)).toBe(1);
   });
 
-  it("steps manually and wraps in both directions", () => {
-    const { container } = renderCarousel();
-    const next = screen.getByRole("button", { name: "Next project" });
-    const prev = screen.getByRole("button", { name: "Previous project" });
-
-    fireEvent.click(prev);
-    expect(visibleIndex(container)).toBe(slider.length - 1);
-
-    fireEvent.click(next);
-    expect(visibleIndex(container)).toBe(0);
-  });
-
-  it("restarts the full 6s after a manual step", () => {
-    // Without this, pressing "next" just before a scheduled advance skips the
-    // slide the visitor asked for, because the old timer fires immediately.
+  it("restarts the full 6s after picking a project from the dot row", () => {
+    // Without this, choosing a project a moment before a scheduled advance would
+    // skip the slide just chosen, because the old timer fires immediately.
     const { container } = renderCarousel();
     advance(5000);
-    fireEvent.click(screen.getByRole("button", { name: "Next project" }));
+    fireEvent.click(screen.getByRole("button", { name: `Show ${slider[1].title}` }));
     expect(visibleIndex(container)).toBe(1);
 
     // 1.1s of the new turn — the old timer would have fired by now.
