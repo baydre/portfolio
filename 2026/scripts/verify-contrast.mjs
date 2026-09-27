@@ -131,23 +131,29 @@ const PAIRINGS = [
   ["--brand-kicad", "--tech-tile", "graphic", "KiCad mark"],
 
   // --- About ROLE marks, on the page rather than on a tile ---
-  // These four are the lead technology of each role in `aboutSkillRoles`, drawn
-  // at the frame's 120px in the Technical Skills tiles. Those `<li>`s have no
-  // background of their own, so the surface is `--background`, NOT `--tech-tile`
-  // like the six above — which is why React and Linux pass here with more room
-  // than they have on the Tools tiles, and why Raspberry Pi needed its own
-  // correction: simple-icons' `#a22846` is 2.57:1 on the page.
+  // These are the lead technology of each role in `aboutSkillRoles`, drawn at the
+  // frame's 120px in the Technical Skills tiles. Those `<li>`s have no background
+  // of their own, so the surface is `--background`, NOT `--tech-tile` like the six
+  // above — which is why React and Linux pass here with more room than they have
+  // on the Tools tiles, and why Raspberry Pi needed its own correction:
+  // simple-icons' `#a22846` is 2.57:1 on the page.
   //
-  // The Backend entry is `--brand-c`, not `--brand-python`, since 2026-09-27: the
-  // role's mark is `stack[0]` and the owner put C first in that stack, so the
-  // tile no longer draws Python here. Python is still gated above, on
-  // `--tech-tile`, where the Tools row actually renders it — so dropping it from
-  // this list loses no coverage, it just stops asserting a pairing that no longer
-  // occurs on the page.
-  ["--brand-c", "--background", "graphic", "Backend role mark"],
+  // The Backend entry is `--brand-python` again as of 2026-09-27. C led that
+  // stack for part of the day, which moved the tile's mark to `--brand-c`, and the
+  // owner then put Python back in front — so this pairing follows `stack[0]`
+  // rather than being pinned to a language independently of it. Python is
+  // separately gated above on `--tech-tile`, where its Tools tile draws it, so
+  // listing it in both places is two real surfaces rather than a duplicate.
+  ["--brand-python", "--background", "graphic", "Backend role mark"],
   ["--brand-react", "--background", "graphic", "Full-stack role mark"],
   ["--brand-linux", "--background", "graphic", "DevOps role mark"],
   ["--brand-raspberrypi", "--background", "graphic", "IoT role mark"],
+  // C is `stack[1]`, so nothing draws it today. Gated anyway, on the surface a
+  // role mark would use, because the registry entry is kept precisely so a
+  // C-first order cannot break the tile — this asserts the colour that entry
+  // would ship with, rather than leaving it ungated. It is not one of the
+  // corrected values: #a8b9cc is 9.19:1 here, so it needs no lightening.
+  ["--brand-c", "--background", "graphic", "Backend role mark, if C leads"],
 
   // --- About frame ---
   // `--muted-foreground` has been marked "DERIVED — untested for contrast" in

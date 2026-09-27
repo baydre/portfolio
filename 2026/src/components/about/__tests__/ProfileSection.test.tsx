@@ -12,7 +12,7 @@ import {
   aboutSocialLinks,
   aboutTools,
 } from "../../../content/about";
-import { hasTechIcon } from "../../common/TechIcon";
+import { TechIcon, hasTechIcon } from "../../common/TechIcon";
 import {
   siC,
   siDjango,
@@ -588,8 +588,8 @@ describe("About page — technical skills", () => {
 
     expect(backend.title).toBe("Backend Engineering");
     expect(backend.stack).toEqual([
-      "C",
       "Python",
+      "C",
       "Django",
       "FastAPI",
       "REST APIs",
@@ -615,9 +615,11 @@ describe("About page — technical skills", () => {
     const backend = aboutSkillRoles[0];
     const devops = aboutSkillRoles[2];
 
-    // "C at the before Python" — C is not merely present, it LEADS.
-    expect(backend.stack[0]).toBe("C");
-    expect(backend.stack[1]).toBe("Python");
+    // "let the Python come before the C" — the owner's reversal of the same
+    // day. C is not merely present, it sits IMMEDIATELY BEHIND Python: asserting
+    // presence alone would pass with C last, which is the opposite of the ask.
+    expect(backend.stack[0]).toBe("Python");
+    expect(backend.stack[1]).toBe("C");
     // "Unit testing at the end" — genuinely last, not merely contained.
     expect(backend.stack[backend.stack.length - 1]).toBe("Unit testing");
 
@@ -631,21 +633,14 @@ describe("About page — technical skills", () => {
     expect(devops.stack).toContain("GitHub Actions");
   });
 
-  it("gives the Backend role the C mark, since its mark is stack[0]", () => {
-    // The knock-on effect of putting C first, recorded as its own test because
-    // it is a real coupling rather than an incidental one: `ProfileSection`
-    // renders `<TechIcon tool={role.stack[0]}>`, so the role's logo is whatever
-    // leads its stack. The owner moving C to the front therefore moved the
-    // Backend tile's mark off Python, and the registry needs a matching entry or
-    // the tile renders no glyph at all.
+  it("keeps the Python mark on the Backend role, since C is no longer first", () => {
+    // The mark is `stack[0]`, so the owner's reversal moves this tile's logo back
+    // off C and onto Python. Kept as its own test because the coupling is real:
+    // it is the reason the earlier C-first amendment needed a C glyph at all, and
+    // the reason this ordering cannot be changed without thinking about the mark.
     const backend = aboutSkillRoles[0];
-    expect(backend.stack[0]).toBe("C");
-    expect(hasTechIcon("C")).toBe(true);
+    expect(backend.stack[0]).toBe("Python");
 
-    // The rendered tile must actually draw it, not merely resolve the lookup.
-    // Read from the Skills block's own `<li>` rather than through the `fillFor`
-    // helper above, which is scoped to the Tools block — C has no Tools tile, and
-    // the point here is which mark THIS tile carries.
     const { container } = render(
       <MemoryRouter>
         <AboutPage />
@@ -656,17 +651,46 @@ describe("About page — technical skills", () => {
     ) as HTMLElement;
     const tile = skills.querySelectorAll("li")[0];
     const mark = tile.querySelector("svg") as SVGSVGElement;
+
+    // Python's CORRECTED fill (#3776ab is 2.69:1 on the tile, so it is lightened
+    // to #458ac3), and explicitly no longer C's.
+    expect(mark.getAttribute("fill")).toBe("#458ac3");
+    expect(mark.getAttribute("fill")).not.toBe("#a8b9cc");
+    expect(mark.innerHTML).toContain(siPython.path.slice(0, 40));
+
+    // C keeps its registry entry even though nothing draws it now, so the
+    // `hasTechIcon(stack[0])` guard cannot fail on a legitimate C-first stack if
+    // the owner reorders again. C is listed in the stack either way.
+    expect(backend.stack).toContain("C");
+    expect(hasTechIcon("C")).toBe(true);
+  });
+
+  it("keeps a real C glyph in the registry, on simple-icons' own path and hex", () => {
+    // C is the one stack entry with no Tools tile of its own, so its mark can
+    // only come from the shared registry. That entry was added when C led the
+    // Backend stack and is kept after the owner moved Python back in front, so
+    // the `hasTechIcon(stack[0])` guard stays sound under either order.
+    // The registry entry itself, rendered directly rather than through a role
+    // tile. C is `stack[1]` since the owner's reversal, so no `<li>` draws it any
+    // more — asserting on the Backend tile here would only re-test Python. What
+    // still needs proving is that the entry resolves and draws a real C, so the
+    // `hasTechIcon(stack[0])` guard cannot fail on a legitimate C-first stack if
+    // the order is ever revisited.
+    expect(hasTechIcon("C")).toBe(true);
+    const { container } = render(<TechIcon tool="C" className="size-28" />);
+    const mark = container.querySelector("svg") as SVGSVGElement;
     expect(mark).not.toBeNull();
+
+    // C's own simple-icons path, and its UNCORRECTED brand hex: #a8b9cc is
+    // 9.19:1 on --background, so unlike Python, Django, Git and KiCad this fill
+    // is published as-is rather than lightened to clear 3:1. Asserted against the
+    // vendor hex, so a future "corrected" C would fail here.
     expect(mark.getAttribute("fill")).toBe("#a8b9cc");
-
-    // The mark is C's own simple-icons path, and its UNCORRECTED brand hex:
-    // #a8b9cc is 9.19:1 on --background, so unlike Python, Django, Git and KiCad
-    // this fill is published as-is rather than lightened to clear 3:1. Asserted
-    // against the vendor hex so a future "corrected" C would fail here.
     expect(mark.innerHTML).toContain(siC.path.slice(0, 40));
+    expect(mark.getAttribute("class")).toContain("size-28");
 
-    // And Python is no longer this tile's mark, though it remains a Tools tile.
-    expect(aboutTools).toContain("Python");
+    // C is listed in the Backend stack, and is not a Tools tile in its own right.
+    expect(aboutSkillRoles[0].stack).toContain("C");
     expect(aboutTools).not.toContain("C");
   });
 

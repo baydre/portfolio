@@ -198,17 +198,16 @@ export const aboutSkillRoles: SkillRole[] = [
   {
     index: "01",
     title: "Backend Engineering",
-    // **Amended by the owner 2026-09-27**, which has one knock-on effect worth
-    // recording here rather than only in the docs: the role's mark is `stack[0]`
-    // (see `ProfileSection`), so putting C first moves this tile's logo from the
-    // Python mark to the C mark. That is the intended reading of the rule — the
-    // mark is the role's own FIRST technology, so it follows the owner's order
-    // rather than being pinned to Python independently of it. `C` therefore
-    // needs a real entry in the `TechIcon` registry, or the tile loses its
-    // glyph and the "every role's mark resolves" test fails.
+    // **Amended by the owner 2026-09-27**, twice the same day. C was added
+    // first, then moved behind Python at the owner's request, so the settled
+    // order is C second — the mark follows `stack[0]` and is Python again. See
+    // `ProfileSection`: a role's mark is its own FIRST technology, so the logo
+    // tracks this ordering rather than being pinned to a language independently
+    // of it. `C` keeps its entry in the `TechIcon` registry either way, so the
+    // "every role's mark resolves" guard holds if the order is revisited.
     stack: [
-      "C",
       "Python",
+      "C",
       "Django",
       "FastAPI",
       "REST APIs",
