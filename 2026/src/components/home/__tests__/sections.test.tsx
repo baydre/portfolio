@@ -20,6 +20,29 @@ import { WorkSection } from "../WorkSection";
 const renderSection = (ui: React.ReactElement) =>
   render(<MemoryRouter>{ui}</MemoryRouter>);
 
+/**
+ * The featured static card — IdCardify, the one project the owner kept on the
+ * page rather than folding into the rotation.
+ *
+ * These card-anatomy tests predate the carousel and were written when the
+ * section held exactly one card, so `getByRole("article")` was unambiguous. It
+ * is not any more, and it cannot be made so by visibility: jsdom does not apply
+ * the UA stylesheet's `[hidden] { display: none }`, so Testing Library still
+ * reports the four off-screen slides as present. In a real browser they are
+ * genuinely hidden, and `ProjectCarousel.test.tsx` asserts that via the `hidden`
+ * ATTRIBUTE rather than through a visibility-based query, which is the honest
+ * way to test it under jsdom.
+ *
+ * So the anatomy is asserted against the featured card, reached by DOM position
+ * rather than by role, and the rotating cards get their own coverage.
+ */
+const featuredCard = (container: HTMLElement) =>
+  container.querySelector("section#work > ol > li > article") as HTMLElement;
+
+/** Every project card in the section, in document order, hidden ones included. */
+const allCards = (container: HTMLElement) =>
+  Array.from(container.querySelectorAll("section#work article"));
+
 describe("WorkSection", () => {
   it("is a labelled region with a real heading", () => {
     renderSection(<WorkSection />);
@@ -36,13 +59,26 @@ describe("WorkSection", () => {
     expect(section?.className).toContain("scroll-mt-header");
   });
 
-  it("renders one numbered entry per project", () => {
+  it("renders one numbered entry per project, across both lists", () => {
     const { container } = renderSection(<WorkSection />);
-    // Scoped to the ordered list: ProjectCard also contains a <ul> of stack
-    // tiles, which a bare getAllByRole("listitem") would count.
-    const list = container.querySelector("ol");
-    expect(list).not.toBeNull();
-    expect(list?.querySelectorAll(":scope > li")).toHaveLength(projects.length);
+    // There are now TWO ordered lists — the featured card's, and the carousel's,
+    // the latter nested inside the carousel's own wrapper element. So this counts
+    // `ol > li` anywhere in the section rather than direct children of it. The
+    // `ol` part is what keeps it honest: ProjectCard contains a `<ul>` of stack
+    // tiles, and `ul > li` is excluded by the tag.
+    expect(container.querySelectorAll("section#work ol > li")).toHaveLength(
+      projects.length,
+    );
+
+    // And the split is the owner's: one static, the rest rotating.
+    const lists = container.querySelectorAll("section#work ol");
+    expect(lists).toHaveLength(2);
+    expect(lists[0].querySelectorAll(":scope > li")).toHaveLength(1);
+    expect(lists[1].querySelectorAll(":scope > li")).toHaveLength(
+      projects.length - 1,
+    );
+    // The static one is the FIRST project, so the featured card keeps `01`.
+    expect(lists[0].textContent).toContain(projects[0].title);
   });
 
   /**
@@ -52,8 +88,8 @@ describe("WorkSection", () => {
    * `docs/DESIGN_SYSTEM.md` §6 and in `projects.ts` instead of in the UI.
    */
   it("gives the title row exactly the design's two children", () => {
-    renderSection(<WorkSection />);
-    const card = screen.getByRole("article");
+    const { container } = renderSection(<WorkSection />);
+    const card = featuredCard(container);
     const title = within(card).getByRole("heading", { level: 3 });
     const index = within(card).getByText(/^\d{2}$/);
 
@@ -72,11 +108,17 @@ describe("WorkSection", () => {
   });
 
   it("links each project title to its detail route", () => {
-    renderSection(<WorkSection />);
+    const { container } = renderSection(<WorkSection />);
+    // Queried from the DOM rather than by role: the carousel's off-screen slides
+    // are `hidden`, so a role query cannot see them, and these five links are
+    // exactly what must not be allowed to go missing just because a card is
+    // between turns. Asserted for ALL six, not just the visible one.
     for (const project of projects) {
-      expect(
-        screen.getByRole("link", { name: project.title }),
-      ).toHaveAttribute("href", `/projects/${project.id}`);
+      const link = container.querySelector<HTMLAnchorElement>(
+        `a[href="/projects/${project.id}"]`,
+      );
+      expect(link, `${project.title} detail link`).not.toBeNull();
+      expect(link?.textContent).toBe(project.title);
     }
   });
 
@@ -161,10 +203,8 @@ describe("WorkSection", () => {
    * built as an icon box above a centred label.
    */
   it("puts the NN label in the card's title row, right-aligned", () => {
-    renderSection(<WorkSection />);
-    const card = within(screen.getByRole("region", { name: "Work" })).getByRole(
-      "article",
-    );
+    const { container } = renderSection(<WorkSection />);
+    const card = featuredCard(container);
     // Bare digits: the frame's `//` prefix is dropped on owner request
     // 2026-09-26, so this also fails if the prefix ever comes back.
     const label = within(card).getByText(/^\d{2}$/);
@@ -177,10 +217,8 @@ describe("WorkSection", () => {
   });
 
   it("styles the card title and summary as the snippet specifies", () => {
-    renderSection(<WorkSection />);
-    const card = within(screen.getByRole("region", { name: "Work" })).getByRole(
-      "article",
-    );
+    const { container } = renderSection(<WorkSection />);
+    const card = featuredCard(container);
 
     // text-[32px] font-maisonNeue text-[#FFF]
     const title = within(card).getByRole("heading", { level: 3 });
@@ -197,10 +235,8 @@ describe("WorkSection", () => {
   });
 
   it("uses the snippet's 12px card radius, not the hero image radius", () => {
-    renderSection(<WorkSection />);
-    const card = within(screen.getByRole("region", { name: "Work" })).getByRole(
-      "article",
-    );
+    const { container } = renderSection(<WorkSection />);
+    const card = featuredCard(container);
 
     // Both exports say borderRadius 12 for the image and the panel, and
     // --radius-lg is 12px. rounded-image (24px) is the HERO image's radius, and
@@ -239,10 +275,8 @@ describe("WorkSection", () => {
   );
 
   it("uppercases and tracks the panel label as the export specifies", () => {
-    renderSection(<WorkSection />);
-    const card = within(screen.getByRole("region", { name: "Work" })).getByRole(
-      "article",
-    );
+    const { container } = renderSection(<WorkSection />);
+    const card = featuredCard(container);
     const label = within(card).getByText("Built with");
 
     // textTransform: uppercase, letter-spacing 0.88px = 0.0733em at 12px.
@@ -289,8 +323,8 @@ describe("WorkSection", () => {
   });
 
   it("uses 12px on the panel and 8px on the tile box", () => {
-    renderSection(<WorkSection />);
-    const card = screen.getByRole("article");
+    const { container } = renderSection(<WorkSection />);
+    const card = featuredCard(container);
     // Scoped to the panel that owns the label — `card.querySelector(".bg-panel")`
     // would return the image placeholder, which is also bg-panel.
     const panel = within(card).getByText("Built with").closest(".bg-panel");
@@ -347,10 +381,8 @@ describe("WorkSection", () => {
   });
 
   it("builds each stack tile as an icon box above a centred label", () => {
-    renderSection(<WorkSection />);
-    const card = within(screen.getByRole("region", { name: "Work" })).getByRole(
-      "article",
-    );
+    const { container } = renderSection(<WorkSection />);
+    const card = featuredCard(container);
     const tile = within(card).getAllByText("React.js")[0];
     const box = tile.parentElement?.querySelector("div");
 
@@ -414,10 +446,8 @@ describe("WorkSection", () => {
   });
 
   it("emits no duplicate SVG clip-path ids across tiles", () => {
-    renderSection(<WorkSection />);
-    const card = within(screen.getByRole("region", { name: "Work" })).getByRole(
-      "article",
-    );
+    const { container } = renderSection(<WorkSection />);
+    const card = featuredCard(container);
     // The snippet repeats clip0_323_427 / clip0_323_437 across its five tiles,
     // which puts duplicate ids in the document. TechIcon drops the no-op clip.
     expect(card.querySelectorAll("clipPath").length).toBe(0);
@@ -443,7 +473,7 @@ describe("WorkSection", () => {
   });
 
   it("keeps the per-project numbering while dropping the section index", () => {
-    renderSection(<WorkSection />);
+    const { container } = renderSection(<WorkSection />);
     const heading = within(
       screen.getByRole("region", { name: "Work" }),
     ).getByRole("heading", { level: 2 });
@@ -453,10 +483,12 @@ describe("WorkSection", () => {
     expect(heading.textContent).toBe("Work");
     expect(heading.parentElement?.textContent).not.toMatch(/\d/);
 
-    // The per-project `01`–`04` labels are content and still render, one per
-    // card, with no `//` prefix (owner request, 2026-09-26).
-    const cards = screen.getAllByRole("article");
-    expect(cards).toHaveLength(projects.length);
+      // The per-project `01`–`04` labels are content and still render, one per
+      // card, with no `//` prefix (owner request, 2026-09-26). All six are
+      // checked, including the four off-screen ones — numbering that is only
+      // correct while a card happens to be on screen is not correct.
+      const cards = allCards(container);
+      expect(cards).toHaveLength(projects.length);
 
     const labels = cards.map((card) =>
       Array.from(card.querySelectorAll(".text-card-index")).map(

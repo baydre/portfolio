@@ -129,6 +129,14 @@ const PAIRINGS = [
   ["--brand-git", "--tech-tile", "graphic", "Git mark"],
   ["--brand-linux", "--tech-tile", "graphic", "Linux mark"],
   ["--brand-kicad", "--tech-tile", "graphic", "KiCad mark"],
+  // Four added 2026-09-27 for the rotating Work projects. Their "Built with"
+  // tiles sit on --tech-tile, same as the six above. Only Ansible needed
+  // correcting; the other three publish the vendor hex because it already
+  // clears 3:1 here.
+  ["--brand-shell", "--tech-tile", "graphic", "Shell mark"],
+  ["--brand-nginx", "--tech-tile", "graphic", "NGINX mark"],
+  ["--brand-docker", "--tech-tile", "graphic", "Docker mark"],
+  ["--brand-ansible", "--tech-tile", "graphic", "Ansible mark"],
 
   // --- About ROLE marks, on the page rather than on a tile ---
   // These are the lead technology of each role in `aboutSkillRoles`, drawn at the
@@ -176,6 +184,11 @@ const SUPERSEDED = {
   // simple-icons' own KiCad hex, which is also what the owner's supplied
   // `kicad.svg` baked in. Kept for the same reason as the other three.
   "--brand-kicad": "#314cb0",
+  // Ansible is the fifth lightness-only correction, and the only one of the four
+  // marks added for the Work projects that needed it: `#ee0000` is 2.87:1 on
+  // --tech-tile. The integrity check below is what proves `#ff2d2d` is that same
+  // red lightened rather than a different red.
+  "--brand-ansible": "#ee0000",
   // simple-icons' Raspberry Pi hex. Corrected against `--background`, the
   // surface the About role tiles actually sit on — see the PAIRINGS note.
   "--brand-raspberrypi": "#a22846",

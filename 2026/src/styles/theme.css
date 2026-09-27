@@ -73,6 +73,17 @@
                          the raw brand hex already clears the 3:1 a graphic
                          needs, so unlike Python/Django/Git/KiCad it is not a
                          corrected value.                                     */
+  /* Four more for the rotating Work projects, 2026-09-27. These render in the
+     card's "Built with" panel, so their surface is --tech-tile like the six
+     above — NOT --background, which is where the About role marks sit. */
+  --brand-shell: #ffd500; /* simple-icons Shell, 9.15:1, unchanged          */
+  --brand-nginx: #009639; /* simple-icons NGINX, 3.36:1, unchanged          */
+  --brand-docker: #2496ed; /* simple-icons Docker, 4.13:1, unchanged        */
+  --brand-ansible: #ff2d2d; /* CORRECTED from #ee0000, 2.87 -> 3.51:1. The
+                                only one of these four needing it: Ansible's
+                                pure red is the darkest mark on the tile.
+                                Lightness raised, hue 0.0 deg and saturation
+                                1.000 both unchanged.                        */
   --pill: #f9f9ff; /* "View Github Repo" light pill fill           */
   --pill-foreground: #0d0a2c; /* its label                             */
   --pill-outline-label: #2d2f33; /* "View Live Project" text on --pill */

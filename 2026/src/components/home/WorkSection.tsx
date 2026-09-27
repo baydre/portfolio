@@ -1,6 +1,7 @@
 import { projects } from "../../content/projects";
 import { SectionIntro } from "../common/SectionIntro";
 import { ProjectCard } from "./ProjectCard";
+import { ProjectCarousel } from "./ProjectCarousel";
 
 /**
  * The Work section of the homepage.
@@ -44,6 +45,13 @@ import { ProjectCard } from "./ProjectCard";
  * it as section layout once led to centring the header, which was wrong.
  */
 export function WorkSection() {
+  // The first project is the featured card and stays put; the rest rotate.
+  // Destructured rather than sliced inline at the JSX so the split is named and
+  // cannot be quietly reordered, and so `startIndex` is derived from the same
+  // list the card labels are numbered against — the rotating cards continue at
+  // `02` instead of restarting at `01`.
+  const [featured, ...rotating] = projects;
+
   return (
     <section id="work" aria-labelledby="work-heading" className="container-site scroll-mt-header py-20">
       <SectionIntro
@@ -57,13 +65,21 @@ export function WorkSection() {
         founders who care about the difference.
       </SectionIntro>
 
-      <ol className="mt-16 flex flex-col gap-16">
-        {projects.map((project, index) => (
-          <li key={project.id}>
-            <ProjectCard project={project} index={index} />
+      {featured ? (
+        <ol className="mt-16 flex flex-col gap-16">
+          <li>
+            <ProjectCard project={featured} index={0} />
           </li>
-        ))}
-      </ol>
+        </ol>
+      ) : null}
+
+      {/*
+        The rotating half. Owner request 2026-09-27 — the featured card above
+        stays static, these five take turns. See `ProjectCarousel` for the
+        accessibility decisions that request obliges: a pause control, no motion
+        under `prefers-reduced-motion`, no focus trap and no `aria-live`.
+      */}
+      <ProjectCarousel projects={rotating} startIndex={featured ? 1 : 0} />
     </section>
   );
 }

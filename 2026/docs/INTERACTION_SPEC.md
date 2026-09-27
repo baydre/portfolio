@@ -144,15 +144,48 @@ The design includes `Previous Project` and `Next Project`.
 - Real `<Link>` elements, reachable by keyboard, with discernible accessible names
   — "Previous project: ID Cardify", not bare "Previous".
 
-### 4.3 Image gallery — **[P]**
+### 4.3 Image gallery — **[D]** · and the Work carousel — **[D]**
 
 The design shows multiple screenshots. Whether they are a grid, a carousel, or a
 lightbox is **not specified** — the design is static.
 
-Baseline recommendation: a static responsive grid. A carousel is a significant
-accessibility cost (focus trapping, autoplay, slide announcements) and must not
-be added just because it is possible. If a lightbox is wanted, it must be
-keyboard-dismissible and return focus to its trigger.
+**Gallery: unchanged, still a static responsive grid.** No gallery has been
+built. The reasoning below is retained because it is what a carousel has to earn,
+and one now has.
+
+**Work section carousel: decided 2026-09-27, on the owner's explicit request.**
+This subsection previously read "a carousel … must not be added just because it
+is possible" and the ledger row read "static grid unless a carousel is explicitly
+wanted". The owner asked for it, which is the condition that row was waiting on,
+so the cost below is paid deliberately.
+
+- **Scope.** IdCardify stays a static card. The other five projects rotate. The
+  cards keep the frame's anatomy and the section's authored geometry; only how
+  many are on screen at once changed.
+- **Interval 6s**, chosen by the owner.
+- **WCAG 2.2.2 Pause, Stop, Hide — paid.** The rotation auto-updates, so a stop
+  control is mandatory, and it ships as a visible Pause/Resume button rather than
+  a hover-only affordance.
+- **`prefers-reduced-motion` — paid.** Autoplay does not start at all when the
+  preference is set, and the fade is gated on `motion-safe:`. Turning the setting
+  on mid-session stops the rotation. A visitor who then presses Resume has asked
+  for the motion explicitly and gets it — the preference suppresses the default,
+  it does not remove the control.
+- **No focus trap.** Off-screen slides carry the `hidden` attribute, so they are
+  out of the accessibility tree and out of the tab order. Consequence, and the
+  reason it is asserted in a test: the slide `<li>` must never take a `display`
+  utility, or `display: flex` would beat the UA sheet's `[hidden] { display: none }`.
+- **No slide announcements.** No `aria-live` region. A polite live region behind
+  a 6s timer interrupts a screen reader every 6 seconds, which is the "slide
+  announcements" cost named above and is worse than silence. Instead every
+  project is named in the dot row's accessible labels, so all five are
+  discoverable without waiting for a turn.
+- **Pause on engagement.** Hovering the region or focusing into it stops rotation
+  until the pointer or focus leaves, so a card cannot slide out from under
+  someone reading it. Moving focus *between* controls inside the region does not
+  resume it.
+- **Rotation never steals focus** or reorders the document.
+- **Not decided here:** the image gallery above, which remains a static grid.
 
 ### 4.4 External links — **[I]**
 
@@ -341,6 +374,7 @@ content.
 | Contact submit | Four-state machine, never faked | **[D]** |
 | Mobile menu | Disclosure pattern, `aria-expanded`, `Escape`, focus return | **[P]** |
 | Gallery | Static grid unless a carousel is explicitly wanted | **[P]** |
+| Work carousel | Explicitly wanted 2026-09-27; pause control, reduced-motion, no trap, no `aria-live` | **[D]** |
 | Anything animated | Honours `prefers-reduced-motion` | **[D]** |
 
 ---

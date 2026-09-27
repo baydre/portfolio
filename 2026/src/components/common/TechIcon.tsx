@@ -1,13 +1,17 @@
 import {
+  siAnsible,
   siC,
   siDjango,
+  siDocker,
   siFastapi,
   siGit,
   siKicad,
   siLinux,
+  siNginx,
   siPython,
   siRaspberrypi,
   siReact,
+  siShell,
 } from "simple-icons";
 
 /**
@@ -171,6 +175,26 @@ const brand: Record<string, Glyph> = {
    * so the raw brand colour is used as published. See the `--brand-c` token.
    */
   C: { d: siC.path, fill: "#a8b9cc" },
+  /**
+   * Four marks for the rotating Work projects, added 2026-09-27. All from
+   * simple-icons like every other entry, and each is named because a repository's
+   * own description or detected language says so — none is inferred.
+   *
+   * Three are UNCORRECTED, publishing the vendor hex because it already clears
+   * the 3:1 a graphic needs on `--tech-tile`: Shell 9.15:1, Docker 4.13:1,
+   * NGINX 3.36:1. Ansible is the exception — its `#ee0000` is 2.87:1 there, so it
+   * is lightened to `#ff2d2d` (3.51:1) with hue and saturation untouched, the
+   * same lightness-only correction Python, Django, Git and KiCad received. See
+   * the `--brand-*` tokens and `verify-contrast.mjs`.
+   *
+   * `Shell` is the language simple-icons reports for blue-green-deployment-
+   * strategy; it is a real mark rather than a generic terminal glyph, which is the
+   * distinction this registry exists to keep.
+   */
+  Shell: { d: siShell.path, fill: "#ffd500" },
+  NGINX: { d: siNginx.path, fill: "#009639" },
+  Docker: { d: siDocker.path, fill: "#2496ed" },
+  Ansible: { d: siAnsible.path, fill: "#ff2d2d" },
 };
 
 /**
