@@ -981,14 +981,37 @@ placeholders too, because abstract decoration is not a mark for "Brand
 Development" or "Technical Writing". The owner asked for the right icon in all
 six slots, so `ServiceArtwork` is deleted and `ServiceIcon` replaces it.
 
-| Service | Mark | Why |
+The owner reviewed the first set on 2026-09-27 and asked for marks that read
+**technical, mature and professional**. The first set was literal and read the
+wrong way: `Palette`, `Lightbulb` and `Megaphone` are the stock shorthand of
+consumer creative and startup decks, and `Shapes` said nothing at all. The glyphs
+were never unclear — a palette for Web Design is perfectly legible. They sold
+*creativity* to a reader deciding whether to trust a consultancy.
+
+The set was therefore re-picked on one rule: every mark is an **instrument, a
+structure, or a measurement** — something a practitioner operates — rather than
+an object, a spark, or an announcement.
+
+| Service | Mark | Register |
 | --- | --- | --- |
-| `01` Web Design | `Palette` | the conventional mark for the discipline |
-| `02` Web Development | `CodeXml` | the bracket pair, not a generic terminal |
-| `03` Brand Development | `Shapes` | a kit of parts — a system, not a logo |
-| `04` Technical Writing | `FileText` | the page, not a book or a pen |
-| `05` Consultation Services | `Lightbulb` | the advice being given |
-| `06` Marketing Services | `Megaphone` | reach and announcement |
+| `01` Web Design | `LayoutTemplate` | the wireframe the layout follows |
+| `02` Web Development | `CodeXml` | the markup itself |
+| `03` Brand Development | `Fingerprint` | a unique, identifying mark |
+| `04` Technical Writing | `ScrollText` | a published, authored document |
+| `05` Consultation Services | `Compass` | deliberate direction |
+| `06` Marketing Services | `TrendingUp` | a measured result |
+
+Two are deliberate overreads of the service name. `LayoutTemplate` is an
+*engineering* artefact where a palette was an *artistic* one, and the discipline
+being sold really is structure. `TrendingUp` is a metric where `Megaphone` was a
+broadcast — marketing is bought for a number, not for noise. `Compass` replaces
+`Lightbulb`, the worst of the first six: a bulb is an idea, and an idea is the
+one thing a consultancy cannot be hired for.
+
+Rejected in the same pass: `Boxes` (generic kit of parts), `Braces` (duplicates
+`CodeXml`), `FileCode` (a file of code misdescribes *writing*), `ClipboardList`
+(an assessment — sounds like a survey), `Target` (campaign-shaped),
+`NotebookPen` (stationery).
 
 **Why lucide here, having rejected it for About.** The About page's marks are
 brands, and lucide deliberately carries almost no brand logos, so nothing in it

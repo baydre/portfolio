@@ -606,12 +606,12 @@ describe("ServicesSection", () => {
 
     // And the mapping is the intended one, not merely six different glyphs.
     const expected: Record<string, string> = {
-      "Web Design": "palette",
+      "Web Design": "layout-template",
       "Web Development": "code-xml",
-      "Brand Development": "shapes",
-      "Technical Writing": "file-text",
-      "Consultation Services": "lightbulb",
-      "Marketing Services": "megaphone",
+      "Brand Development": "fingerprint",
+      "Technical Writing": "scroll-text",
+      "Consultation Services": "compass",
+      "Marketing Services": "trending-up",
     };
     for (const [i, card] of cards.entries()) {
       const title = services[i].title;

@@ -1,10 +1,10 @@
 import {
   CodeXml,
-  FileText,
-  Lightbulb,
-  Megaphone,
-  Palette,
-  Shapes,
+  Compass,
+  Fingerprint,
+  LayoutTemplate,
+  ScrollText,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
@@ -30,6 +30,42 @@ import {
  * palette and a code bracket are the conventional shorthand for exactly these
  * six, and lucide is a dependency already, drawn on the same 24-unit grid and
  * stroked rather than filled, so the six marks read as a set.
+ *
+ * ## Register: technical, mature, professional
+ *
+ * The owner reviewed this set on 2026-09-27 and asked for marks that feel
+ * "technical, mature and professional". The first set was literal and it read
+ * the wrong way: `Palette`, `Lightbulb` and `Megaphone` are the stock shorthand of
+ * consumer creative and startup decks, and `Shapes` said nothing at all. The
+ * problem was never that the glyphs were unclear — a palette for Web Design is
+ * perfectly legible. It was that they sold *creativity* to a reader who is
+ * deciding whether to trust a consultancy.
+ *
+ * So the set was re-picked on one rule: each mark is an **instrument, a
+ * structure, or a measurement** — something a practitioner operates — rather
+ * than an object, a spark, or an announcement. That register is what
+ * "technical" looks like, and it survives being read at a glance:
+ *
+ * | Service            | Mark              | Instrument / structure          |
+ * | ------------------ | ----------------- | ------------------------------- |
+ * | Web Design         | `LayoutTemplate`  | the wireframe the layout follows |
+ * | Web Development    | `CodeXml`         | the markup itself               |
+ * | Brand Development  | `Fingerprint`     | a unique, identifying mark      |
+ * | Technical Writing  | `ScrollText`      | a published, authored document   |
+ * | Consultation       | `Compass`         | deliberate direction            |
+ * | Marketing          | `TrendingUp`      | a measured result               |
+ *
+ * Two of these are deliberate overreads of the service name. `LayoutTemplate` is
+ * an *engineering* artefact where a palette was an *artistic* one, and the
+ * discipline being sold really is structure. `TrendingUp` is a metric where
+ * `Megaphone` was a broadcast — marketing is bought for a number, not for noise.
+ * `Compass` replaces `Lightbulb`, which was the worst of the original six: a bulb
+ * is an idea, and an idea is the one thing a consultancy cannot be hired for.
+ *
+ * Rejected in the same pass: `Boxes` (a kit of parts, but generic), `Braces`
+ * (duplicates `CodeXml`'s territory), `FileCode` (a file of code, which
+ * misdescribes *writing*), `ClipboardList` (an assessment, which sounds like a
+ * survey), `Target` (campaign-shaped), `NotebookPen` (stationery).
  *
  * ## Keyed by title, not by index
  *
@@ -58,16 +94,22 @@ import {
  * are set at.
  */
 const ICONS: Record<string, LucideIcon> = {
-  // The frame's `01` is the service that had no artwork, and the discipline
-  // whose conventional mark is the one everybody already recognises.
-  "Web Design": Palette,
+  // Web design is structure, not decoration: the wireframe is what the work
+  // actually produces, and it is the engineering artefact the client reviews.
+  "Web Design": LayoutTemplate,
+  // The only one of the six that was already right. A bracket pair names the
+  // markup specifically; a terminal would stand for using a computer.
   "Web Development": CodeXml,
-  // `Shapes` is the brand-system shorthand: a kit of parts, not a logo.
-  "Brand Development": Shapes,
-  "Technical Writing": FileText,
-  // A bulb for consultancy, which is the advice rather than the meeting.
-  "Consultation Services": Lightbulb,
-  "Marketing Services": Megaphone,
+  // Brand work is differentiation, so a unique identifying mark rather than a
+  // kit of interchangeable parts. `Shapes` was a logo-shaped logo.
+  "Brand Development": Fingerprint,
+  // A finished, published document — the deliverable — rather than a file or a
+  // pen, which describe the act of writing instead of the thing written.
+  "Technical Writing": ScrollText,
+  // Judgement and direction is what is being sold, not a flash of insight.
+  "Consultation Services": Compass,
+  // A measured outcome, which is what a client is paying for.
+  "Marketing Services": TrendingUp,
 };
 
 export function ServiceIcon({ title }: { title: string }) {
