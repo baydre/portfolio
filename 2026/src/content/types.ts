@@ -212,23 +212,6 @@ export interface Service {
   description?: string;
 }
 
-/**
- * A service in the secondary tier — `servicesSecondary` in `services.ts`.
- *
- * A separate type from `Service` rather than a flag on it, because the two tiers
- * differ structurally and not just in styling: the primary six are indexed `01`–
- * `06` and sit in the frame's 3 × 2 grid, while the secondary pair carries **no
- * index** and renders in its own quieter group. Modelling that as
- * `Service & { tier: "secondary" }` would leave `index` required on a tier that
- * has none, so the type would have to become optional and the primary invariant
- * would be lost with it.
- */
-export interface SecondaryService {
-  title: string;
-  /** Owner copy is pending for both secondary services as of 2026-09-27 — see `services.ts`. */
-  description?: string;
-}
-
 /* ------------------------------------------------------------------ Projects */
 
 /**

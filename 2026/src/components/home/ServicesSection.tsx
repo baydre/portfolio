@@ -1,10 +1,5 @@
-import {
-  secondaryServices,
-  services,
-  servicesSectionDescription,
-} from "../../content/services";
+import { services, servicesSectionDescription } from "../../content/services";
 import { SectionIntro } from "../common/SectionIntro";
-import type { SecondaryService } from "../../content/types";
 
 /**
  * The Services section of the homepage.
@@ -61,36 +56,6 @@ frame has them. This is why `descriptionSizeClassName` is passed at all.
  * Removing the slot is what makes the cards compact: they go from ~384px tall to
  * roughly the height of their copy. `items-stretch` on the row still equalises
  * them, so the `border-r` rules still run the full height of the row.
- *
- * ## The two tiers, and why the grid is not resized
- *
- * The six primary services are all **owner-supplied copy as of 2026-09-27** (the
- * frame's own six titles and descriptions were replaced wholesale — see
- * `content/services.ts` for the before/after table), and the owner added two
- * **secondary** services: Digital Marketing, and Technical Consulting & Training.
- *
- * The tempting implementation is to make it a 4 × 2 grid, or a 3 + 3 + 2 stack.
- * Both are wrong here, for the same reason:
- *
- * - The frame is a 3 × 2 grid with a `border-r` on every card but the last in its
- *   row, and a 1px rule between the rows. Four columns or a trailing pair of two
- *   means either discarding that geometry or leaving a rule drawn beside a cell
- *   that is empty. A `3 + 3 + 2` stack reads as a mistake, not as a layout.
- * - Nothing in the frame supports a fourth column or an eighth cell, so either
- *   choice is a redesign dressed up as a data change. The AGENTS.md rule is that
- *   a Figma detail the design is silent about must be *recorded*, not invented —
- *   and "how should eight cards reflow" is precisely such a detail.
- *
- * So the frame's grid is left exactly as supplied and the secondary pair is
- * rendered as its **own group below**, separated by the same kind of rule. That
- * makes "secondary" structural rather than a matter of opinion: they are not in
- * the numbered grid at all, and they are read after it, not beside it.
- *
- * They carry **no `01`–`06` index.** The numbering is a deliberate motif shared
- * with the Work section, and continuing it to `07`/`08` would present the two as
- * the same kind of offer, merely later in the list — which is the opposite of what
- * "secondary" means. If the owner wants them numbered, that is a one-line change
- * to `secondaryServices` plus the same treatment in the row below.
  */
 export function ServicesSection() {
   const [firstRow, secondRow] = [services.slice(0, 3), services.slice(3)];
@@ -136,52 +101,10 @@ export function ServicesSection() {
             eight — and the pair is `flex-col` on small screens and two columns
             from `lg`, matching the primary rows' responsive behaviour without
             borrowing their three-column geometry. */}
-        <div aria-hidden="true" className="h-px w-full bg-rule" />
-        <SecondaryServicesRow services={secondaryServices} />
       </div>
     </section>
   );
 }
-
-/**
- * The secondary tier: the two services the owner listed as secondary.
- *
- * Quieter than the primary cards in four specific ways, each of which carries
- * meaning rather than taste:
- *
- * - **No `01`–`06` index.** See the note on the section — numbering them `07`/`08`
- *   would rank them as equals of the six.
- * - **No card padding and no `border-r` column dividers.** The frame's dividers
- *   are three-column furniture; two columns of quiet list items do not need them,
- *   and a stray divider beside a 2-item row reads as a missing third cell.
- * - **Title is `h3` but the description is body size.** Same heading level as the
- *   primary cards, so the document outline is unchanged, but at the smaller
- *   `text-service-body` the copy is plainly supporting rather than leading.
- * - **Titles sit on the project's own `gap-8` rhythm**, matching the primary
- *   cards' internal spacing so the block does not read as a different site.
- *
- * `description` is rendered only when present. Both are currently owner-pending,
- * so this renders the two titles alone and the section says nothing invented.
- */
-function SecondaryServicesRow({ services }: { services: SecondaryService[] }) {
-  return (
-    <ul data-tier="secondary" className="flex flex-col gap-8 lg:flex-row">
-      {services.map((service) => (
-        <li key={service.title} className="flex flex-1 flex-col gap-2">
-          <h3 className="font-heading text-service leading-service text-white">
-            {service.title}
-          </h3>
-          {service.description && (
-            <p className="text-service-body leading-service-body text-foreground">
-              {service.description}
-            </p>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 /**
  * One row of three cards.
  *
@@ -198,15 +121,7 @@ function SecondaryServicesRow({ services }: { services: SecondaryService[] }) {
  */
 function ServicesRow({ services: row }: { services: typeof services }) {
   return (
-    // `data-tier` is not a test hook bolted on afterwards: the two tiers render
-    // the same element types, and without a way to tell them apart in the DOM
-    // "select every service card" silently means "all eight", and any CSS scoped
-    // to the card would hit the secondary pair too. The attribute is also what
-    // makes the tier visible to anyone reading the rendered page in devtools.
-    <ul
-      data-tier="primary"
-      className="flex flex-col items-stretch gap-8 lg:flex-row"
-    >
+    <ul className="flex flex-col items-stretch gap-8 lg:flex-row">
       {row.map((service, i) => (
         <li
           key={service.index}

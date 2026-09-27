@@ -1,4 +1,4 @@
-import type { SecondaryService, Service } from "./types";
+import type { Service } from "./types";
 
 /**
  * The six primary services.
@@ -66,30 +66,6 @@ export const services: Service[] = [
     title: "IoT & Embedded Prototyping",
     description:
       "IoT systems, Raspberry Pi/Arduino, sensor integration, edge computing and hardware/software prototypes.",
-  },
-];
-
-/**
- * The two secondary services, rendered as a quieter tier beneath the primary six.
- *
- * **OWNER-SUPPLIED 2026-09-27**, as "Digital Marketing" and "Technical Consulting &
- * Training". They are deliberately NOT in `services` and deliberately NOT in the
- * frame's 3 × 2 grid — see `ServicesSection` for why, and for why they carry no
- * `01`–`06` index.
- *
- * **Both descriptions are `PENDING` from the owner.** The owner supplied titles
- * only. `description` is optional on the type and the section omits the paragraph
- * when empty rather than rendering a placeholder or inventing marketing copy.
- * Do not fill these in without being asked — inventing service copy is worse than
- * publishing none, the same rule that held back the primary descriptions until the
- * owner supplied them.
- */
-export const secondaryServices: SecondaryService[] = [
-  {
-    title: "Digital Marketing",
-  },
-  {
-    title: "Technical Consulting & Training",
   },
 ];
 

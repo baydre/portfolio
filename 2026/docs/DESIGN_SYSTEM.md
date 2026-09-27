@@ -992,37 +992,17 @@ position. Descriptions are transcribed verbatim from the owner's message,
 including the `&` in titles, the `and`/`&` split in bodies, and the
 capitalisation of "Raspberry Pi/Arduino".
 
+**The list is exactly these six.** Digital Marketing and Technical Consulting &
+Training were offered as secondary services later the same day and then withdrawn,
+so there is no second tier, no unnumbered group below the grid, and no second
+divider — the section is the frame's 3 × 2 grid and the one 1px rule the frame
+puts between its rows.
+
 This is a change of *register* worth naming: the frame's copy was design-agency
 language ("developing visual identities", "helping teams make better digital
 decisions") and the replacement is engineering-deliverable language — a list of
 what gets built, not an adjective about it. The section's own description was
 **not** updated with it and is now the one stale paragraph; see §9.
-
-### Two tiers, and why the grid was not resized
-
-The owner added two **secondary** services: Digital Marketing, and Technical
-Consulting & Training.
-
-They are rendered as **their own group below the primary grid**, separated by the
-same 1px rule, and they carry **no `01`–`06` index**. The alternatives were
-rejected for reasons worth keeping:
-
-- A 4 × 2 grid, or a `3 + 3 + 2` stack, would either discard the frame's
-  three-column geometry with its `border-r` dividers, or leave a divider drawn
-  beside an empty cell — a pair of two in a row of three reads as a mistake.
-- Nothing in the frame supports a fourth column or an eighth cell, so both are a
-  redesign disguised as a data change. How eight cards should reflow is exactly
-  the kind of detail the design is silent about, and the rule is to record it, not
-  invent it.
-- Not numbering them `07`/`08` is the substantive part. Continuing the motif would
-  present the pair as the same kind of offer, merely later in the list, which is
-  the opposite of "secondary".
-
-So the two tiers render the same element types and are told apart by
-`data-tier="primary"` / `data-tier="secondary"`. Without that, "select every
-service card" silently means all eight, and any CSS scoped to the card would hit
-the secondary pair as well. The tiers are deliberately different shapes: primary
-cards are `p,h3,p`, the secondary pair is `h3` alone while their copy is pending.
 
 ### There is no per-service mark
 
@@ -1710,7 +1690,6 @@ input from the owner or a new snippet.
 | About biography tracking | `CONFIRMED` | The frame sets the biography `tracking-widest` = 0.1em, which is **1.4px at 14px** — unusually loose for a face this design otherwise sets tight. It was long marked `UNVERIFIED` because the frame had not been seen; the owner supplied the frame's own markup on 2026-09-26 and it does specify `tracking-widest`, so the value is confirmed rather than assumed. Held in `--tracking-about-bio`; deleting that one declaration returns the copy to default tracking. |
 | About closing call-to-action | `ASSUMED` | Not in the frame. The previous page's panel, kept on the owner's instruction 2026-09-26 ("keep this for now"). Its heading and body are not transcribed from anything, and its gradient uses `--secondary` and `--accent`, both DERIVED. Its two actions were repaired to real destinations. Treat as unapproved until a frame exists. |
 | ~~Six service descriptions~~ | **SUPERSEDED** | Closed 2026-09-26 by transcribing all six verbatim from the frame, plus the section description. **Superseded 2026-09-27**: all six titles and descriptions are now **OWNER-SUPPLIED** copy and none of them is the frame's. The `index` labels `01`–`06` are the frame's and are unchanged. See "The service copy is the owner's, not the frame's". |
-| Secondary service descriptions | **PENDING** | Digital Marketing and Technical Consulting & Training were added 2026-09-27 as a secondary tier. The owner supplied **titles only** — no description for either. `SecondaryService.description` is optional and the section omits the paragraph when empty, so the tier currently renders two titles and no invented copy. Do not fill these in without being asked. |
 | `servicesSectionDescription` is stale | **PENDING** | Still the frame's verbatim paragraph, and it no longer matches the services it introduces: it offers "Digital experiences, brands, and technical solutions" and there is no longer a brand or digital-experience service. Left as supplied rather than rewritten — inventing marketing prose is not this file's call. Needs one owner decision. |
 | ~~Service illustrations~~ | **CLOSED** | The frame's per-card artwork was **deleted** on owner request 2026-09-26 and replaced by `ServiceIcon`, six lucide marks keyed by title. That set was reviewed the same day as consumer-creative shorthand, re-picked as six "instrument, structure or measurement" marks, and then **removed entirely** on owner request 2026-09-27: six 192px pictograms read as illustration, not as capabilities. Five panels of transcribed `gray-200` geometry and one 12%-opacity holding rect were placeholders, and `01` (Web Design) was a placeholder *by construction*, having no geometry in the frame at all. `ServiceArtwork.tsx` and `ServiceIcon.tsx` are both removed. The 384 × 384 **slot is gone with the mark** — cards are index, title, description, and the suite fails if `aspect-square` or any `svg`/`img` reappears in one. See "There is no per-service mark". |
 | ~~Service artwork sizes~~ | **MOOT** | The `UNVERIFIED` Tailwind-utility size readings only ever described the deleted geometry. Nothing depends on them now — the icon scales from a 24-unit lucide grid. |

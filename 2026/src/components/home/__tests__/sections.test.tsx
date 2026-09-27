@@ -3,7 +3,7 @@ import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 import { projects } from "../../../content/projects";
-import { secondaryServices, services } from "../../../content/services";
+import { services } from "../../../content/services";
 import { ProjectCard } from "../ProjectCard";
 import { ServicesSection } from "../ServicesSection";
 import { WorkSection } from "../WorkSection";
@@ -487,27 +487,13 @@ describe("ServicesSection", () => {
     expect(document.querySelector("section#services")).not.toBeNull();
   });
 
-  it("renders the six primary services, then the two secondary ones", () => {
-    const { container } = renderSection(<ServicesSection />);
-    // Scoped by tier rather than by position: both tiers render `h3`, so
-    // "every level-3 heading in the section" is now all eight and would stop
-    // saying anything about order within the grid.
+  it("renders all six services in the design's order", () => {
+    renderSection(<ServicesSection />);
     const headings = within(screen.getByRole("region", { name: "Services" }))
       .getAllByRole("heading", { level: 3 })
       .map((h) => h.textContent);
-
-    expect(headings).toEqual([...services, ...secondaryServices].map((s) => s.title));
+    expect(headings).toEqual(services.map((s) => s.title));
     expect(services).toHaveLength(6);
-    expect(secondaryServices).toHaveLength(2);
-
-    // And the split is real, not just a concatenated list: the primary six are
-    // in the two 3-column rows, the secondary pair in its own group below.
-    const tiers = Array.from(container.querySelectorAll("ul[data-tier]"));
-    expect(tiers.map((t) => t.getAttribute("data-tier"))).toEqual([
-      "primary",
-      "primary",
-      "secondary",
-    ]);
   });
 
   it("drops the section-level 02 while keeping the h2", () => {
@@ -573,7 +559,7 @@ describe("ServicesSection", () => {
 
   it("orders each card as index, then title, then description", () => {
     const { container } = renderSection(<ServicesSection />);
-    const card = container.querySelectorAll('ul[data-tier="primary"] > li')[1]; // 02
+    const card = container.querySelectorAll("ul > li")[1]; // 02
 
     // The frame's order was 0N, artwork, title, description. The artwork slot
     // was removed on 2026-09-27, so the card is now three children with the
@@ -591,7 +577,7 @@ describe("ServicesSection", () => {
 
   it("renders no icon or reserved graphic slot in any card", () => {
     const { container } = renderSection(<ServicesSection />);
-    const cards = Array.from(container.querySelectorAll('ul[data-tier="primary"] > li'));
+    const cards = Array.from(container.querySelectorAll("ul > li"));
     expect(cards).toHaveLength(6);
 
     // Owner decision 2026-09-27: the per-service marks were removed, so a
@@ -609,57 +595,33 @@ describe("ServicesSection", () => {
     }
   });
 
-  it("gives every primary card the same anatomy, and keeps the tiers distinct", () => {
+  it("gives every card an identical anatomy, and the indices the frame's 01-06", () => {
     const { container } = renderSection(<ServicesSection />);
-    const shape = (li: Element) =>
-      Array.from(li.children).map((k) => k.tagName.toLowerCase()).join(",");
+    const cards = Array.from(container.querySelectorAll("ul > li"));
 
-    // This test originally existed because 01 had no artwork while the other
-    // five did, so its three children did not match the others' four. With the
-    // marks gone the primary cards are all the same three children, so the
-    // asymmetry it was written to catch is gone with it — it now guards the flat
-    // anatomy WITHIN a tier.
-    //
-    // Scoped, because the tiers are now deliberately not the same shape: the
-    // primary cards are `p,h3,p` (index, title, description) and the secondary
-    // pair is `h3` alone until the owner supplies their copy. Asserting one
-    // shape across all eight would have forced the secondary services to grow a
-    // fake index, which is the thing being avoided.
-    const primary = Array.from(container.querySelectorAll('ul[data-tier="primary"] > li'));
-    expect(new Set(primary.map(shape)).size).toBe(1);
-    expect(shape(primary[0])).toBe("p,h3,p");
+    // This test originally existed because 01 had no artwork while the other five
+    // did, so its three children did not match the others' four. With the marks
+    // gone every card is the same three children, so the asymmetry it was written
+    // to catch is gone with it — it now guards the flat anatomy.
+    const shapes = cards.map((c) =>
+      Array.from(c.children).map((k) => k.tagName.toLowerCase()).join(","),
+    );
+    expect(new Set(shapes).size).toBe(1);
+    expect(shapes[0]).toBe("p,h3,p");
 
-    const secondary = Array.from(container.querySelectorAll('ul[data-tier="secondary"] > li'));
-    expect(new Set(secondary.map(shape)).size).toBe(1);
-    expect(shape(secondary[0])).toBe("h3");
-  });
-
-  it("gives the secondary services no index label of their own", () => {
-    const { container } = renderSection(<ServicesSection />);
-
-    // The numbering is a motif shared with the Work section, and it is
-    // deliberately NOT continued to `07`/`08`: numbering the secondary pair
-    // would present them as the same kind of offer, merely later in the list.
-    for (const card of container.querySelectorAll('ul[data-tier="secondary"] > li')) {
-      const text = card.textContent ?? "";
-      expect(text).not.toMatch(/\b0[1-8]\b/);
-    }
-
-    // And the primary indices are untouched, still 01–06, still content rather
-    // than array position.
-    const indices = Array.from(
-      container.querySelectorAll('ul[data-tier="primary"] > li > p:first-child'),
-    ).map((p) => p.textContent);
-    expect(indices).toEqual(["01", "02", "03", "04", "05", "06"]);
+    // The `01`–`06` labels are the design's own and are content rather than array
+    // position, so they are pinned in order: six cards, six indices, nothing
+    // numbered beyond the frame's last.
+    expect(cards.map((c) => c.children[0].textContent)).toEqual([
+      "01", "02", "03", "04", "05", "06",
+    ]);
   });
 
   it("uses two rows of three with the design's rule between them", () => {
     const { container } = renderSection(<ServicesSection />);
-    const rows = Array.from(container.querySelectorAll('ul[data-tier="primary"]'));
+    const rows = Array.from(container.querySelectorAll("ul"));
 
-    // Not one 6-cell grid: the frame puts a rule between the rows. Scoped to the
-    // primary tier, because the secondary pair is a THIRD ul and is deliberately
-    // not part of this grid.
+    // Not one 6-cell grid: the frame puts a rule between the rows.
     expect(rows).toHaveLength(2);
     expect(rows[0].children).toHaveLength(3);
     expect(rows[1].children).toHaveLength(3);
@@ -670,7 +632,7 @@ describe("ServicesSection", () => {
 
   it("drops the trailing divider on the last card of each row", () => {
     const { container } = renderSection(<ServicesSection />);
-    const rows = Array.from(container.querySelectorAll('ul[data-tier="primary"]'));
+    const rows = Array.from(container.querySelectorAll("ul"));
 
     // The frame omits border-r on 03 and 06, which are last in their rows.
     for (const row of rows) {
@@ -726,7 +688,7 @@ describe("ServicesSection", () => {
 
   it("keeps the card copy at 24px, changing only the section description", () => {
     const { container } = renderSection(<ServicesSection />);
-    const cards = Array.from(container.querySelectorAll('ul[data-tier="primary"] > li'));
+    const cards = Array.from(container.querySelectorAll("ul > li"));
 
     // "only" — the six 0N labels and six card descriptions stay at the frame's
     // 24px, and the heading stays 36px.
