@@ -557,87 +557,41 @@ describe("ServicesSection", () => {
     }
   });
 
-  it("orders each card as index, mark, title, then description", () => {
+  it("orders each card as index, then title, then description", () => {
     const { container } = renderSection(<ServicesSection />);
     const card = container.querySelectorAll("ul > li")[1]; // 02, Web Development
 
-    // The frame's order is 0N, artwork, title, description, and the mark slot is
-    // still the second child — the 0N label is a sibling ABOVE it, where the
-    // design puts it. Only the slot's contents changed, not its position.
+    // The frame's order was 0N, artwork, title, description. The artwork slot
+    // was removed on 2026-09-27, so the card is now three children with the
+    // title directly after the 0N label. The `div` is asserted ABSENT rather
+    // than merely not listed: a reserved-but-empty slot would still stretch the
+    // card to 384px, which is the thing that was removed.
     expect(Array.from(card?.children ?? []).map((c) => c.tagName.toLowerCase())).toEqual([
       "p", //   02
-      "div", // mark slot
       "h3", //   title
       "p", //   description
     ]);
+    expect(card?.querySelector("div")).toBeNull();
     expect(card?.querySelector("h3")?.textContent).toBe("Web Development");
   });
 
-  it("gives all six cards a mark, 01 included", () => {
+  it("renders no icon or reserved graphic slot in any card", () => {
     const { container } = renderSection(<ServicesSection />);
     const cards = Array.from(container.querySelectorAll("ul > li"));
     expect(cards).toHaveLength(6);
 
-    // Every card renders an icon. The frame gave 01 no artwork at all and the
-    // other five abstract geometry; all six are now real marks, so the check
-    // that once asserted a `0 0 384 384` viewBox across the row now asserts a
-    // lucide glyph in every slot — a blank slot fails here rather than shipping.
-    const glyphs = cards.map((card) => card.querySelector("svg.lucide"));
-    for (const [i, svg] of glyphs.entries()) {
-      expect(svg, `card ${i} (${services[i].title}) has no icon`).not.toBeNull();
-      // lucide's 24-unit grid, on which stroke width is authored.
-      expect(svg?.getAttribute("viewBox")).toBe("0 0 24 24");
-    }
-  });
-
-  it("gives each service a distinct icon, keyed to the service not the slot", () => {
-    const { container } = renderSection(<ServicesSection />);
-    const cards = Array.from(container.querySelectorAll("ul > li"));
-
-    // The icons are keyed by `title` inside `ServiceIcon`, so a reordering of
-    // `services` cannot swap two cards' marks. Asserting the six are distinct is
-    // what would catch a registry that resolved every key to the same glyph.
-    const names = cards.map((card) => {
-      const svg = card.querySelector("svg.lucide") as SVGElement;
-      // lucide sets `data-lucide` / a `lucide-<name>` class per icon.
-      return svg.getAttribute("class") ?? "";
-    });
-    expect(new Set(names).size).toBe(6);
-
-    // And the mapping is the intended one, not merely six different glyphs.
-    const expected: Record<string, string> = {
-      "Web Design": "layout-template",
-      "Web Development": "code-xml",
-      "Brand Development": "fingerprint",
-      "Technical Writing": "scroll-text",
-      "Consultation Services": "compass",
-      "Marketing Services": "trending-up",
-    };
+    // Owner decision 2026-09-27: the per-service marks were removed, so a
+    // pictogram must not come back. This is the inverse of the guard that used
+    // to live here — that one failed a *blank* slot, this one fails a *filled*
+    // one. Asserted on the whole card, so an icon anywhere in the anatomy is
+    // caught, not just one in the slot's old position.
     for (const [i, card] of cards.entries()) {
-      const title = services[i].title;
-      const svg = card.querySelector("svg.lucide") as SVGElement;
-      const cls = svg.getAttribute("class") ?? "";
-      expect(cls, `${title}`).toContain(`lucide-${expected[title]}`);
-    }
-  });
-
-  it("keeps the mark slot square and scaled to the card", () => {
-    const { container } = renderSection(<ServicesSection />);
-    const slots = Array.from(container.querySelectorAll("ul > li > div"));
-
-    expect(slots).toHaveLength(6);
-    for (const [i, slot] of slots.entries()) {
-      const cls = slot.className;
-      // The frame's slot is 384 × 384 and its height is load-bearing: a shorter
-      // card puts its title on a different line from its row-mates.
-      expect(cls, `slot ${i}`).toContain("aspect-square");
-      expect(cls, `slot ${i}`).toContain("w-full");
-      // The icon takes half the slot rather than a fixed pixel size, so it
-      // shrinks with the card instead of overflowing a narrow column.
-      const icon = slot.querySelector("svg") as SVGElement;
-      expect(icon.className.baseVal ?? "").toMatch(/w-1\/2/);
-      // Decorative: the card's h3 already names the service.
-      expect(slot.getAttribute("aria-hidden")).toBe("true");
+      const label = services[i].title;
+      expect(card.querySelector("svg"), `${label} has an svg mark`).toBeNull();
+      expect(card.querySelector("img"), `${label} has an img mark`).toBeNull();
+      // The reserved 384px box is the real regression: it is what made the cards
+      // tall. `aspect-square` had no reason to survive the icon.
+      expect(card.innerHTML, `${label} reserved a graphic slot`).not.toContain("aspect-square");
     }
   });
 
@@ -645,13 +599,15 @@ describe("ServicesSection", () => {
     const { container } = renderSection(<ServicesSection />);
     const cards = Array.from(container.querySelectorAll("ul > li"));
 
-    // 01 used to render index, title, description with no artwork, so its three
-    // children did not match the others' four. Same shape on every card now.
+    // This test originally existed because 01 had no artwork while the other
+    // five did, so its three children did not match the others' four. With the
+    // marks gone every card is the same three children, so the asymmetry it was
+    // written to catch is gone with it — it now guards the flat anatomy.
     const shapes = cards.map((c) =>
       Array.from(c.children).map((k) => k.tagName.toLowerCase()).join(","),
     );
     expect(new Set(shapes).size).toBe(1);
-    expect(shapes[0]).toBe("p,div,h3,p");
+    expect(shapes[0]).toBe("p,h3,p");
   });
 
   it("uses two rows of three with the design's rule between them", () => {
@@ -730,7 +686,9 @@ describe("ServicesSection", () => {
     // "only" — the six //0N labels and six card descriptions stay at the frame's
     // 24px, and the heading stays 36px.
     for (const card of cards) {
-      const [index, , , body] = Array.from(card.children);
+      // index, title, description — the mark slot was removed on 2026-09-27, so
+      // this skips one child, not two.
+      const [index, , body] = Array.from(card.children);
       expect(index.className).toContain("text-service-body");
       expect(body.className).toContain("text-service-body");
     }

@@ -310,7 +310,7 @@ and asserts both the numbers and the indirection; see §8.
 | `SmartLink` | `DERIVED` | renders a `NavItem` as `<Link>` or `<a>`; the only place that distinction lives |
 | `Hero` | snippet | + fluid type, flex/grid instead of absolute positioning |
 | `WorkSection` / `ProjectCard` | snippet | + real heading, card is a link not a button, `<pre>` for the code panel |
-| `ServicesSection` / `ServiceIcon` | snippet | + real heading, two rows with the frame's rule between them. The frame's per-card artwork is **replaced** on owner request 2026-09-26 — six lucide marks, one per discipline |
+| `ServicesSection` | snippet | + real heading, two rows with the frame's rule between them. The frame's per-card artwork was replaced on 2026-09-26 and then **removed** on 2026-09-27 — the cards carry no mark and no reserved slot |
 | `ContactSection` / `ContactForm` | snippet + `ACCESSIBILITY` | snippet has no form; see below |
 | `SiteFooter` | snippet | replaces the previous generic footer |
 | `SectionIntro` | `DERIVED` | shared heading block for Work/Services; size and gap come from the caller because the two frames differ |
@@ -561,7 +561,7 @@ three measures once normalised to the 15 grid:
   solid-filled or differently constructed.
 
 So `ArrowRightIcon` in `src/components/common/icons.tsx` uses the authored path
-data verbatim — consistent with `SocialIcon`, `TechIcon`, `ServiceIcon` and
+data verbatim — consistent with `SocialIcon`, `TechIcon` and
 `SiteHeader`, every other icon in the project. `SiteFooter.test.tsx` pins the
 `viewBox`, the stroke width and both `d` strings, so a swap to a library glyph
 fails the suite rather than passing as a near-miss.
@@ -903,7 +903,6 @@ Card anatomy, in the frame's order:
 | Part | Frame | Token |
 | --- | --- | --- |
 | `01` | 24px Jura, `#FFF` | `text-service-body` + `text-white` |
-| Mark slot | 384 × 384 square, no border, no radius | `ServiceIcon` — the frame's artwork is replaced; the *slot* is the frame's |
 | Title | 30px, `#FFF` | `text-service` (1.875rem) + `text-white` |
 | Description | 24px / 40px, `#E9E9EC` | `text-service-body` + `leading-service-body` |
 
@@ -972,78 +971,47 @@ number, so the prefix cannot quietly return.
 
 ### Service marks replace the frame's artwork (owner request, 2026-09-26)
 
-The frame's Services cards each carry a 384 × 384 panel of flat `gray-200`
-geometry, and this project transcribed five of the six exactly — offsets, sizes,
-rotation angles and all. The sixth, `01` Web Design, has **no** geometry in the
-frame and was filled with a 12%-opacity rect whose only job was to hold the slot
-open. That one was a placeholder by construction; the other five read as
-placeholders too, because abstract decoration is not a mark for "Brand
-Development" or "Technical Writing". The owner asked for the right icon in all
-six slots, so `ServiceArtwork` is deleted and `ServiceIcon` replaces it.
+### There is no per-service mark
 
-The owner reviewed the first set on 2026-09-27 and asked for marks that read
-**technical, mature and professional**. The first set was literal and read the
-wrong way: `Palette`, `Lightbulb` and `Megaphone` are the stock shorthand of
-consumer creative and startup decks, and `Shapes` said nothing at all. The glyphs
-were never unclear — a palette for Web Design is perfectly legible. They sold
-*creativity* to a reader deciding whether to trust a consultancy.
+**The Services cards carry no artwork.** The card is `01`, title, description —
+three children, no graphic slot, no reserved box. This is the third state of that
+slot and the history is recorded because it has reversed twice.
 
-The set was therefore re-picked on one rule: every mark is an **instrument, a
-structure, or a measurement** — something a practitioner operates — rather than
-an object, a spark, or an announcement.
+*Frame as supplied.* Five of the six cards carried a 384 × 384 panel of flat
+`gray-200` geometry, transcribed exactly — offsets, sizes, rotation angles. The
+sixth, `01` Web Design, carried **no** geometry in the frame and was filled with
+a 12%-opacity rect whose only job was holding the slot open. A placeholder
+whatever it was made of, and the other five read as placeholders too: abstract
+decoration is not a mark for "Brand Development" or "Technical Writing".
 
-| Service | Mark | Register |
-| --- | --- | --- |
-| `01` Web Design | `LayoutTemplate` | the wireframe the layout follows |
-| `02` Web Development | `CodeXml` | the markup itself |
-| `03` Brand Development | `Fingerprint` | a unique, identifying mark |
-| `04` Technical Writing | `ScrollText` | a published, authored document |
-| `05` Consultation Services | `Compass` | deliberate direction |
-| `06` Marketing Services | `TrendingUp` | a measured result |
+*2026-09-26, owner request — the first replacement.* The geometry was deleted and
+`ServiceIcon` supplied a real lucide mark per service, keyed by `title`.
 
-Two are deliberate overreads of the service name. `LayoutTemplate` is an
-*engineering* artefact where a palette was an *artistic* one, and the discipline
-being sold really is structure. `TrendingUp` is a metric where `Megaphone` was a
-broadcast — marketing is bought for a number, not for noise. `Compass` replaces
-`Lightbulb`, the worst of the first six: a bulb is an idea, and an idea is the
-one thing a consultancy cannot be hired for.
+*2026-09-27, owner request — a re-pick, then removal.* The first set (`Palette`,
+`Shapes`, `FileText`, `Lightbulb`, `Megaphone`) was reviewed and called out for
+reading as consumer-creative and startup-deck shorthand rather than technical and
+mature. It was re-picked on the rule that every mark is an **instrument, a
+structure, or a measurement** — `LayoutTemplate`, `CodeXml`, `Fingerprint`,
+`ScrollText`, `Compass`, `TrendingUp`. **The marks were then removed entirely.**
 
-Rejected in the same pass: `Boxes` (generic kit of parts), `Braces` (duplicates
-`CodeXml`), `FileCode` (a file of code misdescribes *writing*), `ClipboardList`
-(an assessment — sounds like a survey), `Target` (campaign-shaped),
-`NotebookPen` (stationery).
+The reason was not legibility. Six cards each carrying a 192px pictogram read as
+illustration rather than as a consultancy's capabilities, and the pictogram was
+the loudest element in a section whose actual argument is the written
+description. `ServiceIcon` is deleted; nothing is imported into the section.
 
-**Why lucide here, having rejected it for About.** The About page's marks are
-brands, and lucide deliberately carries almost no brand logos, so nothing in it
-is Python or Django — that rejection stands and is unchanged. These six are
-**disciplines**. There is no "Web Development" logo to be missing; a palette and a
-code bracket are what these six are universally drawn as, and lucide is already a
-dependency, on one 24-unit grid, stroked rather than filled, so the six read as a
-set rather than as six unrelated pictures.
+**The slot did not survive the removal.** The 384 × 384 `aspect-square` wrapper
+existed to hold the mark, so removing the mark removes the box: the cards drop
+from ~384px tall to roughly the height of their own copy. A reserved-but-empty
+slot would have kept them tall, which is the thing that is gone. The suite
+asserts `aspect-square` appears nowhere in a Services card, and that no card
+contains an `svg` or `img`.
 
-**Keyed by `title`, not by `index`.** The old artwork was keyed `//01`–`//06`, so
-reordering `services` would have silently swapped a card's artwork onto a
-different service. The new registry is keyed on the service's own title, mirroring
-`TechIcon`, which is keyed by tool label for the same reason. The cost is that a
-renamed or added service has no mark, so `ServiceIcon` returns `null` and the suite
-asserts that all six resolve *and* that they are the intended six — a blank slot
-or a duplicated glyph fails the build rather than shipping.
-
-**The slot survived the swap.** The frame's 384 × 384 is load-bearing, so the
-wrapper keeps `aspect-square` whatever the icon does inside it. The icon takes
-`w-1/2` of that slot rather than a fixed pixel size, which is 192px at the
-frame's width and scales down with the card instead of overflowing a narrow
-column. `strokeWidth` is 1, not lucide's default 2: the 24-unit viewBox means
-stroke width scales with the render, and a default stroke at 192px lands 16px
-wide — a slab, not a line.
-
-**Artwork is transcribed, not invented.** The frame gives every shape's `left`,
-`top`, size and angle, so the earlier decision to leave neutral panels in place
-was over-cautious — that is data, not guesswork. They are SVG on a
-`viewBox="0 0 384 384"` because a rotated div needs `absolute` + `left`/`top` +
-`rotate-*` + `origin-top-left` per shape where SVG needs one `transform`, and
-because the viewBox makes the box scale exactly at narrow widths. `rotate(θ x y)`
-rotates about `(x, y)`, the same origin `origin-top-left` names.
+This reverses two earlier owner decisions, and the section-specific nature of
+the request matters: About's **Tools** row and its **role** marks are brand
+glyphs from `TechIcon` and are untouched, as are the header's contact marks and
+`SocialIcon`. `TechTile` keeps its 32 × 32 reserved box, which is a different
+case — it reserves a box precisely so a *missing* brand glyph cannot shorten a
+tile.
 
 ## 6.1 The About frame
 
@@ -1500,8 +1468,9 @@ call site.
 Before this, an unmapped tool produced a tile with no icon box — roughly half the
 height of a glyphed one, its label 44px higher. That was invisible while every
 Work stack entry was "React.js", and would have been very visible on a Tools row
-where four entries of five have no glyph. Same approach and same reason as
-`ServiceIcon` holding the slot.
+where four entries of five have no glyph. The Services section reached the same
+problem and resolved it the other way — by removing the slot rather than
+reserving it — so the two are no longer examples of one decision.
 
 ## 7. SUPERSEDED — the previous Figma Make export
 
@@ -1688,7 +1657,7 @@ input from the owner or a new snippet.
 | About biography tracking | `CONFIRMED` | The frame sets the biography `tracking-widest` = 0.1em, which is **1.4px at 14px** — unusually loose for a face this design otherwise sets tight. It was long marked `UNVERIFIED` because the frame had not been seen; the owner supplied the frame's own markup on 2026-09-26 and it does specify `tracking-widest`, so the value is confirmed rather than assumed. Held in `--tracking-about-bio`; deleting that one declaration returns the copy to default tracking. |
 | About closing call-to-action | `ASSUMED` | Not in the frame. The previous page's panel, kept on the owner's instruction 2026-09-26 ("keep this for now"). Its heading and body are not transcribed from anything, and its gradient uses `--secondary` and `--accent`, both DERIVED. Its two actions were repaired to real destinations. Treat as unapproved until a frame exists. |
 | ~~Six service descriptions~~ | **CLOSED** | All six transcribed verbatim, plus the section's own description, as `servicesSectionDescription`. The `PENDING` copy is gone. |
-| ~~Service illustrations~~ | **CLOSED** | The frame's per-card artwork is **deleted** on owner request 2026-09-26 and replaced by `ServiceIcon` — six lucide marks, one per discipline. Five panels of transcribed `gray-200` geometry and one 12%-opacity holding rect were all placeholders; `01` (Web Design) was a placeholder *by construction*, having no geometry in the frame at all. `ServiceArtwork.tsx` is removed. See "Service marks replace the frame's artwork". The 384 × 384 **slot** is kept, because its height is load-bearing. |
+| ~~Service illustrations~~ | **CLOSED** | The frame's per-card artwork was **deleted** on owner request 2026-09-26 and replaced by `ServiceIcon`, six lucide marks keyed by title. That set was reviewed the same day as consumer-creative shorthand, re-picked as six "instrument, structure or measurement" marks, and then **removed entirely** on owner request 2026-09-27: six 192px pictograms read as illustration, not as capabilities. Five panels of transcribed `gray-200` geometry and one 12%-opacity holding rect were placeholders, and `01` (Web Design) was a placeholder *by construction*, having no geometry in the frame at all. `ServiceArtwork.tsx` and `ServiceIcon.tsx` are both removed. The 384 × 384 **slot is gone with the mark** — cards are index, title, description, and the suite fails if `aspect-square` or any `svg`/`img` reappears in one. See "There is no per-service mark". |
 | ~~Service artwork sizes~~ | **MOOT** | The `UNVERIFIED` Tailwind-utility size readings only ever described the deleted geometry. Nothing depends on them now — the icon scales from a 24-unit lucide grid. |
 | ~~`02` diagonal line~~ | **MOOT** | The one deliberate `ADAPTED` departure — a `w-40 h-0` div drawn as a 1px stroke — described deleted geometry. |
 | Home page `//` numbering | **CLOSED** | The frame prints `//01`–`//06` and `//01`–`//04`; the About frame's `SkillRole` indices have no slashes, so the two halves of the site disagreed. The owner asked for the slashes removed everywhere on 2026-09-26 and they are. **The digits are untouched** — still the design's own authored labels, still one value per entry, still not derived from array position. The `//` went because it is a code comment marker, which on a page that discusses `//01` in a code block invited reading the display type as a comment. Asserted: no `//` in either section's rendered text, and every project index matches `^\d{2}$`. |

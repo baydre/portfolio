@@ -30,8 +30,8 @@ import { TechIcon } from "./TechIcon";
  * half the height of the React one and their labels sat 44px higher.
  *
  * The 32 × 32 box is therefore always present and the glyph is optional inside
- * it. Same approach, same reason, as `ServiceIcon` holding the slot at a
- * service graphic that has not been supplied.
+ * it — a reserved box plus an optional mark, so a missing glyph costs a blank
+ * square rather than a shorter tile.
  *
  * The glyph keeps `relative` + `overflow-hidden` from the Work panel, where the
  * design positions the vector absolutely inside a relative glyph frame.

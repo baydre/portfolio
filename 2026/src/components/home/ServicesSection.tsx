@@ -1,6 +1,5 @@
 import { services, servicesSectionDescription } from "../../content/services";
 import { SectionIntro } from "../common/SectionIntro";
-import { ServiceIcon } from "./ServiceIcon";
 
 /**
  * The Services section of the homepage.
@@ -14,9 +13,7 @@ import { ServiceIcon } from "./ServiceIcon";
  *
  * Card anatomy, in the design's order and with its own spacing:
  *
- *   01             24px Jura, `text-white`   — a sibling *above* the mark,
- *                                             not a label inside it
- *   mark           384 × 384 square, no border, no radius, `ServiceIcon`
+ *   01             24px Jura, `text-white`
  *   title          30px, `text-white`
  *   description    24px / 40px, `text-gray-200`
  *
@@ -39,15 +36,26 @@ frame has them. This is why `descriptionSizeClassName` is passed at all.
  * lines, and bottom-aligning drops a 36px heading beside the *last* of them —
  * which reads as the header sitting too low. Work already asked for this.
  *
- * **The frame's per-card artwork is gone as of 2026-09-26, on owner request.**
- * Five of the six cards carried flat `gray-200` geometry transcribed from this
- * frame, and the sixth, `01` Web Design, carried *nothing* — it was a faint
- * 12%-opacity rect holding the slot open, which is a placeholder whatever it
- * is made of, and the other five read as placeholders too. Every card now renders
- * a real mark for its discipline via `ServiceIcon` (lucide, keyed by `title`).
- * The frame's `01` has no geometry to lose, so nothing about the grid changed
- * shape: the slot keeps its `aspect-square` so all six cards stay the height of
- * their row-mates and the two rows of titles stay flush.
+ * **There is no per-card artwork. This is the third state of this slot, and
+ * the history matters — do not re-add a mark without reading it.**
+ *
+ * *Frame as supplied.* Five of the six cards carried flat `gray-200` geometry
+ * transcribed from this frame; the sixth, `01` Web Design, carried *nothing* and
+ * was a faint 12%-opacity rect holding the slot open. A placeholder whatever it
+ * was made of, and the other five read as placeholders too.
+ *
+ * *2026-09-26, owner request.* The geometry was deleted and replaced with a real
+ * lucide mark per service, keyed by `title` (`ServiceIcon`, since removed).
+ *
+ * *2026-09-27, owner request.* **The marks were removed.** Six cards each
+ * carrying a 192px pictogram read as illustration rather than as a consultancy's
+ * capabilities, and the pictogram was the loudest thing in a section whose real
+ * argument is the written description. The cards are now **index, title,
+ * description** — no graphic slot, no `aspect-square` box, nothing reserved.
+ *
+ * Removing the slot is what makes the cards compact: they go from ~384px tall to
+ * roughly the height of their copy. `items-stretch` on the row still equalises
+ * them, so the `border-r` rules still run the full height of the row.
  */
 export function ServicesSection() {
   const [firstRow, secondRow] = [services.slice(0, 3), services.slice(3)];
@@ -126,11 +134,6 @@ function ServicesRow({ services: row }: { services: typeof services }) {
           <p className="font-body text-service-body leading-service text-white">
             {service.index}
           </p>
-
-          {/* Keyed by `title`, not `index`: see `ServiceIcon`. A missing key
-              renders nothing, and the suite asserts all six resolve, so a new
-              service cannot ship with a blank slot. */}
-          <ServiceIcon title={service.title} />
 
           {/* The frame wraps the title in a `justify-between items-center` row
               holding nothing else. It is a single-child wrapper, so it is not
