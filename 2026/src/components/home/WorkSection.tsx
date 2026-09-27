@@ -1,6 +1,5 @@
 import { projects } from "../../content/projects";
 import { SectionIntro } from "../common/SectionIntro";
-import { ProjectCard } from "./ProjectCard";
 import { ProjectCarousel } from "./ProjectCarousel";
 
 /**
@@ -10,6 +9,12 @@ import { ProjectCarousel } from "./ProjectCarousel";
  * The snippet labels the section `//01` and each project `01`–`04`; only the
  * per-project labels remain, since the section-level index was removed on owner
  * request (2026-09-26).
+ *
+ * The frame shows four identical stacked cards and no motion. Both are
+ * superseded: the entries are now six real projects, and the stack is one slider
+ * that advances by itself (owner request and then correction, 2026-09-27). What
+ * is retained from the frame is the card anatomy, the `01`–`06` per-project
+ * labels, the Work-specific divider and the container geometry.
  *
  * The design's own gutter is inconsistent — `padding-left: 81px` against
  * `padding-right: 84px`, and content widths that drift between 1272, 1275 and
@@ -45,13 +50,6 @@ import { ProjectCarousel } from "./ProjectCarousel";
  * it as section layout once led to centring the header, which was wrong.
  */
 export function WorkSection() {
-  // The first project is the featured card and stays put; the rest rotate.
-  // Destructured rather than sliced inline at the JSX so the split is named and
-  // cannot be quietly reordered, and so `startIndex` is derived from the same
-  // list the card labels are numbered against — the rotating cards continue at
-  // `02` instead of restarting at `01`.
-  const [featured, ...rotating] = projects;
-
   return (
     <section id="work" aria-labelledby="work-heading" className="container-site scroll-mt-header py-20">
       <SectionIntro
@@ -65,21 +63,20 @@ export function WorkSection() {
         founders who care about the difference.
       </SectionIntro>
 
-      {featured ? (
-        <ol className="mt-16 flex flex-col gap-16">
-          <li>
-            <ProjectCard project={featured} index={0} />
-          </li>
-        </ol>
-      ) : null}
-
       {/*
-        The rotating half. Owner request 2026-09-27 — the featured card above
-        stays static, these five take turns. See `ProjectCarousel` for the
-        accessibility decisions that request obliges: a pause control, no motion
-        under `prefers-reduced-motion`, no focus trap and no `aria-live`.
+        One slider, all six projects, advancing by itself every 6s. Owner
+        correction 2026-09-27: an earlier build showed IdCardify pinned above a
+        carousel of the other five, on the reading that the design's first card
+        was a featured one. That split is gone — it presented the section as "one
+        real project plus five lesser ones", which is the opposite of what six
+        real projects on a 6s rotation should say. IdCardify now takes its turn
+        with the rest, in its authored position, numbered `01`.
+
+        Everything `ProjectCarousel` has to answer for is documented there: a
+        pause control (WCAG 2.2.2), no motion under `prefers-reduced-motion`, no
+        focus trap, and no `aria-live`.
       */}
-      <ProjectCarousel projects={rotating} startIndex={featured ? 1 : 0} />
+      <ProjectCarousel projects={projects} />
     </section>
   );
 }

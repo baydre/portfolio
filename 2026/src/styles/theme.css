@@ -73,7 +73,7 @@
                          the raw brand hex already clears the 3:1 a graphic
                          needs, so unlike Python/Django/Git/KiCad it is not a
                          corrected value.                                     */
-  /* Four more for the rotating Work projects, 2026-09-27. These render in the
+  /* Four more for the Work slider, 2026-09-27. These render in the
      card's "Built with" panel, so their surface is --tech-tile like the six
      above — NOT --background, which is where the About role marks sit. */
   --brand-shell: #ffd500; /* simple-icons Shell, 9.15:1, unchanged          */

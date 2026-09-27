@@ -176,7 +176,7 @@ const brand: Record<string, Glyph> = {
    */
   C: { d: siC.path, fill: "#a8b9cc" },
   /**
-   * Four marks for the rotating Work projects, added 2026-09-27. All from
+   * Four marks for the Work slider, added 2026-09-27. All from
    * simple-icons like every other entry, and each is named because a repository's
    * own description or detected language says so — none is inferred.
    *

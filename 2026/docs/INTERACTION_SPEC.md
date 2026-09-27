@@ -159,9 +159,16 @@ is possible" and the ledger row read "static grid unless a carousel is explicitl
 wanted". The owner asked for it, which is the condition that row was waiting on,
 so the cost below is paid deliberately.
 
-- **Scope.** IdCardify stays a static card. The other five projects rotate. The
-  cards keep the frame's anatomy and the section's authored geometry; only how
-  many are on screen at once changed.
+- **Scope.** One slider over all six projects, IdCardify included. The cards
+  keep the frame's anatomy and the section's authored geometry; only how many
+  are on screen at once changed.
+
+  An earlier build of this pinned IdCardify as a static card above a carousel of
+  the other five, on the reading that the design's first card was a featured one.
+  The owner corrected it the same day: it presented the section as one real
+  project plus five lesser ones, which is the opposite of what six real projects
+  on a rotation should say. There is now no featured/rotating split, one ordered
+  list, and the labels run `01`–`06` straight from the top.
 - **Interval 6s**, chosen by the owner.
 - **WCAG 2.2.2 Pause, Stop, Hide — paid.** The rotation auto-updates, so a stop
   control is mandatory, and it ships as a visible Pause/Resume button rather than
@@ -374,7 +381,7 @@ content.
 | Contact submit | Four-state machine, never faked | **[D]** |
 | Mobile menu | Disclosure pattern, `aria-expanded`, `Escape`, focus return | **[P]** |
 | Gallery | Static grid unless a carousel is explicitly wanted | **[P]** |
-| Work carousel | Explicitly wanted 2026-09-27; pause control, reduced-motion, no trap, no `aria-live` | **[D]** |
+| Work carousel | Explicitly wanted 2026-09-27, then corrected to a single slider over all six; pause control, reduced-motion, no trap, no `aria-live` | **[D]** |
 | Anything animated | Honours `prefers-reduced-motion` | **[D]** |
 
 ---

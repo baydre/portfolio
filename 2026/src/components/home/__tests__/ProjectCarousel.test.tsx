@@ -6,7 +6,7 @@ import { projects } from "../../../content/projects";
 import { ProjectCarousel } from "../ProjectCarousel";
 
 /**
- * The rotating half of the Work section.
+ * The Work slider: every project, taking turns.
  *
  * Most of this file exists to hold the accessibility claims in
  * `ProjectCarousel`'s own comment to account. A carousel is the one component
@@ -23,7 +23,8 @@ import { ProjectCarousel } from "../ProjectCarousel";
  * assertion, since it pins the mechanism rather than a computed consequence of
  * it.
  */
-const rotating = projects.slice(1);
+/** All six. The section is ONE slider, so nothing sits outside it. */
+const slider = projects;
 
 /** Force the `prefers-reduced-motion` answer, before the component mounts. */
 function stubReducedMotion(matches: boolean) {
@@ -42,7 +43,7 @@ function stubReducedMotion(matches: boolean) {
 const renderCarousel = () =>
   render(
     <MemoryRouter>
-      <ProjectCarousel projects={rotating} startIndex={1} />
+      <ProjectCarousel projects={slider} />
     </MemoryRouter>,
   );
 
@@ -73,7 +74,7 @@ describe("ProjectCarousel", () => {
     const { container } = renderCarousel();
     const all = slides(container);
 
-    expect(all).toHaveLength(rotating.length);
+    expect(all).toHaveLength(slider.length);
     // Only the first is on screen. The other four carry `hidden`, which removes
     // them from the accessibility tree AND the tab order — the property that
     // keeps this from being a focus trap.
@@ -122,7 +123,7 @@ describe("ProjectCarousel", () => {
 
   it("advances every 6s, wrapping past the end", () => {
     const { container } = renderCarousel();
-    const last = rotating.length - 1;
+    const last = slider.length - 1;
     expect(visibleIndex(container)).toBe(0);
 
     advance(6000);
@@ -219,7 +220,7 @@ describe("ProjectCarousel", () => {
     const prev = screen.getByRole("button", { name: "Previous project" });
 
     fireEvent.click(prev);
-    expect(visibleIndex(container)).toBe(rotating.length - 1);
+    expect(visibleIndex(container)).toBe(slider.length - 1);
 
     fireEvent.click(next);
     expect(visibleIndex(container)).toBe(0);
@@ -245,24 +246,24 @@ describe("ProjectCarousel", () => {
     // discoverable without waiting for its turn — the mitigation for having no
     // aria-live announcements.
     renderCarousel();
-    for (const project of rotating) {
+    for (const project of slider) {
       expect(
         screen.getByRole("button", { name: `Show ${project.title}` }),
       ).toBeInTheDocument();
     }
     const first = screen.getByRole("button", {
-      name: `Show ${rotating[0].title}`,
+      name: `Show ${slider[0].title}`,
     });
     expect(first).toHaveAttribute("aria-current", "true");
     expect(
-      screen.getByRole("button", { name: `Show ${rotating[1].title}` }),
+      screen.getByRole("button", { name: `Show ${slider[1].title}` }),
     ).not.toHaveAttribute("aria-current");
   });
 
   it("jumps straight to a project from its dot", () => {
     const { container } = renderCarousel();
     fireEvent.click(
-      screen.getByRole("button", { name: `Show ${rotating[3].title}` }),
+      screen.getByRole("button", { name: `Show ${slider[3].title}` }),
     );
     expect(visibleIndex(container)).toBe(3);
   });
@@ -281,20 +282,25 @@ describe("ProjectCarousel", () => {
     );
     expect(announcing).toHaveLength(0);
 
-    const counter = screen.getByText(`1 / ${rotating.length}`);
+    const counter = screen.getByText(`1 / ${slider.length}`);
     expect(counter).toHaveAttribute("aria-live", "off");
   });
 
-  it("continues the Work numbering instead of restarting at 01", () => {
-    // The featured card holds `01`, so the rotating cards must read `02`–`06`.
-    // `startIndex` exists so this cannot silently drift.
+  it("numbers the whole slider `01`–`06` with no featured card", () => {
+    // The earlier build pinned IdCardify at `01` and numbered the carousel from
+    // `02`, via a `startIndex` prop that existed only to continue that offset.
+    // One slider has no offset to continue, so the prop is gone and the labels
+    // must run straight from the top of the list. This is the test that would
+    // catch the split quietly returning.
     const { container } = renderCarousel();
+    expect(slider).toHaveLength(6);
     const indices = slides(container).map((li) =>
       li.querySelector(".text-card-index")?.textContent,
     );
     expect(indices).toEqual(
-      rotating.map((_, i) => String(i + 2).padStart(2, "0")),
+      slider.map((_, i) => String(i + 1).padStart(2, "0")),
     );
+    expect(indices[0]).toBe("01");
   });
 
   it("labels itself a carousel for assistive tech", () => {
@@ -313,7 +319,7 @@ describe("ProjectCarousel", () => {
   it("renders nothing at all for an empty list, without throwing", () => {
     const { container } = render(
       <MemoryRouter>
-        <ProjectCarousel projects={[]} startIndex={1} />
+        <ProjectCarousel projects={[]} />
       </MemoryRouter>,
     );
     expect(container).toBeEmptyDOMElement();

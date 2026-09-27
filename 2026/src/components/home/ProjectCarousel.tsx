@@ -7,7 +7,13 @@ import { usePrefersReducedMotion } from "../../lib/usePrefersReducedMotion";
 import { ProjectCard } from "./ProjectCard";
 
 /**
- * The rotating half of the Work section: five projects taking turns.
+ * The Work section: one slider, all six projects taking turns on a 6s
+ * interval.
+ *
+ * Owner request, then correction, both 2026-09-27. The first build pinned
+ * IdCardify above a carousel of the other five. That is gone — this component
+ * now receives the whole list, so the section reads as six projects rather
+ * than one flagship with five supporting acts.
  *
  * ## Why this exists at all
  *
@@ -74,21 +80,7 @@ import { ProjectCard } from "./ProjectCard";
  */
 const INTERVAL_MS = 6000;
 
-export function ProjectCarousel({
-  projects,
-  /** Index of the first project in the full Work list, for the `01` label. */
-  startIndex,
-}: {
-  projects: Project[];
-  /**
-   * Zero-based position of `projects[0]` within the whole Work list, so the
-   * card labels continue the numbering instead of restarting at `01`. The
-   * featured card occupies `0`, so this is `1` today — but it is a parameter
-   * rather than a constant so the numbering cannot silently drift if the
-   * featured card is ever not first.
-   */
-  startIndex: number;
-}) {
+export function ProjectCarousel({ projects }: { projects: Project[] }) {
   const count = projects.length;
   const [active, setActive] = React.useState(0);
   const [hovered, setHovered] = React.useState(false);
@@ -176,7 +168,7 @@ export function ProjectCarousel({
                   : undefined
               }
             >
-              <ProjectCard project={project} index={startIndex + i} />
+              <ProjectCard project={project} index={i} />
             </li>
           );
         })}

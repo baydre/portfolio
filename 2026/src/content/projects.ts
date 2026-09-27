@@ -27,11 +27,12 @@
  * "one known project, do not invent the rest" constraint is satisfied for those
  * five and the `provisional` framing above applies only to IdCardify.
  *
- * One part of that original claim did not survive: `WorkSection` DID change,
- * because the owner asked for the five to auto-rotate while IdCardify stays
- * static. That is a component change on top of the data change, and it is
- * recorded in `docs/INTERACTION_SPEC.md` §4.3, which had argued against exactly
- * this carousel until the request made it explicit.
+ * One part of that original claim did not survive: `WorkSection` DID change.
+ * The owner asked for these five to auto-rotate, then corrected the first build
+ * to a single slider over all six rather than IdCardify pinned above them. That
+ * is a component change on top of the data change, and it is recorded in
+ * `docs/INTERACTION_SPEC.md` §4.3, which had argued against exactly this
+ * carousel until the request made it explicit.
  */
 
 import type { Project } from "./types";
@@ -85,7 +86,8 @@ const idCardify: Project = {
 };
 
 /**
- * The five rotating projects, added 2026-09-27.
+ * The five real projects, added 2026-09-27. They sit in the same slider as
+ * IdCardify — array order is slide order, and `01`–`06` follow this order.
  *
  * Every field here is real and traceable, which is why these entries look
  * thinner than IdCardify's and why that is correct rather than unfinished:

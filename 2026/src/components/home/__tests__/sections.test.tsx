@@ -21,23 +21,27 @@ const renderSection = (ui: React.ReactElement) =>
   render(<MemoryRouter>{ui}</MemoryRouter>);
 
 /**
- * The featured static card — IdCardify, the one project the owner kept on the
+ * The first slide of the slider. IdCardify, which the owner kept as the
  * page rather than folding into the rotation.
  *
  * These card-anatomy tests predate the carousel and were written when the
  * section held exactly one card, so `getByRole("article")` was unambiguous. It
  * is not any more, and it cannot be made so by visibility: jsdom does not apply
  * the UA stylesheet's `[hidden] { display: none }`, so Testing Library still
- * reports the four off-screen slides as present. In a real browser they are
+ * reports the five off-screen slides as present. In a real browser they are
  * genuinely hidden, and `ProjectCarousel.test.tsx` asserts that via the `hidden`
  * ATTRIBUTE rather than through a visibility-based query, which is the honest
  * way to test it under jsdom.
  *
- * So the anatomy is asserted against the featured card, reached by DOM position
- * rather than by role, and the rotating cards get their own coverage.
+ * So the anatomy is asserted against the first slide, reached by DOM position
+ * rather than by role, and the slides beyond it get their own coverage.
+ *
+ * Descendant `ol`, not `> ol`: the slider's list is nested inside the carousel's
+ * own wrapper, so a direct-child selector matches nothing now that the static
+ * featured list is gone.
  */
-const featuredCard = (container: HTMLElement) =>
-  container.querySelector("section#work > ol > li > article") as HTMLElement;
+const firstSlide = (container: HTMLElement) =>
+  container.querySelector("section#work ol > li > article") as HTMLElement;
 
 /** Every project card in the section, in document order, hidden ones included. */
 const allCards = (container: HTMLElement) =>
@@ -59,26 +63,31 @@ describe("WorkSection", () => {
     expect(section?.className).toContain("scroll-mt-header");
   });
 
-  it("renders one numbered entry per project, across both lists", () => {
+  it("renders all six projects in ONE slider, with no featured card above it", () => {
     const { container } = renderSection(<WorkSection />);
-    // There are now TWO ordered lists — the featured card's, and the carousel's,
-    // the latter nested inside the carousel's own wrapper element. So this counts
-    // `ol > li` anywhere in the section rather than direct children of it. The
-    // `ol` part is what keeps it honest: ProjectCard contains a `<ul>` of stack
-    // tiles, and `ul > li` is excluded by the tag.
+    // Owner correction 2026-09-27. An earlier build had a pinned IdCardify card
+    // above a five-project carousel, in two ordered lists. That split is gone:
+    // every project takes its turn, in the single list the slider rotates
+    // through. The `ol > li` part of the selector keeps it honest, since
+    // ProjectCard contains a `<ul>` of stack tiles and `ul > li` is excluded.
     expect(container.querySelectorAll("section#work ol > li")).toHaveLength(
       projects.length,
     );
 
-    // And the split is the owner's: one static, the rest rotating.
+    // Exactly one list. This is the assertion that would fail if a static
+    // featured card were reintroduced above the slider.
     const lists = container.querySelectorAll("section#work ol");
-    expect(lists).toHaveLength(2);
-    expect(lists[0].querySelectorAll(":scope > li")).toHaveLength(1);
-    expect(lists[1].querySelectorAll(":scope > li")).toHaveLength(
-      projects.length - 1,
+    expect(lists).toHaveLength(1);
+    expect(lists[0].querySelectorAll(":scope > li")).toHaveLength(
+      projects.length,
     );
-    // The static one is the FIRST project, so the featured card keeps `01`.
+
+    // And IdCardify is inside the slider rather than parked above it, so it gets
+    // its turn like the rest and keeps the `01` label from the top of the list.
     expect(lists[0].textContent).toContain(projects[0].title);
+    for (const project of projects) {
+      expect(lists[0].textContent).toContain(project.title);
+    }
   });
 
   /**
@@ -89,7 +98,7 @@ describe("WorkSection", () => {
    */
   it("gives the title row exactly the design's two children", () => {
     const { container } = renderSection(<WorkSection />);
-    const card = featuredCard(container);
+    const card = firstSlide(container);
     const title = within(card).getByRole("heading", { level: 3 });
     const index = within(card).getByText(/^\d{2}$/);
 
@@ -204,7 +213,7 @@ describe("WorkSection", () => {
    */
   it("puts the NN label in the card's title row, right-aligned", () => {
     const { container } = renderSection(<WorkSection />);
-    const card = featuredCard(container);
+    const card = firstSlide(container);
     // Bare digits: the frame's `//` prefix is dropped on owner request
     // 2026-09-26, so this also fails if the prefix ever comes back.
     const label = within(card).getByText(/^\d{2}$/);
@@ -218,7 +227,7 @@ describe("WorkSection", () => {
 
   it("styles the card title and summary as the snippet specifies", () => {
     const { container } = renderSection(<WorkSection />);
-    const card = featuredCard(container);
+    const card = firstSlide(container);
 
     // text-[32px] font-maisonNeue text-[#FFF]
     const title = within(card).getByRole("heading", { level: 3 });
@@ -236,7 +245,7 @@ describe("WorkSection", () => {
 
   it("uses the snippet's 12px card radius, not the hero image radius", () => {
     const { container } = renderSection(<WorkSection />);
-    const card = featuredCard(container);
+    const card = firstSlide(container);
 
     // Both exports say borderRadius 12 for the image and the panel, and
     // --radius-lg is 12px. rounded-image (24px) is the HERO image's radius, and
@@ -276,7 +285,7 @@ describe("WorkSection", () => {
 
   it("uppercases and tracks the panel label as the export specifies", () => {
     const { container } = renderSection(<WorkSection />);
-    const card = featuredCard(container);
+    const card = firstSlide(container);
     const label = within(card).getByText("Built with");
 
     // textTransform: uppercase, letter-spacing 0.88px = 0.0733em at 12px.
@@ -324,7 +333,7 @@ describe("WorkSection", () => {
 
   it("uses 12px on the panel and 8px on the tile box", () => {
     const { container } = renderSection(<WorkSection />);
-    const card = featuredCard(container);
+    const card = firstSlide(container);
     // Scoped to the panel that owns the label — `card.querySelector(".bg-panel")`
     // would return the image placeholder, which is also bg-panel.
     const panel = within(card).getByText("Built with").closest(".bg-panel");
@@ -382,7 +391,7 @@ describe("WorkSection", () => {
 
   it("builds each stack tile as an icon box above a centred label", () => {
     const { container } = renderSection(<WorkSection />);
-    const card = featuredCard(container);
+    const card = firstSlide(container);
     const tile = within(card).getAllByText("React.js")[0];
     const box = tile.parentElement?.querySelector("div");
 
@@ -447,7 +456,7 @@ describe("WorkSection", () => {
 
   it("emits no duplicate SVG clip-path ids across tiles", () => {
     const { container } = renderSection(<WorkSection />);
-    const card = featuredCard(container);
+    const card = firstSlide(container);
     // The snippet repeats clip0_323_427 / clip0_323_437 across its five tiles,
     // which puts duplicate ids in the document. TechIcon drops the no-op clip.
     expect(card.querySelectorAll("clipPath").length).toBe(0);
@@ -483,7 +492,7 @@ describe("WorkSection", () => {
     expect(heading.textContent).toBe("Work");
     expect(heading.parentElement?.textContent).not.toMatch(/\d/);
 
-      // The per-project `01`–`04` labels are content and still render, one per
+      // The per-project `01`–`06` labels are content and still render, one per
       // card, with no `//` prefix (owner request, 2026-09-26). All six are
       // checked, including the four off-screen ones — numbering that is only
       // correct while a card happens to be on screen is not correct.
