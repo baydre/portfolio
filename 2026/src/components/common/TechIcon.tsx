@@ -11,7 +11,7 @@ import {
   siPython,
   siRaspberrypi,
   siReact,
-  siShell,
+  siGnubash,
 } from "simple-icons";
 
 /**
@@ -191,7 +191,10 @@ const brand: Record<string, Glyph> = {
    * strategy; it is a real mark rather than a generic terminal glyph, which is the
    * distinction this registry exists to keep.
    */
-  Shell: { d: siShell.path, fill: "#ffd500" },
+  // `siShell` is the oil company, not a shell. GNU Bash is the mark that
+  // actually reads as "a command line", which is what blue-green-deployment-
+  // strategy is written in.
+  Shell: { d: siGnubash.path, fill: "#4eaa25" },
   NGINX: { d: siNginx.path, fill: "#009639" },
   Docker: { d: siDocker.path, fill: "#2496ed" },
   Ansible: { d: siAnsible.path, fill: "#ff2d2d" },

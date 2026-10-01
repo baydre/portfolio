@@ -196,13 +196,28 @@ so the cost below is paid deliberately.
   utility, or `display: flex` would beat the UA sheet's `[hidden] { display: none }`.
 - **No slide announcements.** No `aria-live` region. A polite live region behind
   a 6s timer interrupts a screen reader every 6 seconds, which is the "slide
-  announcements" cost named above and is worse than silence. Instead every
-  project is named in the dot row's accessible labels, so all five are
-  discoverable without waiting for a turn.
-- **Pause on engagement.** Hovering the region or focusing into it stops rotation
-  until the pointer or focus leaves, so a card cannot slide out from under
-  someone reading it. Moving focus *between* controls inside the region does not
-  resume it.
+  announcements" cost named above and is worse than silence.
+- **Pause on engagement.** Hovering, focusing into, or pressing the slider stops
+  rotation for as long as the engagement lasts. Reading a card while it slides
+  out from under you is the failure this prevents.
+
+  Each of those three had to be made **impossible to latch**, and two shipped
+  broken. A press read only on the container never ended if the pointer was
+  released outside it, so `pressing` stayed true and the carousel stopped for
+  good — press a card to read it, slide off still holding, release: dead until
+  reload. And hover read from React's `onMouseEnter` cannot distinguish a cursor
+  arriving from a tap's synthesised mouse event, and a tap is never followed by a
+  mouse-leave, so `hovered` latched and **autoplay was dead on mobile after the
+  first touch**. The press now ends on a window-level listener, and hover reads
+  `pointerType` and ignores touch entirely. Both are pinned by regression tests,
+  because the symptom in both cases was only "it pauses, then never resumes".
+
+- **Reduced motion renders a static list, not a frozen carousel.** With the dot
+  row and the counter gone there is no way to reach an off-screen project
+  without motion, so suppressing autoplay alone would show a reduced-motion
+  visitor **one project out of six**. `prefers-reduced-motion: reduce` therefore
+  renders all six stacked, with no timer, no fade and nothing hidden — which is
+  also the shape the design actually draws.
 - **Rotation never steals focus** or reorders the document.
 - **Not decided here:** the image gallery above, which remains a static grid.
 

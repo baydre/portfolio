@@ -9,7 +9,9 @@
  * content — a placeholder must be recognisable as a placeholder.
  */
 
-import heroAsset from "figma:asset/c24501893257f415ae9c63024548048fcb48b651.png";
+import heroSrc from "../assets/hero-bg-2048.jpg";
+import heroSrc1280 from "../assets/hero-bg-1280.jpg";
+import heroSrc2048 from "../assets/hero-bg-2048.jpg";
 import type { LocationCopy, NavItem, Profile, SocialLink } from "./types";
 
 export const profile: Profile = {
@@ -20,12 +22,20 @@ export const profile: Profile = {
   description:
     "BaydreAfrica designs and builds brands, websites, and software that hold up in the real world, not just on a moodboard. Work made to perform, for founders who care about the difference.",
   email: "baydreafrica@gmail.com",
-  // PENDING: the snippet's hero is an external placehold.co URL. This local
-  // asset stands in until the real image is supplied. See docs/DESIGN_SYSTEM.md.
+  // Owner-supplied 2026-09-27, replacing the placehold.co stand-in. The source
+  // is 5530x3684 / 2.7 MB, so two derivatives are committed and the full-size
+  // original is NOT imported: 1280w is the 1x fetch for the 1272px content
+  // column and 2048w covers ~1.6x. That is 7-18x less to download.
+  //
+  // `width`/`height` are the intrinsic size of the SOURCE, not of a derivative,
+  // because that ratio is what reserves the box before the bytes land. It is
+  // 1.501:1, against the placeholder's 1.778:1 — visible only as a change in
+  // how much `object-cover` trims, which is the design's own framing rule.
   heroImage: {
-    src: heroAsset,
-    width: 2560,
-    height: 1440,
+    src: heroSrc,
+    srcSet: `${heroSrc1280} 1280w, ${heroSrc2048} 2048w`,
+    width: 5530,
+    height: 3684,
   },
   heroImageAlt: "",
   role: "Developer & Designer",

@@ -133,7 +133,7 @@ const PAIRINGS = [
   // tiles sit on --tech-tile, same as the six above. Only Ansible needed
   // correcting; the other three publish the vendor hex because it already
   // clears 3:1 here.
-  ["--brand-shell", "--tech-tile", "graphic", "Shell mark"],
+  ["--brand-shell", "--tech-tile", "graphic", "GNU Bash mark"],
   ["--brand-nginx", "--tech-tile", "graphic", "NGINX mark"],
   ["--brand-docker", "--tech-tile", "graphic", "Docker mark"],
   ["--brand-ansible", "--tech-tile", "graphic", "Ansible mark"],

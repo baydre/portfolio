@@ -155,6 +155,16 @@ export interface Profile {
 
 export interface HeroImage {
   src: string;
+  /**
+   * Width-descriptor list for `srcset`, so the browser fetches one derivative
+   * sized to the device instead of the largest one committed. The hero sits in a
+   * content column capped at 1272px, so 1280w is the 1x answer.
+   *
+   * Optional: `heroImageAlt` and the placeholder that preceded it had no
+   * `srcset`, and a missing one must not become a hard requirement.
+   */
+  srcSet?: string;
+  /** Intrinsic size of the SOURCE image, used to reserve the box before load. */
   width: number;
   height: number;
 }

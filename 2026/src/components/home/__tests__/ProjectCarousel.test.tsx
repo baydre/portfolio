@@ -6,15 +6,16 @@ import { projects } from "../../../content/projects";
 import { ProjectCarousel } from "../ProjectCarousel";
 
 /**
- * The Work slider: every project, taking turns.
+ * The Work slider: every project, taking turns on a 6s interval, with no visible
+ * controls at all.
  *
- * Most of this file exists to hold the accessibility claims in
- * `ProjectCarousel`'s own comment to account. A carousel is the one component
- * in this codebase that can be *correct* in its markup and still be a wall of
- * motion for someone who did not ask for it, so the tests assert the absence of
- * harm as directly as they assert the presence of the rotation: no `aria-live`,
- * no off-screen card in the tab order, nothing moving under reduced motion, and a
- * stop control that is always there.
+ * Most of this file exists to hold the accessibility claims in `ProjectCarousel`'s
+ * own comment to account. A carousel is the one component in this codebase that
+ * can be *correct* in its markup and still be a wall of motion for someone who
+ * did not ask for it, so the tests assert the absence of harm as directly as they
+ * assert the presence of the rotation: no `aria-live`, no off-screen card in the
+ * tab order, nothing moving under reduced motion, and no engaged flag that can
+ * latch and stop the carousel for good.
  *
  * On `hidden` and jsdom: jsdom does not implement the UA stylesheet's
  * `[hidden] { display: none }`, so Testing Library's visibility-aware role
@@ -23,6 +24,7 @@ import { ProjectCarousel } from "../ProjectCarousel";
  * assertion, since it pins the mechanism rather than a computed consequence of
  * it.
  */
+
 /** All six. The section is ONE slider, so nothing sits outside it. */
 const slider = projects;
 
@@ -55,6 +57,8 @@ const slides = (container: HTMLElement) =>
 const visibleIndex = (container: HTMLElement) =>
   slides(container).findIndex((li) => !li.hasAttribute("hidden"));
 
+const region = () => screen.getByRole("region", { name: "More work" });
+
 const advance = (ms: number) =>
   act(() => {
     vi.advanceTimersByTime(ms);
@@ -75,7 +79,7 @@ describe("ProjectCarousel", () => {
     const all = slides(container);
 
     expect(all).toHaveLength(slider.length);
-    // Only the first is on screen. The other four carry `hidden`, which removes
+    // Only the first is on screen. The other five carry `hidden`, which removes
     // them from the accessibility tree AND the tab order — the property that
     // keeps this from being a focus trap.
     expect(visibleIndex(container)).toBe(0);
@@ -92,70 +96,19 @@ describe("ProjectCarousel", () => {
     // card visible and focusable again. Cheap to assert, silent to regress.
     const { container } = renderCarousel();
     for (const li of slides(container)) {
-      const className = li.className ?? "";
-      expect(className).not.toMatch(/\b(flex|grid|block|contents)\b/);
+      expect(li.className ?? "").not.toMatch(/\b(flex|grid|block|contents)\b/);
     }
   });
 
-  it("has no play/pause or previous/next controls, on the owner's instruction", () => {
-    // Removed 2026-09-27: the section should read as one automatic slider, and
-    // nobody should have to click anything to see the work. Asserted as an
-    // ABSENCE, which is unusual but the only way to stop a "helpful" control
-    // being re-added by a later change that assumed the others were there.
+  it("has no controls at all", () => {
+    // The Play/Pause button, the previous/next arrows, the `1 / 6` counter and
+    // the dot row were all removed on the owner's instruction: the section is
+    // automatic and the visitor should not have to click anything. Asserted as an
+    // ABSENCE, which is the only way to stop a "helpful" control being re-added by
+    // a later change that assumed the others were still there.
     renderCarousel();
-    for (const name of [
-      "Pause automatic rotation",
-      "Resume automatic rotation",
-      "Previous project",
-      "Next project",
-    ]) {
-      expect(screen.queryByRole("button", { name })).toBeNull();
-    }
-    // The only buttons left are the dots, one per project.
-    expect(screen.getAllByRole("button")).toHaveLength(slider.length);
-  });
-
-  it("stops on press and holds a full turn after release", () => {
-    // The touch path, and the reason it exists: a phone has no cursor, so hover
-    // gives a touch user nothing and the card would slide away mid-read. Press
-    // stops it. Crucially, release does NOT resume immediately — the visitor
-    // gets a whole 6s turn to finish reading, because nobody reads with a finger
-    // still on the glass.
-    const { container } = renderCarousel();
-    const region = screen.getByRole("region", { name: "More work" });
-
-    fireEvent.pointerDown(region);
-    advance(6000 * 2);
-    expect(visibleIndex(container)).toBe(0);
-
-    // Lifted: still held, on the grace timer.
-    fireEvent.pointerUp(region);
-    advance(5900);
-    expect(visibleIndex(container)).toBe(0);
-
-    // Grace expires and rotation resumes — but the interval is created at that
-    // moment, so the new turn is a full 6s away rather than an instant advance.
-    advance(200);
-    expect(visibleIndex(container)).toBe(0);
-    advance(6000);
-    expect(visibleIndex(container)).toBe(1);
-  });
-
-  it("releases the hold on a cancelled pointer, rather than sticking", () => {
-    // `pointercancel` replaces `pointerup` when a system gesture takes over, so
-    // it has to end the press too. Forget the handler and a cancelled touch
-    // leaves `pressing` true forever — the carousel silently stops for that
-    // visitor with no way to know why. It gets the same grace as a normal lift,
-    // since a cancelled gesture still means someone was reaching in.
-    const { container } = renderCarousel();
-    const region = screen.getByRole("region", { name: "More work" });
-
-    fireEvent.pointerDown(region);
-    fireEvent.pointerCancel(region);
-    advance(6000);
-    // Grace expired: hold released, interval running but not yet due.
-    advance(6000);
-    expect(visibleIndex(container)).toBe(1);
+    expect(screen.queryAllByRole("button")).toHaveLength(0);
+    expect(screen.queryByText(/^\d+\s*\/\s*\d+$/)).toBeNull();
   });
 
   it("advances every 6s, wrapping past the end", () => {
@@ -172,169 +125,15 @@ describe("ProjectCarousel", () => {
     expect(visibleIndex(container)).toBe(last);
 
     // And once more wraps to the first rather than stranding the visitor on the
-    // end with only a "previous" that works.
+    // end with no way forward.
     advance(6000);
     expect(visibleIndex(container)).toBe(0);
-  });
-
-  it("does not advance while the cursor is resting on it", () => {
-    const { container } = renderCarousel();
-    const region = screen.getByRole("region", { name: "More work" });
-    fireEvent.mouseEnter(region);
-
-    advance(6000 * 3);
-    expect(visibleIndex(container)).toBe(0);
-  });
-
-  it("does not advance under prefers-reduced-motion, from the first frame", () => {
-    // Set before render: the hook reads the query synchronously on first render
-    // specifically so a reduced-motion visitor never sees one step of rotation
-    // before the correction lands. If the hook regressed to an effect-only read,
-    // this test would still pass on the later frames but the first advance
-    // would not be covered — hence asserting the position immediately.
-    stubReducedMotion(true);
-    const { container } = renderCarousel();
-
-    expect(visibleIndex(container)).toBe(0);
-    advance(6000 * 5);
-    expect(visibleIndex(container)).toBe(0);
-  });
-
-  it("leaves the dots working when reduced motion suppresses rotation", () => {
-    // The consequence of removing the Resume button: for a reduced-motion
-    // visitor autoplay is now off permanently, which is the right reading of the
-    // preference. What must not follow is that the content becomes unreachable —
-    // the dots are how they move between projects, with no motion at all.
-    stubReducedMotion(true);
-    const { container } = renderCarousel();
-    advance(6000 * 4);
-    expect(visibleIndex(container)).toBe(0);
-
-    fireEvent.click(
-      screen.getByRole("button", { name: `Show ${slider[2].title}` }),
-    );
-    expect(visibleIndex(container)).toBe(2);
-
-    // And the fade cannot run: the classes are always on the active slide, and
-    // what suppresses them under reduced motion is the `motion-safe:` variant
-    // prefix — not their absence. Asserting the prefix is the honest check;
-    // asserting the class is missing would pass only if someone deleted the
-    // animation outright, including for visitors who allow motion.
-    const classes = (slides(container)[2].className ?? "").split(/\s+/);
-    const animationClasses = classes.filter((c) => /animate|fade/.test(c));
-    expect(animationClasses.length).toBeGreaterThan(0);
-    for (const cls of animationClasses) {
-      expect(cls.startsWith("motion-safe:")).toBe(true);
-    }
-  });
-
-  it("stops while the pointer is over it, and resumes on leave", () => {
-    // Reading a card while it slides out from under you is the failure this
-    // prevents, so a hover pause is part of the feature rather than a nicety.
-    const { container } = renderCarousel();
-    const region = screen.getByRole("region", { name: "More work" });
-
-    fireEvent.mouseEnter(region);
-    advance(6000 * 2);
-    expect(visibleIndex(container)).toBe(0);
-
-    fireEvent.mouseLeave(region);
-    advance(6000);
-    expect(visibleIndex(container)).toBe(1);
-  });
-
-  it("stops while focus is inside, and resumes when focus leaves", () => {
-    // Same reasoning as hover, for a keyboard visitor reading a card. Moving
-    // focus BETWEEN controls must not resume it — only leaving the region.
-    const { container } = renderCarousel();
-    const region = screen.getByRole("region", { name: "More work" });
-    const dot = screen.getByRole("button", { name: `Show ${slider[0].title}` });
-
-    fireEvent.focus(dot);
-    advance(6000 * 2);
-    expect(visibleIndex(container)).toBe(0);
-
-    // Between two controls inside the region: still paused.
-    fireEvent.blur(dot, { relatedTarget: region });
-    advance(6000);
-    expect(visibleIndex(container)).toBe(0);
-
-    // Out of the region entirely: resumes on the next turn. One 6s advance is
-    // enough, because the blur is flushed by `act` before the clock moves — the
-    // interval exists for the whole of that window, so its first tick lands on
-    // it. (The press-grace test needs two, because there the release happens
-    // *inside* a timer callback and the interval is created at the end of it.)
-    fireEvent.blur(region, { relatedTarget: document.body });
-    advance(6000);
-    expect(visibleIndex(container)).toBe(1);
-  });
-
-  it("restarts the full 6s after picking a project from the dot row", () => {
-    // Without this, choosing a project a moment before a scheduled advance would
-    // skip the slide just chosen, because the old timer fires immediately.
-    const { container } = renderCarousel();
-    advance(5000);
-    fireEvent.click(screen.getByRole("button", { name: `Show ${slider[1].title}` }));
-    expect(visibleIndex(container)).toBe(1);
-
-    // 1.1s of the new turn — the old timer would have fired by now.
-    advance(1100);
-    expect(visibleIndex(container)).toBe(1);
-    advance(4900);
-    expect(visibleIndex(container)).toBe(2);
-  });
-
-  it("names every project in the dot row, and marks the current one", () => {
-    // The only place all five are named at once, so every project is
-    // discoverable without waiting for its turn — the mitigation for having no
-    // aria-live announcements.
-    renderCarousel();
-    for (const project of slider) {
-      expect(
-        screen.getByRole("button", { name: `Show ${project.title}` }),
-      ).toBeInTheDocument();
-    }
-    const first = screen.getByRole("button", {
-      name: `Show ${slider[0].title}`,
-    });
-    expect(first).toHaveAttribute("aria-current", "true");
-    expect(
-      screen.getByRole("button", { name: `Show ${slider[1].title}` }),
-    ).not.toHaveAttribute("aria-current");
-  });
-
-  it("jumps straight to a project from its dot", () => {
-    const { container } = renderCarousel();
-    fireEvent.click(
-      screen.getByRole("button", { name: `Show ${slider[3].title}` }),
-    );
-    expect(visibleIndex(container)).toBe(3);
-  });
-
-  it("has no aria-live region, so rotation cannot interrupt a screen reader", () => {
-    // A polite live region behind a 6s timer interrupts whatever is being read,
-    // every 6s, forever. The design decision is to say nothing and rely on the
-    // dot labels instead.
-    const { container } = renderCarousel();
-    // Asserted as "no ANNOUNCING live region" rather than "no aria-live
-    // attribute": the counter below carries `aria-live="off"` deliberately, to
-    // state that it is presentational rather than leaving that to be inferred.
-    // An element that announces is the thing that must not exist.
-    const announcing = Array.from(container.querySelectorAll("[aria-live]")).filter(
-      (el) => el.getAttribute("aria-live") !== "off",
-    );
-    expect(announcing).toHaveLength(0);
-
-    const counter = screen.getByText(`1 / ${slider.length}`);
-    expect(counter).toHaveAttribute("aria-live", "off");
   });
 
   it("numbers the whole slider `01`–`06` with no featured card", () => {
-    // The earlier build pinned IdCardify at `01` and numbered the carousel from
-    // `02`, via a `startIndex` prop that existed only to continue that offset.
-    // One slider has no offset to continue, so the prop is gone and the labels
-    // must run straight from the top of the list. This is the test that would
-    // catch the split quietly returning.
+    // An earlier build pinned IdCardify at `01` and numbered the rest from `02`.
+    // One slider has no offset to continue, so this is the test that would catch
+    // that split quietly returning.
     const { container } = renderCarousel();
     expect(slider).toHaveLength(6);
     const indices = slides(container).map((li) =>
@@ -343,20 +142,202 @@ describe("ProjectCarousel", () => {
     expect(indices).toEqual(
       slider.map((_, i) => String(i + 1).padStart(2, "0")),
     );
-    expect(indices[0]).toBe("01");
+  });
+
+  // ── the two latch bugs ───────────────────────────────────────────────────
+  // Both failed the same way and for the same reason: an engaged flag went true
+  // and nothing ever cleared it, so the carousel stopped permanently. The
+  // reported symptom was "it pauses when I hover, then never starts again".
+
+  it("resumes when the pointer is released OUTSIDE the carousel", () => {
+    // Regression. `onPointerUp` on the container only fires if the pointer comes
+    // up over the container. Press on a card to read it, slide off still
+    // holding, release outside — the event never arrived, `pressing` stayed true,
+    // and the carousel was dead until reload. This is how anyone reads a long
+    // card, not an exotic gesture.
+    const { container } = renderCarousel();
+    fireEvent.pointerDown(region());
+    fireEvent.pointerUp(document.body);
+
+    // Two advances, not one `advance(12000)`. The grace timer expires INSIDE the
+    // first advance, and its state change only reaches the effect that creates
+    // the interval when `act` returns — by which point the clock has already
+    // passed 12000, so a single combined advance misses that tick and looks like
+    // the bug this test exists to catch. Separate advances mirror real elapsed
+    // time: grace ends at 6s, first advance at 12s.
+    advance(6000);
+    expect(visibleIndex(container)).toBe(0);
+    advance(6000);
+    expect(visibleIndex(container)).toBe(1);
+  });
+
+  it("keeps autoplaying for a touch pointer, which never gets hover-pause", () => {
+    // Regression. A tap fires a synthesised mouseenter with no matching
+    // mouseleave, because a finger does not "leave" — and React's onMouseEnter
+    // cannot tell that from a real cursor. `hovered` latched true and autoplay
+    // was dead on mobile after the first touch. Pointer events carry
+    // `pointerType`, so touch must be excluded from hover-pause and rely on
+    // press-and-hold instead.
+    const { container } = renderCarousel();
+    fireEvent.pointerEnter(region(), { pointerType: "touch" });
+
+    advance(6000);
+    expect(visibleIndex(container)).toBe(1);
+  });
+
+  it("does pause for a mouse pointer, and resumes when it leaves", () => {
+    const { container } = renderCarousel();
+    fireEvent.pointerEnter(region(), { pointerType: "mouse" });
+
+    advance(6000 * 2);
+    expect(visibleIndex(container)).toBe(0);
+
+    fireEvent.pointerLeave(region(), { pointerType: "mouse" });
+    advance(6000);
+    expect(visibleIndex(container)).toBe(1);
+  });
+
+  // ── the three pause mechanisms ───────────────────────────────────────────
+
+  it("stops on press and holds a full turn after release", () => {
+    // The touch path. Release does NOT resume immediately: the visitor gets a
+    // whole 6s turn to finish reading, because nobody reads with a finger still
+    // on the glass.
+    const { container } = renderCarousel();
+    fireEvent.pointerDown(region());
+    advance(6000 * 2);
+    expect(visibleIndex(container)).toBe(0);
+
+    fireEvent.pointerUp(region());
+    advance(5900);
+    expect(visibleIndex(container)).toBe(0);
+
+    // Grace expires and rotation resumes — but the interval is created at that
+    // moment, so the new turn is a full 6s away rather than an instant advance.
+    advance(200);
+    expect(visibleIndex(container)).toBe(0);
+    advance(6000);
+    expect(visibleIndex(container)).toBe(1);
+  });
+
+  it("releases the hold on a cancelled pointer, rather than sticking", () => {
+    // `pointercancel` replaces `pointerup` when a system gesture takes over. Miss
+    // it and a cancelled touch leaves `pressing` true forever, which is the same
+    // permanent stall as the release-outside bug.
+    const { container } = renderCarousel();
+    fireEvent.pointerDown(region());
+    fireEvent.pointerCancel(region());
+
+    advance(6000); // grace expires, interval starts, not yet due
+    advance(6000);
+    expect(visibleIndex(container)).toBe(1);
+  });
+
+  it("stops while focus is inside, and resumes only when focus leaves", () => {
+    // A hover-only pause would leave a keyboard user with no mechanism at all.
+    // Moving focus BETWEEN things inside must not resume it either.
+    const { container } = renderCarousel();
+    const link = within(region()).getAllByRole("link")[0];
+
+    fireEvent.focus(link);
+    advance(6000 * 2);
+    expect(visibleIndex(container)).toBe(0);
+
+    // Still inside the region: stays paused.
+    fireEvent.blur(link, { relatedTarget: region() });
+    advance(6000);
+    expect(visibleIndex(container)).toBe(0);
+
+    // Out of the region entirely: resumes.
+    fireEvent.blur(region(), { relatedTarget: document.body });
+    advance(6000);
+    expect(visibleIndex(container)).toBe(1);
+  });
+
+  it("adds and removes exactly one window listener pair per press", () => {
+    // The window listeners exist only while a press is live. What actually goes
+    // wrong if that is botched is accumulation — a stale listener firing
+    // setState after every later pointerup on the page — so this counts adds and
+    // removes rather than asserting on effect-cleanup timing, which is brittle
+    // and proves less.
+    const add = vi.spyOn(window, "addEventListener");
+    const remove = vi.spyOn(window, "removeEventListener");
+    const pointers = (spy: typeof add) =>
+      spy.mock.calls.filter(([type]) => type.startsWith("pointer")).length;
+
+    const { unmount } = renderCarousel();
+
+    fireEvent.pointerDown(region());
+    expect(pointers(add)).toBe(2); // pointerup + pointercancel
+    expect(pointers(remove)).toBe(0);
+
+    fireEvent.pointerUp(region());
+    advance(6000); // grace expires; give the cleanup its own act to flush in
+    advance(6000);
+    expect(pointers(remove)).toBe(2);
+
+    // A second press must add one more pair, not a second copy of the first.
+    fireEvent.pointerDown(region());
+    expect(pointers(add)).toBe(4);
+
+    // Unmounting with a press outstanding must not strand the listeners.
+    unmount();
+    expect(pointers(add)).toBe(pointers(remove));
+  });
+
+  // ── reduced motion ───────────────────────────────────────────────────────
+
+  it("renders every project as a plain static list under reduced motion", () => {
+    // Not a frozen one-slide carousel. Once the manual controls are gone,
+    // suppressing autoplay alone would show a reduced-motion visitor one project
+    // out of six with no way to reach the rest. So the preference produces the
+    // design's original shape: everything present, no timer, no fade, nothing
+    // hidden.
+    stubReducedMotion(true);
+    const { container } = renderCarousel();
+
+    expect(slides(container)).toHaveLength(slider.length);
+    for (const li of slides(container)) {
+      expect(li).not.toHaveAttribute("hidden");
+      expect(li.className ?? "").not.toMatch(/animate|fade/);
+    }
+    for (const project of slider) {
+      expect(container.textContent).toContain(project.title);
+    }
+  });
+
+  it("does not advance at all under reduced motion", () => {
+    stubReducedMotion(true);
+    const { container } = renderCarousel();
+    advance(6000 * 6);
+    expect(visibleIndex(container)).toBe(0);
+  });
+
+  it("is not a carousel to a screen reader when it is a static list", () => {
+    // `aria-roledescription="carousel"` on something that does not rotate is a
+    // lie to assistive tech, so the static branch drops it.
+    stubReducedMotion(true);
+    renderCarousel();
+    expect(region()).not.toHaveAttribute("aria-roledescription");
+  });
+
+  // ── structure ────────────────────────────────────────────────────────────
+
+  it("has no announcing live region, so rotation cannot interrupt a reader", () => {
+    // A polite live region behind a 6s timer interrupts whatever is being read,
+    // every 6s, forever.
+    const { container } = renderCarousel();
+    expect(container.querySelector("[aria-live]")).toBeNull();
   });
 
   it("labels itself a carousel for assistive tech", () => {
     renderCarousel();
-    const region = screen.getByRole("region", { name: "More work" });
-    expect(region).toHaveAttribute("aria-roledescription", "carousel");
-    // Named by a real heading rather than a bare `aria-label`, so the region has
-    // a heading in the document outline. Scoped to the region's OWN heading: each
-    // project title is also an `h3`, so an unscoped `getByRole("heading")` finds
-    // six of them.
-    expect(
-      within(region).getByRole("heading", { name: "More work" }),
-    ).toBeInTheDocument();
+    const el = region();
+    expect(el).toHaveAttribute("aria-roledescription", "carousel");
+    // Named by a real heading rather than a bare `aria-label`, so the region has a
+    // heading in the document outline. Scoped to the region's OWN heading: each
+    // project title is also an `h3`, so an unscoped query finds six of them.
+    expect(within(el).getByRole("heading", { name: "More work" })).toBeInTheDocument();
   });
 
   it("renders nothing at all for an empty list, without throwing", () => {

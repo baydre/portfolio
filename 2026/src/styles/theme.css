@@ -76,7 +76,10 @@
   /* Four more for the Work slider, 2026-09-27. These render in the
      card's "Built with" panel, so their surface is --tech-tile like the six
      above — NOT --background, which is where the About role marks sit. */
-  --brand-shell: #ffd500; /* simple-icons Shell, 9.15:1, unchanged          */
+  --brand-shell: #4eaa25; /* simple-icons GNU Bash, 4.40:1, unchanged.
+                                NOT simple-icons "Shell" (#ffd500) — that mark is
+                                the oil company. Corrected 2026-09-27: the card
+                                tile has to read "command line", not "fuel".  */
   --brand-nginx: #009639; /* simple-icons NGINX, 3.36:1, unchanged          */
   --brand-docker: #2496ed; /* simple-icons Docker, 4.13:1, unchanged        */
   --brand-ansible: #ff2d2d; /* CORRECTED from #ee0000, 2.87 -> 3.51:1. The

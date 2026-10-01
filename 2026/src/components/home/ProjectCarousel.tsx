@@ -1,18 +1,17 @@
 import * as React from "react";
 
-import { Button } from "../../app/components/ui/button";
 import type { Project } from "../../content/types";
 import { usePrefersReducedMotion } from "../../lib/usePrefersReducedMotion";
 import { ProjectCard } from "./ProjectCard";
 
 /**
- * The Work section: one slider, all six projects taking turns on a 6s
- * interval.
+ * The Work section: one slider, all six projects taking turns on a 6s interval.
  *
- * Owner request, then correction, both 2026-09-27. The first build pinned
- * IdCardify above a carousel of the other five. That is gone — this component
- * now receives the whole list, so the section reads as six projects rather
- * than one flagship with five supporting acts.
+ * Owner request, then two corrections, all 2026-09-27. The first build pinned
+ * IdCardify above a carousel of the other five. The second removed the
+ * Pause/Resume button and the previous/next arrows: if it is automatic, nobody
+ * should have to click anything to see the work. The third removed the `1 / 6`
+ * counter and the dot row, so there is now no visible chrome of any kind.
  *
  * ## Why this exists at all
  *
@@ -23,79 +22,74 @@ import { ProjectCard } from "./ProjectCard";
  * announcements) and must not be added just because it is possible."
  *
  * The owner asked for it explicitly on 2026-09-27, which is the condition that
- * ledger row was waiting on. So the cost is paid deliberately rather than
- * accidentally, and the rest of this comment is the bill.
+ * ledger row was waiting on. The rest of this comment is the bill.
  *
- * ## What the accessibility cost actually is, and what is done about it
+ * ## Pausing, and the two ways it used to latch
  *
- * **Autoplay with no stop control — WCAG 2.2.2 Pause, Stop, Hide.** The rotation
- * auto-advances every 6s, so it is "auto-updating information presented in
- * parallel with other content" and needs a mechanism to pause it. Three are
- * present, none of them a labelled button:
+ * WCAG 2.2.2 requires a mechanism to pause auto-updating content. Three are
+ * present, none of them a visible control:
  *
- *   1. **Pointer hover.** Cursor over the slider stops it until the cursor
- *      leaves. This is what the owner asked for: automatic by default, stopping
- *      itself the moment someone reaches in to read.
- *   2. **Focus.** Tab into the slider and it stops; it resumes only when focus
- *      leaves the region entirely. So the mechanism exists for a keyboard too,
- *      which a hover-only pause would not have.
- *   3. **Press and hold.** There is no cursor on a phone, so hover would leave
- *      touch users with nothing at all and the card would slide away mid-read.
- *      Pressing stops it; releasing starts a full turn of grace, because nobody
- *      reads with a finger still on the glass.
+ *   1. **Pointer hover**, for a cursor.
+ *   2. **Focus**, for a keyboard — so the mechanism is not hover-only.
+ *   3. **Press and hold**, because a phone has no cursor. Pressing stops the
+ *      rotation; releasing starts a full 6s turn of grace, because nobody reads
+ *      with a finger still on the glass.
  *
- * The trade-off, stated rather than claimed away: these are gestures, not a
- * labelled control. A visitor has to discover that hovering works, and a screen
- * reader user has to reach the slider with a pointer to try any of it. The
- * Pause/Resume button and the previous/next arrows were removed on the owner's
- * instruction — the section should read as one automatic slider, and nobody
- * should have to click anything to see the work. That is a defensible choice and
- * it is the owner's, but it is a weaker reading of 2.2.2 than a visible control,
- * and this comment is the record of that. The dot row below is what remains, and
- * it is not decorative: it is the only always-visible control, and the only
- * reason every project is discoverable without waiting for a turn.
+ * The first two versions of this latched, and both failed the same way: an
+ * engaged flag went true and nothing ever cleared it, so the carousel stopped
+ * permanently for that visitor. Worth recording, because the symptom was "it
+ * pauses when I hover, then never starts again" and neither cause is obvious
+ * from that sentence.
  *
- * **Motion the visitor did not ask for.** Auto-advance is suppressed entirely
- * under `prefers-reduced-motion: reduce` — not slowed, not shortened,
- * suppressed. The fade is gated on `motion-safe:` so it does not run either. The
- * dot row still lets the visitor move between projects, so the content stays
- * fully reachable without any motion at all.
+ * **A release has to be listened for on the window, not the element.** Reading
+ * `onPointerUp` on the container only fires if the pointer is released over the
+ * container. Press on the card to read it, slide off while still holding, release
+ * outside — the event never arrives, `pressing` stays true, and the carousel is
+ * dead until the page is reloaded. Pressing and sliding off to read is not an
+ * exotic gesture; it is how everyone reads a long card. The press is now ended by
+ * a window-level listener, so wherever the pointer ends up, it ends.
  *
- * **Focus trapping.** None. Only the slide on screen is exposed; the rest carry
- * the `hidden` attribute, which removes them from the accessibility tree and
- * from the tab order entirely. Tabbing walks the controls and then out of the
- * region, and never lands on an off-screen card. Note the corollary: the `hidden`
- * attribute is doing the work here, so the `<li>` must never be given a
- * `display` utility, or `display: flex` would win over the UA's
- * `[hidden] { display: none }` and the off-screen cards would become visible
- * and focusable again. `visibleClassName` exists to keep that rule in one place.
+ * **Hover is read from pointer events, not mouse events, and touch is excluded.**
+ * On a phone, tapping fires a synthesised `mouseover`/`mouseenter` and then no
+ * `mouseout`, because a finger does not "leave". React's `onMouseEnter` cannot
+ * tell that apart from a real cursor arriving, so the first version set
+ * `hovered = true` on the tap and nothing ever unset it — autoplay was dead on
+ * mobile after the first touch, which is the opposite of what this section is for.
+ * Pointer events carry `pointerType`, so hover-pause now only engages for `mouse`
+ * and `pen`, and touch relies on press-and-hold instead.
  *
- * **Slide announcements.** No `aria-live` region. An auto-advancing carousel
- * behind a polite live region interrupts a screen reader every 6 seconds, which
- * is the "slide announcements" cost the spec named, and it is worse than saying
- * nothing. Instead every project stays reachable and identifiable without
- * waiting for a rotation: each dot's accessible name is the project's own title,
- * so all five are discoverable from the control row, and the visible card is a
- * normal document region.
+ * Recorded honestly: these are gestures, not a labelled control. A visitor has to
+ * discover that hovering works, and a screen-reader user has to reach the slider
+ * with a pointer to try one. That is a weaker reading of 2.2.2 than a visible
+ * control, it is the owner's call, and this comment is the record of it.
+ *
+ * ## Why reduced motion renders a plain list
+ *
+ * With the dot row gone, suppressing autoplay would have been actively harmful:
+ * a reduced-motion visitor would see exactly one project out of six, with no
+ * motion and no way to reach the rest. So `prefers-reduced-motion: reduce` does
+ * not produce a frozen one-slide carousel — it renders every project stacked, no
+ * timer, no fade, nothing hidden. That is also the design's original shape, so
+ * the fallback is the thing the design actually drew.
+ *
+ * ## Other costs, paid
+ *
+ * **Motion the visitor did not ask for.** No autoplay, no fade, no hidden slides
+ * under reduced motion — the static branch above covers all three.
+ *
+ * **Focus trapping.** None, in the rotating branch: only the slide on screen is
+ * exposed, the rest carry `hidden`, which removes them from the accessibility tree
+ * and the tab order. Note the corollary — `hidden` is doing the work, so the `<li>`
+ * must never be given a `display` utility, or `display: flex` would win over the
+ * UA's `[hidden] { display: none }` and every card would become visible and
+ * focusable again.
+ *
+ * **Slide announcements.** No `aria-live`. A polite live region behind a 6s timer
+ * interrupts a screen reader every 6 seconds, forever. With the dot row gone there
+ * is nothing to announce to and nothing announcing.
  *
  * **Rotation stealing focus or reading order.** It does not. The interval only
- * ever changes which slide is visible; focus is untouched, and the slide list is
- * in document order, so the reading order does not reshuffle under a screen
- * reader mid-sentence.
- *
- * **Pause on engagement.** Hovering, focusing, or pressing stops the rotation
- * for as long as that engagement lasts. Reading a card while it slides out from
- * under you is the failure this prevents, and it is why rotation is derived from
- * engagement state rather than run as a bare interval.
- *
- * ## The timer
- *
- * One `setInterval` on a single state update, in an effect that returns its own
- * cleanup, keyed on whether rotation is currently running. `tick` is a nonce in
- * the dependency list: selecting a dot bumps it so the next advance is a full 6s
- * away rather than whatever remained of the previous slide's turn. Without it,
- * picking a project a moment before a scheduled advance would skip the slide just
- * chosen.
+ * changes which slide is visible; the list stays in document order.
  */
 const INTERVAL_MS = 6000;
 
@@ -104,44 +98,45 @@ export function ProjectCarousel({ projects }: { projects: Project[] }) {
   const [active, setActive] = React.useState(0);
   const [hovered, setHovered] = React.useState(false);
   const [within, setWithin] = React.useState(false);
-  const [tick, setTick] = React.useState(0);
-  const reduced = usePrefersReducedMotion();
-
-  // Autoplay starts ON unless the visitor has already asked for reduced motion —
-  // read on the FIRST render (see the hook) so there is no frame in which the
-  // carousel takes a step the visitor did not consent to. And because `reduced`
-  // is a live subscription rather than a snapshot, turning the OS setting on
-  // mid-session stops the rotation immediately.
-  //
-  // Press-and-hold, which is the only pause a touch user has. Pausing on
-  // pointer-down and resuming on pointer-UP would be no use at all: nobody reads
-  // a card with their finger still on the glass, and by the time they lift it the
-  // slide would already be leaving. So release starts a full turn's grace
-  // instead of restarting the clock immediately.
   const [pressing, setPressing] = React.useState(false);
+  const reduced = usePrefersReducedMotion();
+  const labelId = React.useId();
+
   const releaseTimer = React.useRef<number | null>(null);
 
-  const beginPress = React.useCallback(() => {
+  const clearRelease = React.useCallback(() => {
     if (releaseTimer.current !== null) {
       window.clearTimeout(releaseTimer.current);
       releaseTimer.current = null;
     }
-    setPressing(true);
   }, []);
 
+  // Release means "start the grace timer", not "resume now" — see the file
+  // comment. Idempotent, so a pointerup and a pointercancel both firing is fine.
   const endPress = React.useCallback(() => {
+    clearRelease();
     releaseTimer.current = window.setTimeout(() => {
       releaseTimer.current = null;
       setPressing(false);
     }, INTERVAL_MS);
-  }, []);
+  }, [clearRelease]);
 
-  React.useEffect(
-    () => () => {
-      if (releaseTimer.current !== null) window.clearTimeout(releaseTimer.current);
-    },
-    [],
-  );
+  // The fix for the latch: while a press is live, its end is watched on the
+  // window, so a release anywhere on the page terminates it. Subscribing only
+  // while `pressing` is true also means no listener is left behind afterwards.
+  React.useEffect(() => {
+    if (!pressing) return;
+    const end = () => endPress();
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+    return () => {
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+    };
+  }, [pressing, endPress]);
+
+  // Never leave a timer running past unmount.
+  React.useEffect(() => clearRelease, [clearRelease]);
 
   const running = !reduced && !hovered && !within && !pressing;
 
@@ -151,13 +146,32 @@ export function ProjectCarousel({ projects }: { projects: Project[] }) {
       setActive((current) => (current + 1) % count);
     }, INTERVAL_MS);
     return () => window.clearInterval(id);
-  }, [running, count, tick]);
+  }, [running, count]);
 
-  const labelId = React.useId();
-
-  // After every hook, deliberately: an early return above `useId` would change
-  // the hook count when `count` went 0 -> non-zero, which React cannot reconcile.
+  // After every hook, deliberately: an early return above these would change the
+  // hook count when `count` went 0 -> non-zero, or when the OS motion preference
+  // flipped mid-session, which React cannot reconcile.
   if (count === 0) return null;
+
+  if (reduced) {
+    // The static fallback. No `hidden`, no timer, no fade — everything is simply
+    // present, which is the only way the content stays reachable once the manual
+    // controls are gone.
+    return (
+      <div aria-labelledby={labelId} role="region">
+        <h3 className="sr-only" id={labelId}>
+          More work
+        </h3>
+        <ol className="mt-16 flex flex-col gap-16">
+          {projects.map((project, i) => (
+            <li key={project.id}>
+              <ProjectCard project={project} index={i} />
+            </li>
+          ))}
+        </ol>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -166,18 +180,26 @@ export function ProjectCarousel({ projects }: { projects: Project[] }) {
       role="region"
       onBlurCapture={(event) => {
         // `relatedTarget` is null when focus leaves the region entirely, which
-        // is the only case that should resume rotation — moving between controls
+        // is the only case that should resume rotation — moving between things
         // inside it must not restart the timer under the visitor.
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
           setWithin(false);
         }
       }}
       onFocusCapture={() => setWithin(true)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onPointerDown={beginPress}
-      onPointerUp={endPress}
-      onPointerCancel={endPress}
+      // Pointer events, not mouse events, and touch excluded: see the file
+      // comment. `pointerType` is the only thing that distinguishes a tap from a
+      // cursor arriving, and getting it wrong silently killed autoplay on mobile.
+      onPointerEnter={(event) => {
+        if (event.pointerType !== "touch") setHovered(true);
+      }}
+      onPointerLeave={(event) => {
+        if (event.pointerType !== "touch") setHovered(false);
+      }}
+      onPointerDown={() => {
+        clearRelease();
+        setPressing(true);
+      }}
     >
       <h3 className="sr-only" id={labelId}>
         More work
@@ -189,9 +211,6 @@ export function ProjectCarousel({ projects }: { projects: Project[] }) {
           return (
             <li
               key={project.id}
-              // See the file comment: `hidden` is what keeps the off-screen
-              // cards out of the a11y tree and the tab order, and it only works
-              // while this element carries no `display` utility.
               hidden={!isActive}
               className={
                 isActive
@@ -204,35 +223,6 @@ export function ProjectCarousel({ projects }: { projects: Project[] }) {
           );
         })}
       </ol>
-
-      <div className="mt-8 flex flex-wrap items-center gap-4">
-        <p aria-live="off" className="text-sm text-muted-foreground">
-          {active + 1} / {count}
-        </p>
-
-        <ul className="flex flex-wrap items-center gap-2">
-          {projects.map((project, i) => (
-            <li key={project.id}>
-              <Button
-                // The title, not the position, is what makes every project
-                // discoverable without waiting for its turn — the dot row is the
-                // only place all six are named at once, and with the buttons gone
-                // it is the only always-visible control left.
-                aria-label={`Show ${project.title}`}
-                aria-current={i === active ? "true" : undefined}
-                className="size-3 rounded-full p-0"
-                onClick={() => {
-                  setActive(i);
-                  setTick((n) => n + 1);
-                }}
-                size="icon"
-                type="button"
-                variant="outline"
-              />
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   );
 }

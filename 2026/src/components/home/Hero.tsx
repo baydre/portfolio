@@ -55,6 +55,10 @@ export function Hero() {
 
         <img
           src={profile.heroImage.src}
+          srcSet={profile.heroImage.srcSet}
+          // The column is capped at 1272px, so 1280w is the honest 1x answer and
+          // the browser picks the other derivative only on a denser screen.
+          sizes="(min-width: 1024px) 1272px, 100vw"
           alt={profile.heroImageAlt}
           width={profile.heroImage.width}
           height={profile.heroImage.height}
