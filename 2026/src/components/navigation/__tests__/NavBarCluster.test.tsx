@@ -17,7 +17,7 @@ describe("NavBar right cluster", () => {
     );
   }
 
-  it("orders socials, then the rule, then the Hire me CTA", () => {
+  it("orders socials, then the rule, then the Let's Build CTA", () => {
     const row = renderNav().container.firstElementChild as HTMLElement;
     // `:scope` is relative to the context node, so this is queried from the nav
     // row — the cluster is one level below it. `SocialLinks` carries its own
@@ -39,7 +39,7 @@ describe("NavBar right cluster", () => {
 
   it("renders the CTA as a labelled link to the contact section", () => {
     renderNav();
-    const cta = screen.getByRole("link", { name: /hire me/i });
+    const cta = screen.getByRole("link", { name: "Let’s Build" });
 
     expect(cta).toHaveAttribute("href", "/#contact");
   });

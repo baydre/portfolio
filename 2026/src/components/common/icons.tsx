@@ -1,4 +1,4 @@
-import { siInstagram } from "simple-icons";
+import { siDiscord, siInstagram } from "simple-icons";
 import type { SocialNetwork } from "../../content/types";
 
 /**
@@ -8,21 +8,24 @@ import type { SocialNetwork } from "../../content/types";
  * identify the networks, so these icons are an assumption — see
  * docs/DESIGN_SYSTEM.md §7.
  *
- * Inlined rather than pulled from an icon package: the design needs exactly
- * three glyphs, and AGENTS.md §4 says not to add a dependency that an existing
- * one cannot justify. All paths are drawn on a 24 × 24 grid and inherit
+ * Inlined rather than pulled from an icon package: the design needs exactly a
+ * small handful of glyphs, and AGENTS.md §4 says not to add a dependency that an
+ * existing one cannot justify. All paths are drawn on a 24 × 24 grid and inherit
  * `currentColor`.
  *
- * Four glyphs came from the design, and a fifth did not.
+ * `linkedin` / `github` / `x` came from the design — its own placeholder squares
+ * plus the footer's naming — and are hand-transcribed.
  *
- * `linkedin` / `github` / `x` are the design's own placeholder squares plus the
- * footer's naming. `instagram` and `youtube` have **no usable design provenance**:
- * the frame's working copy contains no path for either, and the About frame draws
- * no YouTube tile at all. Both therefore come from `simple-icons` (CC0, already a
- * dependency for the Tools row) rather than from a hand-drawn reconstruction —
- * see the `instagram` entry for the measurement that forced that change, and
- * `common/TechIcon.tsx` for the same trade-off made on KiCad. Both are verified to
- * fill their 24 × 24 box, optical centre (12.00, 12.00).
+ * `facebook` / `instagram` / `telegram` / `discord` / `youtube` have **no usable
+ * design provenance**: the frame's working copy contains no path for any of
+ * them, and the About frame draws none of the five. They all come from
+ * `simple-icons` (CC0, already a dependency for the Tools row) rather than from
+ * a hand-drawn reconstruction — see the `instagram` entry for the measurement
+ * that forced that change, and `common/TechIcon.tsx` for the same trade-off made
+ * on KiCad. All are verified to fill their 24 × 24 box, optical centre (12.00,
+ * 12.00). **Facebook and Telegram were removed with their tiles on 2026-10-09**
+ * and their glyph keys left the registry too, so `instagram` / `discord` /
+ * `youtube` are the About card's surviving members.
  *
  * The frame also drew Behance, and a phone tile that is not a network at all.
  * Both were dropped from the row on the owner's instruction 2026-09-26, and
@@ -38,6 +41,9 @@ const paths: Record<SocialNetwork, string> = {
   github:
     "M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.8.1-.8.1-.8 1.2.1 1.8 1.2 1.8 1.2 1.1 1.9 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3z",
   x: "M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.68l7.73-8.84L1.25 2.25h6.83l4.71 6.23zm-1.16 17.52h1.83L7.08 4.13H5.12z",
+  /* simple-icons `discord`, CC0 — arrived with the same 2026-10-08 card set.
+     24 × 24, single path. */
+  discord: siDiscord.path,
   /* Was AUTHORED, NOT TRANSCRIBED and is now from simple-icons, because the
      hand-reconstruction was MEASURABLY BROKEN.
 

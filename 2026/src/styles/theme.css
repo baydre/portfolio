@@ -16,11 +16,21 @@
   /* ---- Palette (observed in the HomePage snippet) ---------------------- */
   --background: #131417; /* page surface                        */
   --foreground: #e9e9ec; /* body + navigation copy              */
-  --surface: #f0f2f5; /* social icon tile                    */
-  --surface-foreground: #344054; /* icon glyph on that tile          */
+  --surface: #f3f4f6; /* social tile (navbar bg-gray-100)    */
+  --surface-foreground: #5d5a88; /* icon glyph on that tile (navbar fill #5D5A88) */
 
-  --primary: #e9e9ec; /* "Hire me" fill                      */
-  --primary-foreground: #131417; /* "Hire me" label                 */
+  --primary: #e9e9ec; /* design CTA fill (form, 404)         */
+  --primary-foreground: #131417; /* label on that fill                 */
+  --lime: #c7f464; /* the design's "lime-300" (#C7F464): active nav copy, */
+                  /* the "Let's Build" CTA fill, social tile hover.   */
+  --lime-hover: #a9cf55; /* the same lime shaded 15% toward black in sRGB
+                           (×0.85 per channel — hue is preserved exactly by
+                           scaling), for button hover. OWNER INSTRUCTION
+                           2026-10-08: "update the hover color with a darker
+                           shade for the existing button color". Used by
+                           HireMeButton and the contact form's Submit;
+                           --primary-foreground on it is 10.34:1, gated in
+                           verify-contrast.mjs.                            */
   --secondary: #1c1d22; /* DERIVED — no panel in the snippet   */
   --secondary-foreground: #e9e9ec;
   --muted: #1c1d22; /* DERIVED — see above                  */
@@ -146,16 +156,24 @@
      AUTHORED SPACING PRIMITIVES. These are the only hand-typed geometry in the
      system. Everything below derives from them, so changing one cannot silently
      desynchronise the header from the hero. */
-  --space-header-pad: 1.375rem; /*   22px header block padding  */
+  --space-header-pad: 1.25rem; /*   20px header block padding (navbar py-5)  */
   --space-nav-pad: 0.5rem; /*    8px nav item padding       */
   --space-nav-gap: 0.75rem; /*   12px between nav items      */
   --space-cluster-gap: 1rem; /*   16px right cluster, socials */
+  --space-nav-mark-gap: clamp(1rem, calc((100vw - 1120px) / 2), 10rem);
+  /* 160px of gap between the nav items and the logo mark at 1440px — the
+     navbar's gap-40 — shrinking smoothly so the nav row fits from 1024px
+     up without a second breakpoint. The constant is chosen so the row keeps
+     ~150px of slack at every width: the space the nav does not claim grows the
+     flex-1 right cluster rather than the gap, so the row can never overflow. */
   --space-wordmark-gap: 3rem; /*   48px wordmark -> copy      */
   --space-copy-image-gap: 1.5rem; /*   24px copy -> image         */
   --space-hero-col-gap: 6.625rem; /*  106px tagline -> body       */
   --space-hero-image: 26.9375rem; /*  431px image height         */
   --space-hero-tail: 8.6875rem;  /*  139px below the image      */
   --size-nav-line: 1.5rem;  /*   24px nav line box           */
+  --size-nav-mark: 4rem;    /*   64px logo mark height — the tallest item in
+                                 the row, so it drives --header-height */
 
   /* About page profile section — the About frame.
      AUTHORITATIVE: the AboutPage snippet, not the HomePage one, so these are
@@ -232,23 +250,22 @@
 
   /* DERIVED GEOMETRY — do not hand-edit these.
 
-     header height  = 22 (block padding ×2) + 8 (item padding ×2) + 24 (line)
-                    = 84px
-     hero clearance = 140 (authored frame offset) − 84 (header)
-                    = 56px
-     wordmark top   = 84 + 56 = 140px, the authored value.
+     header height  = 20 (block padding ×2) + 64 (logo mark)
+                    = 104px
+     hero clearance = 140 (authored frame offset) − 104 (header)
+                    = 36px
+     wordmark top   = 104 + 36 = 140px, the authored value.
 
-     The clearance is 140 − 84, NOT 140. The header occupies normal flow above
+     The clearance is 140 − 104, NOT 140. The header occupies normal flow above
      the hero, so padding the hero by the full 140 would count the header twice
-     and push the wordmark to 224px. The snippet does not do that because it
+     and push the wordmark to 244px. The snippet does not do that because it
      positions the navbar absolutely over the frame.
 
      Because --header-height is computed from the same spacing primitives the
-     navbar actually uses, changing the padding or the line box moves the hero
-     with it. It cannot drift. */
-  --header-height: calc(
-    (var(--space-header-pad) * 2) + (var(--space-nav-pad) * 2) + var(--size-nav-line)
-  );
+     navbar actually uses — the logo mark plus the header's block padding, the
+     two things that determine how tall the row is — changing either moves the
+     hero with it. It cannot drift. */
+  --header-height: calc((var(--space-header-pad) * 2) + var(--size-nav-mark));
   --hero-top-pad: calc(var(--hero-offset) - var(--header-height));
 
   --sidebar: #1c1d22;
@@ -284,6 +301,8 @@
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
   --color-surface-foreground: var(--surface-foreground);
+  --color-lime-300: var(--lime);
+  --color-lime-hover: var(--lime-hover);
   --color-card: var(--surface);
   --color-card-foreground: var(--surface-foreground);
   --color-popover: var(--secondary);
@@ -432,9 +451,10 @@
   --leading-description: 2.5rem; /*   40px authored (200%)  */
   --leading-cta: 1.45; /* 20.30px authored  */
   /* Explicit line-heights only — never leave a line box to `normal`, whose
-     height depends on the font file's internal metrics. The header's height,
-     and therefore the hero's 56px clearance, is derived from --leading-nav. */
-  --leading-nav: var(--size-nav-line); /* drives --header-height  */
+     height depends on the font file's internal metrics. The nav item's 40px box
+     (8px padding ×2 + this 24px line) still sizes the nav row here, but the
+     header's height is now the taller logo mark; see --size-nav-mark. */
+  --leading-nav: var(--size-nav-line); /* 40px nav item box  */
   --leading-wordmark: 1; /*   180px wordmark, leading 1.0     */
   --leading-section: 1.1; /*   40px section headings          */
   --leading-card-title: 1.1; /*   32px card title (DERIVED)     */
@@ -480,6 +500,8 @@
   --spacing-nav-pad: var(--space-nav-pad);
   --spacing-nav-gap: var(--space-nav-gap);
   --spacing-cluster-gap: var(--space-cluster-gap);
+  --spacing-nav-mark: var(--size-nav-mark);
+  --spacing-nav-mark-gap: var(--space-nav-mark-gap);
   --spacing-wordmark-gap: var(--space-wordmark-gap);
   --spacing-copy-image-gap: var(--space-copy-image-gap);
   --spacing-hero-col-gap: var(--space-hero-col-gap);
@@ -517,6 +539,17 @@
   width: 100%;
   max-width: var(--container-site);
   padding-inline: var(--gutter);
+}
+
+/* The sticky header's height as a scroll-margin. Every section target carries
+   `scroll-mt-header`; without it a fragment landing would park the section top
+   UNDER the 104px sticky header. The scroll manager in the layout honours the
+   same `--header-height` on client-side hash navigation, so the browser's own
+   fragment scroll and the router-driven scroll agree. Declared with @utility
+   because Tailwind's `scroll-mt-*` key lookup would silently emit nothing for
+   a token named `--header-height` — it was a no-op class before this. */
+@utility scroll-mt-header {
+  scroll-margin-top: var(--header-height);
 }
 
 @layer base {

@@ -95,19 +95,28 @@ describe("catch-all route", () => {
 });
 
 describe("site header", () => {
-  it("links Work and Contact to homepage sections, and About to its page", () => {
+  it("links the nav entries to the right destinations", () => {
     renderAt("/");
     const nav = within(header().getByRole("navigation", { name: "Primary" }));
 
-    // Anchors, not routes.
+    // Work and Contact are anchors, not routes; Home and About are pages.
+    expect(nav.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
     expect(nav.getByRole("link", { name: "Work" })).toHaveAttribute("href", "/#work");
-    expect(nav.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/#contact");
     expect(nav.getByRole("link", { name: "About" })).toHaveAttribute("href", "/about");
+    expect(nav.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/#contact");
   });
 
-  it("renders the Hire me call to action pointing at the contact section", () => {
+  it("no longer lists Resume in the header nav (owner removal 2026-10-09)", () => {
     renderAt("/");
-    expect(header().getByRole("link", { name: "Hire me" })).toHaveAttribute(
+    const nav = within(header().getByRole("navigation", { name: "Primary" }));
+    // The route and page survive; the only header link to it went away. The
+    // footer's "Yasir Musa" credit links `/resume` instead (see SiteFooter).
+    expect(nav.queryByRole("link", { name: "Resume" })).toBeNull();
+  });
+
+  it("renders the Let's Build call to action pointing at the contact section", () => {
+    renderAt("/");
+    expect(header().getByRole("link", { name: "Let’s Build" })).toHaveAttribute(
       "href",
       "/#contact",
     );
@@ -116,6 +125,26 @@ describe("site header", () => {
   it("marks the current page in the navigation", () => {
     renderAt("/about");
     expect(header().getByRole("link", { name: "About" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  });
+
+  it("keeps the selected section highlighted after it is clicked", async () => {
+    // The regression this pins: section anchors used to be native `<a>`s, which
+    // scrolled but never reached the router, so `useLocation().hash` stayed empty
+    // and the clicked section's lime went off the instant the hover ended.
+    const user = userEvent.setup();
+    renderAt("/");
+    const nav = within(header().getByRole("navigation", { name: "Primary" }));
+
+    await user.click(nav.getByRole("link", { name: "Work" }));
+
+    expect(nav.getByRole("link", { name: "Work" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(nav.getByRole("link", { name: "Contact" })).not.toHaveAttribute(
       "aria-current",
       "page",
     );

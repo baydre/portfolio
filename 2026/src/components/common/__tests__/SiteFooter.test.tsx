@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it } from "vitest";
 import { SiteFooter } from "../SiteFooter";
+import { profile } from "../../../content/profile";
 import { Hero } from "../../home/Hero";
 
 /**
@@ -122,6 +123,103 @@ describe("SiteFooter top edge", () => {
 });
 
 /**
+ * The footer's top row, from a NEW snippet supplied 2026-10-09.
+ *
+ * Layout: title over the discipline chips on the left, "Open for work" over
+ * "View Work" on the right, drawn `justify-between items-center` at `lg` and
+ * stacked below it. The owner's replacement labels — "Technologist & Software
+ * Engineer", "Software / AI / Digital Prototypes" — live in `profile.ts` and
+ * overrule the snippet's own "Developer & Designer / Software • Web • Brand"
+ * text; the snippet's geometry governs how the row is laid out.
+ *
+ * The three separated labels read in the snippet as a single gray-200 title
+ * line; here the title, the availability and the chips are all
+ * `--foreground` (#E9E9EC), the palette's near-white, and the two separators
+ * are 12px `--lime` dots.
+ */
+describe("footer top row reproduces the 2026-10-09 snippet", () => {
+  const topRow = () => {
+    const { container } = render(
+      <MemoryRouter>
+        <SiteFooter />
+      </MemoryRouter>,
+    );
+    const footer = container.querySelector("footer") as HTMLElement;
+    return footer.querySelector(".container-site.py-20 > div") as HTMLElement;
+  };
+
+  it("stacks below lg and spreads across it, per the snippet", () => {
+    const className = topRow().className;
+
+    expect(className).toContain("flex-col");
+    expect(className).toContain("lg:flex-row");
+    expect(className).toContain("lg:items-center");
+    expect(className).toContain("lg:justify-between");
+  });
+
+  it("carries the owner's role and disciplines from one profile field", () => {
+    const row = topRow();
+
+    // Read from `profile` here, not copied literals, so the rendered row cannot
+    // drift from the content file (the two-wordmark test does the same).
+    const [title, ...chips] = row.querySelectorAll(
+      ":scope > div:first-child p, :scope > div:first-child li",
+    );
+    expect(title?.textContent).toBe(profile.role);
+
+    const chipText = chips.map((chip) => chip.textContent);
+    expect(chipText).toEqual(profile.disciplines);
+    expect(profile.role).toBe("Technologist & Software Engineer");
+    expect(profile.disciplines).toEqual(["Software", "AI", "Digital Prototypes"]);
+  });
+
+  it("separates the chips with lime dots, none leading", () => {
+    const row = topRow();
+    const chips = [
+      ...row.querySelectorAll(":scope > div:first-child li"),
+    ] as HTMLElement[];
+
+    // Three labels, two separators — the first chip carries no leading dot.
+    const dots = (li: HTMLElement) =>
+      [...li.querySelectorAll("svg circle")].filter(
+        (c) => c.getAttribute("fill") === "currentColor",
+      );
+    expect(chips).toHaveLength(3);
+    expect(dots(chips[0])).toHaveLength(0);
+    expect(dots(chips[1])).toHaveLength(1);
+    expect(dots(chips[2])).toHaveLength(1);
+  });
+
+  it("sets the snippet's type styles and colours", () => {
+    const row = topRow();
+    const title = row.querySelector(
+      ":scope > div:first-child p",
+    ) as HTMLElement;
+    const viewWork = Array.from(row.querySelectorAll("a")).find((a) =>
+      (a.textContent ?? "").includes("View Work"),
+    ) as HTMLAnchorElement;
+
+    // Maison Neue → Outfit (`--font-heading`) at font-light for the copy lines;
+    // the snippet's gray-200 becomes the palette's near-white token.
+    for (const line of [title, row.querySelector(":scope > div:nth-child(2) p")]) {
+      expect(line?.className).toContain("font-heading");
+      expect(line?.className).toContain("font-light");
+      expect(line?.className).toContain("text-foreground");
+    }
+    // "View Work" is the snippet's Jura → `font-sans`, font-medium, leading-4,
+    // with a lime-300 underline and `py-1.5` around its 16px line box.
+    expect(viewWork?.className).toContain("font-sans");
+    expect(viewWork?.className).toContain("font-medium");
+    expect(viewWork?.className).toContain("leading-4");
+    expect(viewWork?.className).toContain("text-foreground");
+    expect(viewWork?.className).toContain("border-b");
+    expect(viewWork?.className).toContain("border-lime-300");
+    expect(viewWork?.className).toContain("py-1.5");
+    expect(viewWork?.getAttribute("href")).toBe("/#work");
+  });
+});
+
+/**
  * The design's copyright bar, synced. The frame is 66px and pins a
  * `w-[1440px]` outer frame with a `w-[1272px]` row at `left-[84px] absolute`.
  * Copying that literally overflows every viewport under 1440px, so the bar is
@@ -168,7 +266,10 @@ describe("copyright bar is responsive, not fixed-width", () => {
  * because the size was 11px (11 x 1.45 = 15.95). At 12px it would give 17.4px. So
  * the size change necessarily brought a length-based leading with it.
  *
- * The credit line is ALREADY the frame's 10px and is deliberately untouched.
+ * The credit, by contrast, was resupplied 2026-10-09 as its own snippet — Jura,
+ * tracking-wide, in the design's lime, linking to the Resume page. The snippet's
+ * 20px was owner-reverted that same day ("the 20px is too obvious") — see the
+ * credit tests below.
  */
 describe("copyright bar typography", () => {
   it("sets the copyright line at the design's 12px", () => {
@@ -185,21 +286,22 @@ describe("copyright bar typography", () => {
     expect(copyright?.className).toContain("leading-copyright");
   });
 
-  it("sets the credit to 12px, matching the copyright line", () => {
+  it("keeps the credit at the previous 12px, not the snippet's 20px", () => {
     const { container } = render(
       <MemoryRouter>
         <SiteFooter />
       </MemoryRouter>,
     );
-    const credit = Array.from(container.querySelectorAll("p")).find((p) =>
-      (p.textContent ?? "").includes("Yasir Musa"),
+    const credit = Array.from(container.querySelectorAll("a")).find((a) =>
+      (a.textContent ?? "").includes("Yasir Musa"),
     );
 
-    // OWNER OVERRIDE 2026-09-26: the frame says `text-[10px]`, the owner asked
-    // for 12px "for consistency", so this line now shares the copyright line's
-    // size. Asserted as text-micro so the two cannot drift apart again.
+    // OWNER DESIGN 2026-10-09 resupplied the credit at the snippet's `text-xl`
+    // (20px); the owner REVERTED the size the same day ("the 20px is too
+    // obvious"), so it is back on the copyright line's `--text-micro` (12px).
+    // The lime, the tracking and the Resume link stay.
     expect(credit?.className).toContain("text-micro");
-    expect(credit?.className).not.toContain("text-tiny");
+    expect(credit?.className).not.toContain("text-description");
   });
 
   it("retires --text-tiny now that nothing is 10px", () => {
@@ -209,21 +311,49 @@ describe("copyright bar typography", () => {
     expect(theme).not.toContain("--text-tiny");
   });
 
-  it("gives the credit the same 16px line box as the copyright line", () => {
+  it("keeps a 16px line box on the credit, matching the copyright's", () => {
     const { container } = render(
       <MemoryRouter>
         <SiteFooter />
       </MemoryRouter>,
     );
-    const credit = Array.from(container.querySelectorAll("p")).find((p) =>
-      (p.textContent ?? "").includes("Yasir Musa"),
+    const copyright = Array.from(container.querySelectorAll("p")).find((p) =>
+      (p.textContent ?? "").includes("All rights reserved"),
+    );
+    const credit = Array.from(container.querySelectorAll("a")).find((a) =>
+      (a.textContent ?? "").includes("Yasir Musa"),
     );
 
-    // This was the deviation actually left on the "Yasir Musa" line:
-    // `leading-caption` is unitless 1.45, so 10px text resolved to a 14.5px line
-    // box where the frame's `leading-4` is 16px. Both bar lines now agree.
-    expect(credit?.className).toContain("leading-copyright");
-    expect(credit?.className).not.toContain("leading-caption");
+    // The snippet's credit is `leading-4` (16px) — 12px glyphs on the same box
+    // the copyright's `--leading-copyright` (1rem) draws, so the two lines sit
+    // on equal 16px boxes.
+    expect(credit?.className).toContain("leading-4");
+    expect(copyright?.className).toContain("leading-copyright");
+  });
+
+  it("links the credit to the Resume page and styles it per the snippet", () => {
+    const { container } = render(
+      <MemoryRouter>
+        <SiteFooter />
+      </MemoryRouter>,
+    );
+    const credit = Array.from(container.querySelectorAll("a")).find((a) =>
+      (a.textContent ?? "").includes("Yasir Musa"),
+    ) as HTMLAnchorElement;
+
+    // OWNER 2026-10-09: the name is a LINK to the Resume page. It uses the
+    // dedicated `creditLink` item (profile.ts) — the owner removed "Resume"
+    // from the NavBar item list the same day, so the header no longer links
+    // `/resume` and this credit renders as the router's `<Link>` to it.
+    // Styling is the snippet's: Jura (`font-sans`), font-normal, tracking-wide,
+    // lime.
+    expect(credit?.getAttribute("href")).toBe("/resume");
+    expect(credit?.textContent).toBe(profile.credit);
+    expect(credit?.className).toContain("font-sans");
+    expect(credit?.className).toContain("font-normal");
+    expect(credit?.className).toContain("leading-4");
+    expect(credit?.className).toContain("tracking-wide");
+    expect(credit?.className).toContain("text-lime-300");
   });
 
   it("declares both sizes and the 16px bar leading in the theme", () => {
@@ -414,19 +544,35 @@ describe("footer has social text links but no icon row", () => {
     }
   });
 
-  it("drops the icon row but keeps the 'View Work' arrow", () => {
+  it("drops the icon row but keeps the 'View Work' arrow and the chip dots", () => {
     const { container } = render(
       <MemoryRouter>
         <SiteFooter />
       </MemoryRouter>,
     );
+    const footer = container.querySelector("footer") as HTMLElement;
 
-    // The removed row rendered one SVG per social link — 3 of them. The footer
-    // legitimately keeps exactly one SVG: the "View Work" arrow.
-    expect(container.querySelectorAll("svg")).toHaveLength(1);
+    // The removed icon row rendered one brand <svg> per social link in the lower
+    // Connect column. That column is text-only again — proven scoped to the lower
+    // `.mt-16.grid` rather than the whole footer, which legitimately holds the
+    // View Work arrow (top row) and the two discipline separator dots.
+    expect(footer.querySelectorAll(".mt-16.grid ul a svg")).toHaveLength(0);
+
+    const dots = [...footer.querySelectorAll("svg")].filter((s) =>
+      s.querySelector("circle"),
+    );
+    expect(dots).toHaveLength(2);
+    for (const dot of dots) {
+      // The 12px lime separator, decorative and skipped by focus.
+      expect(dot.getAttribute("aria-hidden")).toBe("true");
+      expect(dot.getAttribute("width")).toBe("12");
+      expect(dot.getAttribute("height")).toBe("12");
+    }
+
+    // And the arrow remains the footer's single linked svg.
     expect(
-      container.querySelector("svg")?.closest("a")?.textContent,
-    ).toContain("View Work");
+      [...footer.querySelectorAll("svg")].filter((s) => s.closest("a")),
+    ).toHaveLength(1);
   });
 
   it("leaves the shared SocialLinks component in use elsewhere", () => {

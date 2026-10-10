@@ -24,38 +24,68 @@
 
 ## 2. Navigation
 
-### 2.1 Desktop — geometry **[D]**, behaviour **[P]**
+### 2.1 Desktop — geometry and behaviour **[D]**
 
-`AUTHORITATIVE` geometry, from the HomePage snippet: 84px side gutters, 22px
-block padding, `space-between` layout, a left nav with a 12px gap, and a right
-cluster — three social tiles then a filled **"Hire me"** button — with a 16px
-gap. Nav entries are **Work, About, Contact**.
+`AUTHORITATIVE` geometry, from the **updated navbar snippet** supplied
+2026-10-08: 84px side gutters (on `container-site`, matching the hero's column —
+the snippet's fixed `w-[1440px] px-20` is canvas placement), 20px block padding
+(`py-5`), a left nav with a 12px gap, a 121 × 64 logo mark, and a `gap-40` (160px
+at 1440) from the nav to the mark, then a right cluster — three social tiles, the
+rule, then a filled **"Let's Build"** button — with a 16px gap. Nav entries are
+**Home, Work, About, Contact** — the snippet's fifth, Resume, left the NavBar on
+the owner's removal (2026-10-09) and is now linked from the footer credit.
+
+Height: 20 (block padding ×2) + 64 (logo mark) = 104px. The hero's clearance is
+the authored 140px offset minus that 104px = 36px (`--hero-top-pad`). The
+wordmark sits at 104 + 36 = 140px, exactly the frame's value.
 
 `DERIVED` behaviour, built but not specified by the design:
 
-- Active route is visually distinct, via `NavLink`'s `isActive` — never local
-  state. Implemented with an `underline-offset-8` underline.
-- The nav has **no logo**, because the snippet has none. There is therefore no
-  home link; the hero wordmark is the brand mark. A skip link precedes the
-  header so keyboard users are not forced through the nav on every page.
-- Routes navigate via react-router `<Link>`; section anchors render as plain
-  `<a href="/#work">` so they scroll natively and work before hydration.
-  `SmartLink` picks between them from `NavItem["kind"]`.
-- The "Hire me" CTA is filled (`#E9E9EC` on `#131417`) and points at `/#contact`.
-  **[D]** distinct in the design.
+- The authored `gap-40` cannot fit the nav + logo + cluster inside a
+  1024px viewport, so it is expressed as `--space-nav-mark-gap`:
+  `clamp(1rem, calc((100vw - 1120px) / 2), 10rem)` — the authored 160px at
+  1440px, shrinking to 16px at 1024px. The cluster is `flex-1 justify-end` rather
+  than the snippet's `justify-between`, so spare space grows the cluster instead
+  of the gap and the row can never overflow. **[D]** the clamp deliberately
+  compresses the design's fixed gap below `container-site`'s 1440px max-width;
+  the row fits from exactly 1024px up.
+- The logo mark is the design's own `baydre.svg` rasterised to
+  `assets/baydre-logo.png` (483 × 256, ~76 KB); the SVG contains no vector
+  geometry, only an embedded 3244 × 1705 PNG. Rendered 121 × 64 via
+  `BrandLogo`. It is not a link — the snippet does not link it, and Home is the
+  first nav item.
+- Active nav is visually distinct via `text-lime-300` (`--lime`, the design's
+  lime-300 / `#C7F464`) at `font-semibold` — the weight, not an underline, is the
+  non-colour cue WCAG 1.4.1 requires, because colour alone would be the only
+  difference between the active item and its hover, and the snippet itself draws
+  no underline. `aria-current="page"` is set from the location (react-router
+  `NavLink` cannot express a section anchor match, so the test is derived in
+  `NavBar`). Inactive items are `--foreground`, hover `--lime`.
+- Routes and section anchors both navigate via react-router `<Link>`, selected by
+  `SmartLink` from `NavItem["kind"]`. A section anchor is `/#work` — reaching the
+  router's `useLocation()` keeps `aria-current` on the selected section, and a
+  hash-only click is still one click on the first tap. The layout's scroll manager
+  (`Layout.tsx`) scrolls the target into view clear of the sticky header
+  (`scroll-mt-header`) and scrolls to the top on a plain route change, so pages
+  are not "connected" by a stale scroll position.
+- The "Let's Build" CTA is `bg-lime-300` (`--lime` / `#C7F464`) with a
+  `text-primary-foreground` (`#131417`) label, and `hover:bg-lime-300` — the
+  owner stated the hover colour is `bg-lime-300` (#C7F464), which pins the fill
+  against the shadcn default variant's `hover:bg-primary/90`. It points at
+  `/#contact`. **[D]** fill distinct in the design.
 - The header is `sticky`. The snippet absolutely positions it at `top: 0`, which
   does not distinguish sticky from static; at rest the two are visually identical
   because they share the page background. **[P]** confirm.
-- The "Hire me" CTA is a single `<a href="/#contact">` styled as the button,
+- The "Let's Build" CTA is a single `<a href="/#contact">` styled as the button,
   shared by the desktop cluster and the small-screen panel as `HireMeButton`. The
   snippet nests a `<div>` fill inside a `<button>`; collapsing to one element
   avoids a button-inside-a-link, and the padding/radius/weight come from the
   shadcn `default` variant, which already matches. `h-auto` is required because
   the variant pins `h-9` (36px) against the snippet's 36.3px content height.
-  Its colour comes from the variant too, and must not be overridden with a
-  custom `--text-*` size token: tailwind-merge resolves an unrecognised `text-*`
-  class against both the font-size and text-colour groups, so `text-cta` deleted
-  `text-primary-foreground` and left #e9e9ec text on a #e9e9ec fill. Pinned by
+  Its label must not be overridden with a custom `--text-*` size token:
+  tailwind-merge resolves an unrecognised `text-*` class against both the
+  font-size and text-colour groups, so `text-cta` deleted
+  `text-primary-foreground` and left #e9e9ec text on a #c7f464 fill. Pinned by
   `HireMeButton.test.tsx`.
   Note `rounded-md` is 8px here — `theme.css` remaps the radius scale, so
   `rounded-lg` would be 12px and wrong. **[D]**
@@ -64,17 +94,24 @@ gap. Nav entries are **Work, About, Contact**.
   export, which overrides the snippet's `<linearGradient>` — see
   `docs/DESIGN_SYSTEM.md` §6. The snippet's `min-h-screen absolute
   left-[168px] top-0` is canvas placement, not layout.
-- Social tiles are 40 × 40, `#F0F2F5`, 8px radius, containing a 20px glyph. They
-  are `<a>` elements with `sr-only` labels here; the snippet renders unlabelled
-  `<div>`s, which is a WCAG 4.1.2 failure. **[D]** fix required.
-- Social tile hover is an 80% opacity fade. **[P]** — the snippet specifies none.
+- Social tiles are 40 × 40, `#F3F4F6`, 8px radius, containing a 20px glyph filled
+  `#5D5A88`. They are `<a>` elements with `sr-only` labels here; the snippet
+  renders unlabelled `<div>`s, which is a WCAG 4.1.2 failure. **[D]** fix required.
+- Social tile hover is `bg-lime-300` (`#C7F464`) with `transition-colors` — the
+  owner stated the hover colour on 2026-10-08, replacing the earlier 80% opacity
+  fade (the snippet specifies no hover). **[D]** owner-stated.
 
 ### 2.2 Mobile — **[P]**
 
 **The design has no mobile variant.** A menu has to be designed. Built as a
 baseline, subject to confirmation:
 
-- Text nav and right cluster hide below `md`; a menu button appears.
+- The desktop row shows down to `lg`; the nav + logo does not fit below
+  the 1024px content gutter (`--space-nav-mark-gap` shrinks to its 16px floor
+  and the row still needs ~656px of the 856px gutter).
+- Below `lg`, the text nav and right cluster hide; a menu button appears in a
+  56px-tall row that keeps the brand mark beside it, so the small-screen header
+  is not blank.
 - The button toggles a panel with the same links in the same order, plus the
   social tiles and the CTA.
 - `aria-expanded` and `aria-controls` reflect state; the toggle's accessible name
@@ -268,15 +305,27 @@ content, and must move to the content model.
 ### 6.1 What the design supplies
 
 The Contact frame supplies **four underlined rows of placeholder text and a
-chevron**. It contains no `<input>`, no `<select>`, no `<label>`, no submit
-control, and no endpoint. The placeholder is doing the label's job, which fails
-WCAG 2.2 AA 3.3.2 (Labels or Instructions) and leaves the form unusable with a
-screen reader, since a placeholder is not an accessible name. There is also
-nothing to click.
+chevron**; the owner's refreshed snippet (2026-10-08) pins the geometry — a
+732px-wide form of `self-stretch p-6 border-b` rows, each carrying one 16px line
+of placeholder copy, an 18 × 18 `#ADABC3` chevron on the topic row, and (new in
+that refresh) a lime **Submit** button. The snippet still contains no
+`<input>`, no `<select>`, no `<label>`, and no endpoint. A placeholder is not an
+accessible name, so the form being a form lives here.
 
-So the form is **implemented**, not copied. Owner-confirmed 2026-09-26: visible
-labels, placeholders as supplementary guidance only, a real state machine, and
-Formspree as the initial transport.
+Owner-confirmed decisions:
+
+- **2026-09-26** — visible labels, placeholders as supplementary guidance only,
+  a real state machine, and Formspree as the initial transport.
+- **2026-10-08 — the visible labels are REMOVED.** The owner judged a label
+  beside its identical placeholder a duplication and directed "update it to what
+  we have in the new snippet": the rows are placeholder-only. The label is kept
+  as `sr-only`, so WCAG 3.3.2's programmatic half and the accessible names
+  survive. This supersedes the 2026-09-26 decision above.
+- **2026-10-08** — the submit control uses the new snippet's design (label
+  "Submit", "Sending…" in flight, lime fill, `--lime-hover` darker-lime hover).
+  The earlier snippet had no submit control at all.
+- **2026-10-08** — the form is pinned `max-w-[732px]` (owner-approved Option A;
+  full-width below that).
 
 ### 6.2 State machine
 
@@ -310,7 +359,11 @@ Formspree as the initial transport.
 
 ### 6.3 Accessibility
 
-- Every field has a visible `<label>`; placeholders are supplementary.
+- Every field's label is `sr-only` — visually hidden, not removed (owner
+  decision 2026-10-08). The placeholder is the visible cue and the label the
+  accessible name, so WCAG 3.3.2 still passes and `getByLabelText` still
+  resolves. The underline is drawn on each row (`p-6 border-b`), and focus
+  lights the row's border (`focus-within:border-field-chevron`).
 - The topic control is a **native `<select>`**, not the shadcn/Radix Select. Seven
   fixed options with no search or grouping do not justify a composite widget; the
   native control is keyboard- and screen-reader-correct without ARIA, works
@@ -400,7 +453,7 @@ content.
 | Element | Requirement | Conf. |
 | --- | --- | --- |
 | Header nav link | Real navigation; distinct active state | **[D]** |
-| `Contact me` (header + CTA) | Must do something real | **[D]** |
+| `Let's Build` (header CTA) / contact form | Must do something real | **[D]** |
 | Project card | Whole card is one link; hover mirrored on focus | **[D]** / **[P]** |
 | Previous / Next project | Real links; absent at the ends | **[D]** |
 | Website link | `target="_blank"` + `rel="noopener noreferrer"` + announced | **[I]** |
@@ -415,8 +468,13 @@ content.
 
 ## 9. Open questions for the design source
 
-Answered by the HomePage snippet: the nav entries, the "Hire me" label, the
-header geometry, the social tile treatment, and the three type sizes.
+Answered by the HomePage snippet, and updated by the revised navbar snippet
+(2026-10-08): the five nav entries it drew (Home and About are routes among
+them), which resolved the `/resume` question below — the route exists, and the
+owner's removal of "Resume" from the NavBar item list (2026-10-09) moved its
+only link to the footer credit — the "Let's Build" label, the header geometry
+(the 104px row, the logo mark, and the `gap-40` to it), the social tile
+treatment, and the three type sizes.
 
 Still open:
 
@@ -427,8 +485,9 @@ Still open:
 2. The real hero image, the six service illustrations (one is an empty div in the
    export), and the four work images. Local placeholders stand in.
 4. Whether the header is sticky or static.
-5. Whether `/resume` survives, given the design has no Resume nav entry. Note the
-   design's header and footer disagree about Services.
+5. Whether the header should also carry Services, as the footer's Navigate column
+   does. The header and footer currently disagree about Services by design (the
+   header's four items are the snippet's — Resume left the NavBar 2026-10-09).
 6. Whether "Maison Neue" is ever licensed. Currently substituted with Outfit
    (`TEMPORARY`); see `docs/DESIGN_SYSTEM.md` §3.1.
 7. The Product Page layout, and real Challenge/Solution copy. The block order is

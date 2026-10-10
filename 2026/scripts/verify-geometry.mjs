@@ -126,6 +126,24 @@ function resolve(name, seen = new Set()) {
   const value = decls[name];
   if (value === undefined) throw new Error(`undefined custom property: ${name}`);
 
+  // clamp(min, pref, max). The one CSS-only clamp in the system is the nav's
+  // logo gap: --space-nav-mark-gap resolves to the authored 160px at 1440px.
+  if (value.startsWith("clamp(")) {
+    const m = value.match(/^clamp\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^)]+)\)$/);
+    if (!m) throw new Error(`unsupported clamp(): ${value}`);
+    const num = (s) => {
+      // `100vw` is the only viewport unit the system uses; substitute the fixed
+      // frame, then discard unit suffixes so the shunting-yard evaluator above
+      // sees plain numbers.
+      const body = s.replace(/100vw/gi, String(VIEWPORT)).replace(/px/g, "");
+      return /calc\(|var\(/.test(body)
+        ? evaluate(substitute(body, seen))
+        : rem(body);
+    };
+    const [min, pref, max] = [m[1], m[2], m[3]].map(num);
+    return Math.max(min, Math.min(pref, max));
+  }
+
   if (value.startsWith("var(") || /^calc\(/.test(value)) {
     return evaluate(substitute(value, seen));
   }
@@ -152,6 +170,8 @@ function input(label, actual, authored) {
 const headerPad = resolve("--space-header-pad");
 const navPad = resolve("--space-nav-pad");
 const navLine = resolve("--size-nav-line");
+const navMark = resolve("--size-nav-mark");
+const navMarkGap = resolve("--space-nav-mark-gap");
 const header = resolve("--header-height");
 const heroTop = resolve("--hero-top-pad");
 const offset = resolve("--hero-offset");
@@ -160,16 +180,18 @@ const gutter = resolve("--gutter");
 const tagline = resolve("--tagline-col");
 const colGap = resolve("--space-hero-col-gap");
 
-console.log(`\nframe geometry — resolved from ${cssPath.split("/").pop()}\n`);
+console.log(`\nframe geometry — resolved from ${cssPath.split("/").pop()} at ${VIEWPORT}px\n`);
 console.log("  authored inputs");
-input("header block padding", headerPad, 22);
+input("header block padding", headerPad, 20);
+input("logo mark height", navMark, 64);
 input("nav item padding x2", navPad * 2, 16);
 input("nav line box", navLine, 24);
-console.log(`  ${"nav item height".padEnd(36)}${String(px(navPad * 2 + navLine)).padStart(8)}px\n`);
+console.log(`  ${"nav item height".padEnd(36)}${String(px(navPad * 2 + navLine)).padStart(8)}px`);
+console.log(`  ${"nav -> logo gap (clamp at 1440)".padEnd(36)}${String(px(navMarkGap)).padStart(8)}px\n`);
 
 console.log("  derived");
-check("header height", header, 84);
-check("hero clearance = offset - header", heroTop, 56);
+check("header height = pad x2 + mark", header, 104);
+check("hero clearance = offset - header", heroTop, 36);
 check("wordmark top = header + clearance", header + heroTop, 140);
 console.log("");
 
@@ -221,6 +243,8 @@ const utilities = {
   "p-nav-pad": "--space-nav-pad",
   "gap-nav-gap": "--space-nav-gap",
   "gap-cluster-gap": "--space-cluster-gap",
+  "gap-nav-mark-gap": "--space-nav-mark-gap",
+  "h-nav-mark": "--size-nav-mark",
   "pt-hero-top": "--hero-top-pad",
   "pb-hero-tail": "--space-hero-tail",
   "gap-wordmark-gap": "--space-wordmark-gap",

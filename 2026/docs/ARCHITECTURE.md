@@ -212,8 +212,8 @@ export const router = createBrowserRouter(routes);
 | Path | Page | Notes |
 | --- | --- | --- |
 | `/` | `HomePage` | index: Hero, Work, Services, Contact |
-| `/about` | `AboutPage` | built from the **About frame** (2026-09-26): profile section + an `ASSUMED` closing panel |
-| `/resume` | `ResumePage` | retained, **unlinked** — see below |
+| `/about` | `AboutPage` | built from the **About frame** (2026-09-26): profile section + the shared `ContactSection` |
+| `/resume` | `ResumePage` | retained; linked from the footer's "Yasir Musa" credit (`creditLink`) after the owner removed "Resume" from the NavBar item list 2026-10-09 |
 | `/projects/:projectId` | `ProjectPage` | dynamic; the design file calls this the "Product Page" |
 | `*` | `NotFoundPage` | catch-all |
 
@@ -230,30 +230,43 @@ cannot silently regress.
 `NavItem` is therefore a discriminated union — `{ kind: "route", to }` or
 `{ kind: "anchor", to }` — rather than one type with an optional hash. The union
 means the router cannot be handed an anchor where it expects a path.
-`SmartLink` is the only component that branches on it, and it renders anchors as
-plain `<a href>` so they scroll natively, work before hydration, and stay
-copyable and middle-clickable.
+`SmartLink` is the only component that branches on it, and it renders **both
+kinds as the router's `<Link>`**. A `/#fragment` anchor needs the hash in
+`useLocation()` for the selected section to stay highlighted, so a bare `<a>`
+will not do — plain anchors scroll but the router never sees them, and the
+section click loses its `aria-current` the moment the hover ends. `<Link>` is
+still an `<a href>` in the DOM, so a hard click without JS is a normal full-page
+fragment navigation that boots at the hash and lands correctly; the layout's
+scroll manager (`useLocation` effect in `app/layouts/Layout.tsx`) handles the
+scroll — honouring each section's `scroll-mt-header` so the sticky header never
+covers the landing point, and resetting to the top between pages so pages are
+not "connected" by a stale scroll offset. `HireMeButton` and the footer's
+"View Work" link still use `siteUrl` native anchors; they are out of the nav so
+they do not need router state and were left alone.
 
 **"Product Page" vs "project".** The design file calls the detail screen a
 Product Page. The application and the route call it a project, and
 `/projects/:projectId` was explicitly kept rather than renamed to
 `/products/:productId`. Owner-confirmed 2026-09-26.
 
-**The nav follows the snippet, not the old site.** The design specifies
-**Work / About / Contact** with a **"Hire me"** call to action. The previous
-nav was Home / About / Resume / "Contact me". There is no Resume entry in the
-design, so `/resume` is no longer linked from the header — but the route and its
-content still exist, because deleting a page is a content decision. Confirm
-whether a studio portfolio keeps a resume before removing it. Note the design's
-own header and footer disagree: the header omits Services, which the footer lists.
+**The nav follows the snippet.** The updated navbar snippet (2026-10-08)
+specifies **Home / Work / About / Contact / Resume** with the 121 × 64 `Baydre`
+logo mark and a **"Let's Build"** call to action. The items are transcribed
+exactly — see "The nav follows the snippet" in `INTERACTION_SPEC.md`
+§2.1. Home and About are routes; Work and Contact are Home sections
+(`/#work`, `/#contact`). **OWNER REMOVAL 2026-10-09: "Resume" left the NavBar
+item list**, so the header no longer links `/resume`; the route survives and is
+reached from the footer's credit (`creditLink`). The design's own header and
+footer still disagree: the header omits Services, which the footer lists. The
+previous Home / About / Resume / "Contact me" nav is gone.
 
 Rules:
 
 - Every page renders inside `Layout` (header + `<Outlet />` + footer). No page
   renders its own header or footer.
 - Add a route here and nowhere else.
-- Use `SmartLink` for anything from `navItems` / `footerNavItems`; it picks
-  `<Link>` or `<a>` from the item's `kind`.
+- Use `SmartLink` for anything from `navItems` / `footerNavItems`; it renders the
+  router's `<Link>` for both kinds.
 - Derive active state from `useLocation()`, never from local state. An anchor's
   active state is "current page AND matching fragment" — `NavLink` cannot express
   that, since it compares pathnames only.
@@ -322,7 +335,7 @@ Measured against the current repository:
 | 5.4 MB asset | **no longer bundled** | — | fixed; still on disk |
 | TypeScript | `strict`, builds | — | done |
 | Lint / test | 52 tests, all green | — | done |
-| Contrast | 19 pairings verified | all AA | done — `pnpm verify:contrast` |
+| Contrast | 38 pairings verified | all AA | done — `pnpm verify:contrast` |
 | Contact form | real state machine, no backend configured | Formspree ID | set `VITE_FORMSPREE_FORM_ID` |
 
 ### Dead code inventory

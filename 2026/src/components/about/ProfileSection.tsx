@@ -513,24 +513,32 @@ const contactGlyphs = {
  *
  * ## A tile with no destination is NOT a link
  *
- * Of the five networks rendered, two — Instagram and YouTube — have no confirmed
- * URL, so they render as a `<span>`: dimmed, not focusable, and not announced as a
- * link. An `<a>` with an empty or invented `href` is a link to nowhere, and
- * `href="#"` is a link to the top of the page; both are worse than an honest
- * inert tile. The frame's shape is kept so the row still reads as designed while
- * the unknown part is visibly incomplete.
+ * Of the three networks rendered, only Discord has no linkable address: the
+ * owner supplied the username `@baydre_africa` (2026-10-09), but a Discord
+ * username is not a URL — Discord links profiles by numeric user ID or servers
+ * by invite — so the tile renders as a `<span>`: dimmed, not focusable, and not
+ * announced as a link. An `<a>` with an empty or invented `href` is a link to
+ * nowhere, and `href="#"` is a link to the top of the page; both are worse than
+ * an honest inert tile. The frame's shape is kept so the row still reads as
+ * designed while the unknown part is visibly incomplete. Instagram and YouTube
+ * are live — their addresses were owner-supplied 2026-09-26 and are stored
+ * verbatim.
  *
- * Note this keys off an EMPTY `href`, not off `unverified`: GitHub is unverified
- * and still renders as a live link, because the same guessed address already
- * links from the header and footer and one address should not appear live in one
- * place and dead in another. See `content/about.ts` and `content/types.ts`.
+ * Note this keys off an EMPTY `href`, not off `unverified`: the one URL-less
+ * network carries the flag AND an empty `href` and renders inert, while an
+ * unverified entry with a real-looking `href` would render as a live link. See
+ * `content/about.ts` and `content/types.ts`.
  *
- * ## The row is five tiles, and the frame's five were not these
+ * ## The row is three tiles, and the frame's five were not these
  *
- * It was three, then GitHub and YouTube were added to the profile card on
- * 2026-09-26, so the count matches the frame's by coincidence only. Behance and
- * the frame's phone tile remain dropped — the phone has moved into `ContactCard`,
- * where the frame actually put contact details. See `content/about.ts`.
+ * It was LinkedIn, X, Instagram, GitHub, YouTube, which was three then five by
+ * coincidence with the frame. On 2026-10-08 the owner replaced the set wholesale
+ * with Facebook, Instagram, Telegram, Discord, YouTube; LinkedIn, X and GitHub
+ * left the card (GitHub stays live in the header/footer row), and **Facebook and
+ * Telegram left on 2026-10-09** with their glyphs, leaving Instagram, Discord,
+ * YouTube. Behance and the frame's phone tile remain dropped — the phone has
+ * moved into `ContactCard`, where the frame actually put contact details. See
+ * `content/about.ts`.
  */
 function AboutSocialRow() {
   const tile =

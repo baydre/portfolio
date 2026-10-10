@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router";
 import { navItems, socialLinks } from "../../content/profile";
+import { BrandLogo } from "../common/BrandLogo";
 import { SocialLinks } from "../common/SocialLinks";
 import { HireMeButton } from "./HireMeButton";
 import { NavBar } from "./NavBar";
@@ -20,8 +21,10 @@ import { SmartLink } from "./SmartLink";
  * an earlier revision had here are removed, because the design specifies
  * neither and they produced a visible seam over the hero.
  *
- * The design has no mobile variant, so below `md` the row is replaced by a
- * disclosure. See docs/INTERACTION_SPEC.md §2.2.
+ * The design has no mobile variant, so below `lg` the row is replaced by a
+ * disclosure — the nav plus the logo mark does not fit below the
+ * 1024px content gutter (see `--space-nav-mark-gap`). See
+ * docs/INTERACTION_SPEC.md §2.2.
  */
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -54,31 +57,34 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 bg-background">
-      <NavBar className="hidden md:flex" />
+      <NavBar className="hidden lg:flex" />
 
-      <button
-        ref={toggleRef}
-        type="button"
-        aria-expanded={open}
-        aria-controls="primary-menu"
-        onClick={() => setOpen((value) => !value)}
-        className="container-site flex h-10 items-center justify-end md:hidden"
-      >
-        <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          className="size-5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          strokeLinecap="round"
+      <div className="container-site flex h-14 items-center justify-between lg:hidden">
+        <BrandLogo className="h-8 w-auto" />
+        <button
+          ref={toggleRef}
+          type="button"
+          aria-expanded={open}
+          aria-controls="primary-menu"
+          onClick={() => setOpen((value) => !value)}
+          className="flex size-10 items-center justify-center"
         >
-          {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-        </svg>
-      </button>
+          <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="size-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            strokeLinecap="round"
+          >
+            {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+          </svg>
+        </button>
+      </div>
 
-      <div id="primary-menu" hidden={!open} className="border-t border-border md:hidden">
+      <div id="primary-menu" hidden={!open} className="border-t border-border lg:hidden">
         <nav aria-label="Primary" className="container-site py-4">
           <ul className="flex flex-col">
             {navItems.map((item) => (
@@ -86,7 +92,7 @@ export function SiteHeader() {
                 <SmartLink
                   item={item}
                   onNavigate={() => setOpen(false)}
-                  className="block rounded-sm p-nav-pad text-nav leading-nav text-muted-foreground"
+                  className="block rounded-sm p-nav-pad text-nav leading-nav text-foreground"
                 />
               </li>
             ))}

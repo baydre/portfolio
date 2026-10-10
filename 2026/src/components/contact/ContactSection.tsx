@@ -8,8 +8,13 @@ import { ContactForm } from "./ContactForm";
  *
  * Source: the HomePage snippet's Contact frame, 921px — a 96px heading, an intro
  * paragraph, a 1px rule, then a two-column body: the location/response copy on
- * the left at 427px, and the form on the right at 732px running to the right
- * gutter.
+ * the left at 427px, and the form on the right.
+ *
+ * The right column: the frame's earlier snippet ran the form 732px to the right
+ * gutter. At 1440 the derived grid column is ~781px (1272 content − 427 copy −
+ * 64 gap), so the form is pinned `max-w-[732px]` (OWNER DECISION 2026-10-08,
+ * "go with your recommendation" — Option A) and the ~49px left over stays open
+ * before the gutter, exactly as the snippet draws it at smaller widths.
  *
  * The frame has TWO paragraphs, not one: `contactIntro` under the heading, and
  * `contactBlurb` beside the form. They are separate strings because the design

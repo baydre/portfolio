@@ -44,13 +44,39 @@ async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("ContactForm", () => {
-  it("labels every field visibly rather than relying on placeholders", () => {
+  it("gives every field an accessible name, hidden per the snippet's placeholder-only rows", () => {
     render(<ContactForm transport={makeTransport({ ok: true })} />);
-    // WCAG 3.3.2: a placeholder is not an accessible name.
-    expect(screen.getByLabelText(/your name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/what are you working on/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/tell me a little/i)).toBeInTheDocument();
+
+    // Owner decision 2026-10-08: the visible label duplicated the placeholder,
+    // so the rows are placeholder-only. The label survives as `sr-only`, which
+    // keeps WCAG 3.3.2's programmatic label and the accessible name (both
+    // asserted via getByLabelText) wired without putting pixels back.
+    const name = screen.getByLabelText(/your name/i);
+    const email = screen.getByLabelText(/email address/i);
+    const topic = screen.getByLabelText(/what are you working on/i);
+    const message = screen.getByLabelText(/tell me a little/i);
+
+    for (const control of [name, email, topic, message]) {
+      const label = Array.from(document.querySelectorAll("label")).find(
+        (el) => el.getAttribute("for") === control.id,
+      );
+      expect(label).toBeDefined();
+      expect(label?.className).toContain("sr-only");
+    }
+  });
+
+  it("carries the visible cue in the placeholders, verbatim from the snippet", () => {
+    render(<ContactForm transport={makeTransport({ ok: true })} />);
+
+    expect(screen.getByPlaceholderText("Your Name")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Email Address")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Tell me a little about your project"),
+    ).toBeInTheDocument();
+    // The topic's placeholder copy is the <select>'s placeholder option.
+    expect(
+      screen.getByRole("option", { name: "What are you working on?" }),
+    ).toBeInTheDocument();
   });
 
   it("uses the corrected topic label, not the snippet's wording", () => {
@@ -64,7 +90,7 @@ describe("ContactForm", () => {
     const transport = makeTransport({ ok: true });
     render(<ContactForm transport={transport} />);
 
-    await user.click(screen.getByRole("button", { name: /send message/i }));
+    await user.click(screen.getByRole("button", { name: /^submit$/i }));
 
     expect(await screen.findByText(/enter your name/i)).toBeInTheDocument();
     expect(screen.getByText(/enter your email address/i)).toBeInTheDocument();
@@ -82,7 +108,7 @@ describe("ContactForm", () => {
     await user.type(screen.getByLabelText(/email address/i), "not-an-email");
     await user.type(screen.getByLabelText(/tell me a little/i), "Hello.");
     await user.selectOptions(screen.getByLabelText(/what are you working on/i), "Web Design");
-    await user.click(screen.getByRole("button", { name: /send message/i }));
+    await user.click(screen.getByRole("button", { name: /^submit$/i }));
 
     expect(await screen.findByText(/valid email address/i)).toBeInTheDocument();
     expect(transport.submit).not.toHaveBeenCalled();
@@ -94,7 +120,7 @@ describe("ContactForm", () => {
     render(<ContactForm transport={transport} />);
 
     await fillValidForm(user);
-    await user.click(screen.getByRole("button", { name: /send message/i }));
+    await user.click(screen.getByRole("button", { name: /^submit$/i }));
 
     await waitFor(() => expect(transport.submit).toHaveBeenCalledTimes(1));
     expect(transport.submit).toHaveBeenCalledWith(
@@ -118,7 +144,7 @@ describe("ContactForm", () => {
     render(<ContactForm transport={transport} />);
 
     await fillValidForm(user);
-    await user.click(screen.getByRole("button", { name: /send message/i }));
+    await user.click(screen.getByRole("button", { name: /^submit$/i }));
 
     // In flight: label changes, button disabled, no success yet.
     const button = await screen.findByRole("button", { name: /sending/i });
@@ -136,7 +162,7 @@ describe("ContactForm", () => {
     render(<ContactForm transport={transport} />);
 
     await fillValidForm(user);
-    await user.click(screen.getByRole("button", { name: /send message/i }));
+    await user.click(screen.getByRole("button", { name: /^submit$/i }));
 
     expect(
       await screen.findByText(/the form service is unavailable/i),
@@ -150,7 +176,7 @@ describe("ContactForm", () => {
     render(<ContactForm transport={transport} />);
 
     await fillValidForm(user);
-    await user.click(screen.getByRole("button", { name: /send message/i }));
+    await user.click(screen.getByRole("button", { name: /^submit$/i }));
 
     expect(await screen.findByText(/could not reach the form service/i)).toBeInTheDocument();
     expect(screen.queryByText(/message sent/i)).toBeNull();
@@ -166,7 +192,7 @@ describe("ContactForm", () => {
     render(<ContactForm transport={transport} />);
 
     await fillValidForm(user);
-    await user.click(screen.getByRole("button", { name: /send message/i }));
+    await user.click(screen.getByRole("button", { name: /^submit$/i }));
 
     const email = await screen.findByLabelText(/email address/i);
     await waitFor(() => expect(email).toHaveAttribute("aria-invalid", "true"));
@@ -189,56 +215,159 @@ describe("ContactForm", () => {
     render(<ContactForm transport={transport} />);
 
     await fillValidForm(user);
-    await user.click(screen.getByRole("button", { name: /send message/i }));
+    await user.click(screen.getByRole("button", { name: /^submit$/i }));
     await screen.findByText(/try again/i);
 
     // Back to idle, with the send affordance restored.
-    expect(screen.getByRole("button", { name: /send message/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /^submit$/i })).toBeEnabled();
   });
 });
 
 /**
- * The send button's appearance is supplied entirely by the shadcn `default`
- * variant, so nothing about it is visible in this component's own class list.
- * That is how the label went missing: passing `text-cta` made tailwind-merge
- * resolve it against *both* the font-size and text-colour groups and, being
- * last, delete the variant's `text-primary-foreground`. The label then inherited
- * `--foreground` (#e9e9ec) onto a `--primary` (#e9e9ec) fill and rendered
- * invisible — while every behavioural test in this file still passed.
- * `HireMeButton` hit the identical bug; see `ContactForm.tsx` and
- * `HireMeButton.tsx`.
+ * The submit button's appearance. Rest and hover each carry their own colour
+ * pair: the shadcn `default` variant supplies `text-primary-foreground` on the
+ * lime fill (the same dark-on-light pair as "Let's Build"), and the hover is
+ * the owner-requested darker lime `--lime-hover` (2026-10-08). These assert
+ * the class list itself, because the old failure mode — the `text-cta` trap —
+ * rendered the label invisible on a same-coloured fill while every behavioural
+ * test still passed. `HireMeButton` hit the identical bug; see `ContactForm.tsx`
+ * and `HireMeButton.tsx`.
  */
-describe("ContactForm send button appearance", () => {
+describe("ContactForm submit button appearance", () => {
   function sendButton() {
     render(<ContactForm transport={makeTransport({ ok: true })} />);
-    return screen.getByRole("button", { name: /send message/i });
+    return screen.getByRole("button", { name: /^submit$/i });
   }
 
-  it("keeps the variant's dark-on-light colour pair", () => {
+  it("is labelled 'Submit' per the 2026-10-08 design, not 'Send message'", () => {
+    expect(sendButton().textContent).toBe("Submit");
+  });
+
+  it("fills with the design's lime and keeps a dark label", () => {
     const classes = sendButton().className.split(/\s+/);
 
-    // #131417 label on a #e9e9ec fill, 15.20:1.
+    // #131417 label on a #c7f464 fill — the same 14.52:1 pair as "Let's Build".
     expect(classes).toContain("text-primary-foreground");
-    expect(classes).toContain("bg-primary");
+    expect(classes).toContain("bg-lime-300");
+    expect(classes).not.toContain("bg-primary");
+  });
+
+  it("hovers to the darker lime the owner asked for (2026-10-08)", () => {
+    const classes = sendButton().className.split(/\s+/);
+
+    // `--lime-hover` (#A9CF55) replaced both the old rest-colour hover and the
+    // variant's hover:bg-primary/90. The label's 10.34:1 on it is gated in
+    // verify-contrast.mjs.
+    expect(classes).toContain("hover:bg-lime-hover");
+    expect(classes).not.toContain("hover:bg-primary/90");
+    expect(classes).not.toContain("hover:bg-lime-300");
   });
 
   it("does not let a custom --text-* size token displace the colour", () => {
     const classes = sendButton().className.split(/\s+/);
 
-    // `--text-cta` is the same 0.875rem as the variant's `text-sm`, so passing it
-    // bought nothing and cost the colour.
+    // `--text-cta` is the same 0.875rem as the variant's `text-sm`, so passing
+    // it bought nothing and cost the colour.
     expect(classes).not.toContain("text-cta");
     expect(classes).toContain("text-sm");
   });
 
+  it("is the snippet's 36px-block geometry, not the old rounded pill", () => {
+    const classes = sendButton().className.split(/\s+/);
+
+    // The 2026-10-08 snippet: `px-4 py-2` with `text-sm leading-5` forms a 36px
+    // block; the radius is the variant's `rounded-md` (8px — the snippet's own
+    // `rounded-lg` would resolve to 12px via theme.css, same as HireMeButton).
+    expect(classes).toContain("h-auto");
+    expect(classes).toContain("w-fit");
+    expect(classes).toContain("px-4");
+    expect(classes).toContain("font-semibold");
+    expect(classes).toContain("leading-5");
+    expect(classes).toContain("rounded-md");
+    expect(classes).not.toContain("rounded-lg");
+    expect(classes).not.toContain("rounded-full");
+    expect(classes).not.toContain("px-8");
+  });
+
   it("reproduces the same merge tailwind-merge would compute", () => {
     const merged = twMerge(
-      "text-sm font-medium bg-primary text-primary-foreground",
-      "h-auto w-fit rounded-full px-8 py-3 leading-cta",
+      "text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 rounded-md h-9 px-4 py-2",
+      "h-auto w-fit bg-lime-300 hover:bg-lime-hover font-semibold leading-5",
     );
 
     expect(merged).toContain("text-primary-foreground");
     expect(merged).toContain("text-sm");
+    expect(merged).toContain("bg-lime-300");
+    expect(merged).toContain("hover:bg-lime-hover");
+    expect(merged).not.toContain("bg-primary");
+    expect(merged).not.toContain("hover:bg-primary/90");
+    expect(merged).not.toContain("hover:bg-lime-300");
+  });
+});
+
+/**
+ * The 2026-10-08 snippet's form geometry, asserted against the rendered tree so
+ * none of it can drift back to the previous per-control underline rows: the
+ * form pinned to 732px, rows `self-stretch p-6 border-b border-field-border`
+ * with the underline ON THE ROW, a single 16px line of row text (`leading-4`),
+ * and the snippet's 18px chevron.
+ */
+describe("ContactForm row geometry", () => {
+  function fieldRow(control: HTMLElement): HTMLElement {
+    let node: HTMLElement | null = control;
+    while (node && !node.className.includes("border-field-border")) {
+      node = node.parentElement;
+    }
+    expect(node).not.toBeNull();
+    return node as HTMLElement;
+  }
+
+  it("pins the form to the snippet's 732px width, also filling below it", () => {
+    const { container } = render(
+      <ContactForm transport={makeTransport({ ok: true })} />,
+    );
+    const form = container.querySelector("form") as HTMLFormElement;
+
+    expect(form.className).toContain("w-full");
+    expect(form.className).toContain("max-w-[732px]");
+    // Rows are separated by the form's own gap-8, per the snippet.
+    expect(form.className).toContain("gap-8");
+  });
+
+  it("draws the underline on each row, in p-6 padding, with focus on the row", () => {
+    render(<ContactForm transport={makeTransport({ ok: true })} />);
+
+    for (const control of [
+      screen.getByLabelText(/your name/i),
+      screen.getByLabelText(/email address/i),
+      screen.getByLabelText(/what are you working on/i),
+      screen.getByLabelText(/tell me a little/i),
+    ]) {
+      const row = fieldRow(control);
+      expect(row.className).toContain("self-stretch");
+      expect(row.className).toContain("p-6");
+      expect(row.className).toContain("border-b");
+      expect(row.className).toContain("border-field-border");
+      // Focus lights the row's border, not the control's.
+      expect(row.className).toContain("focus-within:border-field-chevron");
+      expect(control.className).not.toContain("border-field-border");
+    }
+  });
+
+  it("uses the snippet's 18px chevron in the field-chevron stroke colour", () => {
+    render(<ContactForm transport={makeTransport({ ok: true })} />);
+
+    const select = screen.getByLabelText(
+      /what are you working on/i,
+    ) as HTMLSelectElement;
+    const url = select.style.backgroundImage;
+
+    expect(url).toContain("width='18'");
+    expect(url).toContain("height='18'");
+    expect(url).toContain("viewBox='0 0 18 18'");
+    expect(url).toContain("stroke='%23adabc3'");
+    expect(url).toContain("stroke-width='1.50001'");
+    expect(url).toContain("M3.75 6.375L9.00004 11.625L14.2501 6.375");
   });
 });
 

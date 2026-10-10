@@ -94,7 +94,13 @@ const readRootTokens = (css) => {
 const PAIRINGS = [
   // --- existing palette, unchanged ---
   ["--foreground", "--background", "text", "body copy on page"],
-  ["--primary-foreground", "--primary", "text", '"Hire me" label'],
+  ["--primary-foreground", "--primary", "text", "filled CTA label (form, 404)"],
+  ["--primary-foreground", "--lime", "text", '"Let\'s Build" label'],
+  // Owner instruction 2026-10-08: the lime buttons hover to a darker shade of
+  // the same lime (--lime-hover, shaded ×0.85 in sRGB with hue unchanged), so
+  // the label colour has to clear AA on the hover fill too, not just on rest.
+  ["--primary-foreground", "--lime-hover", "text", "lime button label on hover"],
+  ["--lime", "--background", "text", "active nav copy"],
   ["--surface-foreground", "--surface", "text", "header social tile glyph"],
   ["--destructive-foreground", "--destructive", "text", "destructive on fill"],
 

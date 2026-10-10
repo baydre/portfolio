@@ -1,4 +1,4 @@
-import { contactBlurb, footerNavItems, profile, socialLinks, viewWorkLabel } from "../../content/profile";
+import { contactBlurb, creditLink, footerNavItems, profile, socialLinks, viewWorkLabel } from "../../content/profile";
 import { ArrowRightIcon } from "./icons";
 import { LocationCopy } from "./LocationCopy";
 import { SmartLink } from "../navigation/SmartLink";
@@ -8,8 +8,8 @@ import { siteUrl } from "../../lib/site-url";
  * The site footer, from the HomePage snippet's Footer frame (728px) and the
  * copyright bar beneath it (66px).
  *
- * Layout: a top row with the role ("Developer & Designer"), the disciplines, and
- * on the right the availability note plus a "View Work" link; a 1px rule; then a
+ * Layout: a top row with the role, the disciplines, and on the right the
+ * availability note plus a "View Work" link; a 1px rule; then a
  * large `baydre_africa` wordmark at 160px; then a lower row with the Navigate
  * column, the Connect column, and the location copy.
  *
@@ -35,11 +35,20 @@ import { siteUrl } from "../../lib/site-url";
  *   third column was probably deleted from the design; no third column is
  *   invented.
  *
- * The credit line reproduces the design's personal name verbatim. See
- * docs/DESIGN_SYSTEM.md §9 — confirm this is a credit and not leftover content.
+ * The credit reproduces the design's personal name verbatim; per the resupplied
+ * 2026-10-09 snippet it reads a Jura line in the design's lime and links to the
+ * Resume page — the size was reverted to 12px the same day (see the copyright
+ * bar below). The owner also removed "Resume" from the NavBar item list that day
+ * (`creditLink` is a standalone item, and `/resume`'s only entry point).
+ * Flagged in docs/DESIGN_SYSTEM.md §9 until then as a possible leftover; that
+ * concern is now CLOSED.
  */
 export function SiteFooter() {
   const year = new Date().getFullYear();
+  // The footer credit links to the Resume page. It uses the dedicated
+  // `creditLink` item (profile.ts), not `navItems` — the owner REMOVED "Resume"
+  // from the NavBar item list 2026-10-09, so the header no longer links `/resume`
+  // and this credit is the page's only entry point.
 
   return (
     // No rule above the footer, and no `mt-20` either. The design supplies the
@@ -56,28 +65,49 @@ export function SiteFooter() {
       {/* The 1px rule the design does specify sits below the role row, inside
           the footer. */}
       <div className="container-site py-20">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex flex-col gap-3">
-            <p className="font-heading text-nav leading-nav text-foreground">{profile.role}</p>
-            <ul className="flex flex-wrap items-center gap-2 text-nav text-footer-link">
+        {/* The footer's top row, from a NEW snippet supplied 2026-10-09.
+            Structure: the title over the discipline chips on the left, "Open for
+            work" over "View Work" on the right, drawn across the row
+            `flex-col gap-6 lg:flex-row lg:items-center lg:justify-between`.
+            The snippet pins the left column at `w-64` (256px) — sized for its
+            own "Software • Web • Brand" line — and the owner's longer
+            disciplines would wrap mid-chip inside it, so the column runs at
+            natural width instead (DERIVED).
+
+            Typeface: the snippet sets the whole row (title, chips, availability)
+            in Maison Neue → Outfit, `--font-heading`, at font-light, with the
+            chips' 12px separator dots and the title in gray-200 text. This
+            palette's near-white is `--foreground` (#e9e9ec, the corrected value
+            every copy line uses), so the three text runs read it through
+            `text-foreground`. The 12px dots are `--lime` (#C7F464, the design's
+            own lime-300) via `currentColor` + `text-lime-300`. "View Work" is
+            the snippet's Jura → `font-sans`, `font-medium`, `leading-4` line
+            box, white text (`text-foreground`), underlined in lime-300, and the
+            arrow is the existing `ArrowRightIcon` (15px) next to it. */}
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col items-start gap-2">
+            <p className="font-heading text-body font-light leading-nav text-foreground">
+              {profile.role}
+            </p>
+            <ul className="flex flex-wrap items-center gap-2">
               {profile.disciplines.map((discipline, index) => (
                 <li key={discipline} className="flex items-center gap-2">
-                  {index > 0 ? (
-                    <span aria-hidden="true" className="text-footer-link">
-                      •
-                    </span>
-                  ) : null}
-                  {discipline}
+                  {index > 0 ? <DisciplineDot /> : null}
+                  <span className="font-heading text-body font-light leading-nav text-foreground">
+                    {discipline}
+                  </span>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="flex flex-col items-start gap-4 lg:items-end">
-            <p className="text-nav leading-nav text-footer-link">{profile.availability}</p>
+          <div className="flex flex-col items-start gap-2 lg:items-end">
+            <p className="font-heading text-body font-light leading-nav text-foreground">
+              {profile.availability}
+            </p>
             <a
               href={siteUrl("/#work")}
-              className="inline-flex items-center gap-2 border-b border-footer-link pb-1 text-nav leading-nav text-foreground transition-opacity hover:opacity-80"
+              className="inline-flex items-center gap-2 border-b border-lime-300 py-1.5 font-sans text-body font-medium leading-4 text-foreground transition-opacity hover:opacity-80"
             >
               {viewWorkLabel}
               {/* The design's own arrow geometry, not a text glyph and not an
@@ -190,16 +220,52 @@ export function SiteFooter() {
           <p className="text-micro leading-copyright text-footer-link">
             &copy; {year} BaydreAfrica. All rights reserved.
           </p>
-          {/* The credit line. The frame specifies `text-[10px]` = 10px, so this
-              was originally 10px, but owner-confirmed 2026-09-26 as **12px "for
-              consistency"** with the copyright line beside it. That is an owner
-              override of the frame: 12px is `text-xs`/`--text-micro`, so the
-              credit now shares the copyright line's size AND its 16px line box,
-              and the bar reads as one type size. `--text-tiny` was retired
-              because this was its only consumer. */}
-          <p className="text-micro leading-copyright text-footer-link">{profile.credit}</p>
+          {/* The credit, OWNER DESIGN 2026-10-09: "Yasir Musa" was resupplied as its
+              own snippet — Jura 20px (`--text-description`), `font-normal`,
+              `tracking-wide`, a 16px `leading-4` line box, in the design's lime
+              (`text-lime-300` = `--lime` on `--background`, the pairing
+              verify-contrast already gates) — and it now LINKS to the Resume
+              page via `creditLink` (profile.ts): the owner removed "Resume"
+              from the NavBar item list the same day, so this credit is
+              `/resume`'s only entry point. OWNER REVERT same day: the 20px "is
+              too obvious", so the size is back to the previous `--text-micro`
+              (12px) — the copyright line's size — while the lime, the tracking
+              and the link stay. The global `:focus-visible` ring in theme.css
+              gives the link its focus state. */}
+          <SmartLink
+            item={creditLink}
+            className="font-sans text-micro font-normal leading-4 tracking-wide text-lime-300"
+          >
+            {profile.credit}
+          </SmartLink>
         </div>
       </div>
     </footer>
+  );
+}
+
+/**
+ * The 12px lime chip that separates the footer's discipline labels — from the
+ * 2026-10-09 snippet (a 12 × 12 circle, `#C7F464`).
+ *
+ * It replaces the old `•` text glyph so the separator matches the new snippet's
+ * dot, and it is re-used between every pair of labels rather than rendering one
+ * leading dot. Decorative, so it is `aria-hidden` and skipped by focus; the fill
+ * is `currentColor` so it tracks the theme's lime-300 token via `text-lime-300`
+ * instead of repeating the hex.
+ */
+function DisciplineDot() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+      className="text-lime-300"
+    >
+      <circle cx="6" cy="6" r="6" fill="currentColor" />
+    </svg>
   );
 }

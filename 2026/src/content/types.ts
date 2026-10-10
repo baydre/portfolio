@@ -10,22 +10,32 @@
  * The networks the site can link to.
  *
  * `linkedin` / `github` / `x` are the header-and-footer set, taken from the
- * design's "Connect" column. `instagram` and `youtube` are **About-page only**:
- * the About frame draws Instagram, the owner added YouTube to the profile card on
- * 2026-09-26, and neither the header nor the footer carries them. They are in the
- * union rather than a separate type because the GLYPH is shared — only the tile
- * geometry and the data that selects it differ between the two rows, and that
- * lives in the components.
+ * design's "Connect" column. The About profile card's three — `instagram`,
+ * `discord`, `youtube` — are the owner's set for that row; none of the three
+ * sits in the header/footer set, and `youtube` in particular is asserted absent
+ * from `socialLinks`.
+ *
+ * They are one union rather than two types because the GLYPH is shared — only
+ * the tile geometry and the data that selects it differ between the two rows,
+ * and that lives in the components.
  *
  * Being in this union is not what puts a network on a page. `SocialNetwork` is a
  * glyph key; membership in `socialLinks` (header/footer) or `aboutSocialLinks`
  * (profile card) is what renders one. YouTube is the case that keeps the two
  * apart: it is here, and it is deliberately absent from `socialLinks`.
  *
- * Behance — which the frame drew but which was dropped from the row on the
- * owner's instruction 2026-09-26 — is not in this union at all.
+ * Behance — dropped from the row on the owner's instruction 2026-09-26 — is not
+ * in this union at all. **Facebook and Telegram were removed 2026-10-09** with
+ * their tiles, so they are not here either: a network with no consumer keeps no
+ * glyph key (the same rule that removed Behance).
  */
-export type SocialNetwork = "linkedin" | "github" | "x" | "instagram" | "youtube";
+export type SocialNetwork =
+  | "linkedin"
+  | "github"
+  | "x"
+  | "instagram"
+  | "discord"
+  | "youtube";
 
 export interface SocialLink {
   /** Network identifier, used to select the icon. */
@@ -34,15 +44,20 @@ export interface SocialLink {
   label: string;
   href: string;
   /**
-   * True when `href` is still a guess rather than a confirmed profile URL.
+* True when the network's real URL is not yet known: either `href` is an
+    * unconfirmed guess, or it is empty because no address has been supplied.
+    * Discord arrived with only a username (the owner's `@baydre_africa`,
+    * 2026-10-09) and carries this flag plus an empty `href` — a Discord username
+    * is not a URL (only a numeric user ID or a server invite is), so it renders
+    * as an inert tile rather than as a link to a relative path.
    *
    * A review flag, not a render flag: it keeps guessed URLs greppable and obvious
    * in review. What renders a tile inert is an EMPTY `href` — a `<span>` rather
    * than an `<a>` — so a network with no known destination never becomes a link to
    * nowhere. An unverified entry with a real-looking `href` renders as a link, and
-   * that is deliberate: `https://github.com/baydre` is the same guess in
-   * `socialLinks` and `aboutSocialLinks`, and having one live and the other dead
-   * would be the actual inconsistency.
+   * that is deliberate: `https://github.com/baydre` in `profile.socialLinks` is a
+   * guess, but it was omitted from `aboutSocialLinks` rather than duplicated dead,
+   * so the same address cannot appear live in one row and inert in another.
    */
   unverified?: boolean;
 }
@@ -139,9 +154,9 @@ export interface Profile {
   heroImage: HeroImage;
   /** Text alternative for the hero image. */
   heroImageAlt: string;
-  /** Footer strapline above the wordmark, e.g. "Developer & Designer". */
+  /** Footer strapline above the wordmark, e.g. "Technologist & Software Engineer". */
   role: string;
-  /** Disciplines listed beside the role, e.g. Software / Web / Brand. */
+  /** Disciplines listed beside the role, e.g. Software / AI / Digital Prototypes. */
   disciplines: string[];
   /** Availability note in the footer. */
   availability: string;

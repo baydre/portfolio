@@ -46,6 +46,24 @@ The **full HomePage snippet is authoritative** and has been implemented. It is
 7329px across six frames: nav + hero (1090), Work (2562), Services (1962),
 Contact (921), footer (728) and a 66px copyright bar.
 
+- **The navbar specifically was resupplied 2026-10-08** and supersedes the
+  original header portion of the HomePage snippet. The new snippet adds the
+  Baydre logo mark (121 × 64), lifts the nav to **Home / Work / About / Contact
+  / Resume**, renames the CTA to **"Let's Build"**, and pins the social tile
+  colours (`#F3F4F6` tile, `#5D5A88` glyphs). It is implemented in
+  `NavBar`/`BrandLogo`/`HireMeButton`/`SocialLinks`; the derived header geometry
+  (20px block padding, 104px row, 36px hero clearance) is recorded in
+  `docs/DESIGN_SYSTEM.md` §5.1 and pinned by `pnpm verify:geometry`. The active
+  nav state is `font-semibold text-lime-300` (the weight is the WCAG 1.4.1
+  non-colour cue — the snippet draws no underline). Section anchors (`/#work`,
+  `/#contact`) render as react-router `<Link>`s via `SmartLink`, so the selected
+  section stays highlighted and the layout's scroll manager lands the click
+  clear of the sticky header and resets scroll between pages. **OWNER REMOVAL
+  2026-10-09: "Resume" left the NavBar item list** — the header now lists
+  **Home / Work / About / Contact**. `/resume` still exists (`ResumePage`) and
+  is linked from the footer's "Yasir Musa" credit (`creditLink` in
+  `profile.ts`), which is the page's only entry point.
+
 - `docs/DESIGN_SYSTEM.md` §2–§5 are **authoritative** for the palette,
   typography, radii and layout. §2.3 records six accessibility corrections to the
   design's palette, and §3.1 the Maison Neue → Outfit substitution. Use those
@@ -63,8 +81,10 @@ Contact (921), footer (728) and a 66px copyright bar.
   `+234**********` number and its five identical tool tiles. The frame's Tools row
   and Services row supplied no real content — five repeated `React.js` tiles and
   four language logos — so those two lists are **owner-supplied** and are marked
-  as such. Everything else about the page that the frame does not show (the
-  closing call-to-action panel) is still `ASSUMED`.
+  as such. The one block the frame does not show — the previous page's invented
+  closing call-to-action panel — was **removed 2026-10-08** on the owner's
+  request. About now closes with the same shared `ContactSection` as the homepage,
+  so the two pages cannot diverge again.
 - The **portrait's contact card is built, its three values are not.** The frame's
   phone/email/location card is implemented as an HTML overlay over the photograph,
   not pasted in as the frame's vector outlines. It ships the frame's own
@@ -73,12 +93,31 @@ Contact (921), footer (728) and a 66px copyright bar.
   **Do not fill these in with a plausible-looking value** — the real phone number,
   email address and location are `PENDING` from the owner, and
   `ContactRow.href` is optional precisely so a placeholder cannot become a link.
-  Likewise **GitHub and YouTube are on the profile card only**, by explicit
-  instruction; YouTube must not be added to `profile.socialLinks`. Instagram and
-  YouTube URLs were supplied 2026-09-26 and are stored **verbatim** — do not
-  "normalise" Instagram's bare host or YouTube's `@bay_dre` handle to match the
-  other networks. **GitHub is still an unverified guess** and is not confirmed by
-  the other two having been supplied.
+  Likewise the profile card's social row is the owner's **Instagram, Discord,
+  YouTube** set: **Facebook and Telegram left 2026-10-09**, and the row was
+  replaced wholesale 2026-10-08 before that. Instagram and YouTube URLs were
+  supplied 2026-09-26 and are stored **verbatim** — do not "normalise"
+  Instagram's bare host or YouTube's `@bay_dre` handle to match the other
+  networks — and **YouTube must not be added to `profile.socialLinks`** (it stays
+  About-only). **Discord has no URL**: the owner supplied only the username
+  `@baydre_africa` (2026-10-09), which is not a linkable address — its `href` is
+  empty and it renders as an inert tile saying "link not confirmed yet". Do not
+  invent a plausible-looking Discord address (a profile link needs the numeric
+  user ID, `https://discord.com/users/<id>`, or a server invite) — that is what
+  the inert-tile branch exists to prevent; the tile becomes live with a one-line
+  data change once an invite link or ID is supplied. The header/footer row is
+  unchanged: LinkedIn, GitHub, X.
+- The **footer's top row was resupplied 2026-10-09**: a new snippet lays the
+  title over discipline chips on the left ("Technologist & Software Engineer" /
+  "Software • AI • Digital Prototypes") against "Open for work" and "View Work"
+  on the right. The owner's strings REPLACE the snippet's own "Developer &
+  Designer / Software • Web • Brand" text, and live in `profile.ts`; the
+  snippet's geometry, type styles (Outfit font-light for the copy, Jura
+  font-medium `leading-4` for the View Work label), lime-300 underline and 12px
+  lime chip dots govern the row's rendering in `SiteFooter`. The snippet's
+  gray-200 copy reads `--foreground`, the palette's near-white. Note the
+  snippet's `w-64` left column was dropped (it is sized for the old words and
+  the owner's longer disciplines wrap mid-chip inside it) — see `SiteFooter`.
 - The **Resume and Product Page** screens still have no design. They are built on
   assumptions, marked `ASSUMED` in the docs. Do not treat their structure as
   approved, and do not extend them speculatively.
@@ -202,7 +241,7 @@ Notes:
   before a build. It checks the header/hero geometry resolves to the authored
   frame values *and* that the spacing utilities still reference their custom
   properties instead of repeating literals. See `docs/DESIGN_SYSTEM.md` §8.
-- `pnpm verify:contrast` reads `src/styles/theme.css` and asserts 19 colour
+- `pnpm verify:contrast` reads `src/styles/theme.css` and asserts 38 colour
   pairings meet WCAG 2.2 AA, **and** that every palette correction is lighter than
   the value it replaced with hue drift under 5°. A correction that redesigns a hue
   fails. See `docs/DESIGN_SYSTEM.md` §2.4.

@@ -47,7 +47,8 @@ Rules:
 
 ## 2. Colour
 
-`AUTHORITATIVE` — all five values are from the snippet. Every pair was measured
+`AUTHORITATIVE` — all values are from the snippet (the palette proper, plus the
+updated navbar's lime, tile and glyph colours). Every pair was measured
 against the `#131417` ground.
 
 | Token | Value | Role | Contrast on `#131417` |
@@ -55,10 +56,14 @@ against the `#131417` ground.
 | `--background` | `#131417` | page ground | — |
 | `--foreground` | `#E9E9EC` | body + nav copy | **15.20:1** |
 | `--foreground` | `#FFFFFF` | the wordmark only | **18.42:1** |
-| `--surface` | `#F0F2F5` | social tile | **16.42:1** |
-| `--surface-foreground` | `#344054` | icon glyph on that tile | **9.33:1** on `#F0F2F5` |
-| `--primary` | `#E9E9EC` | "Hire me" fill | — |
-| `--primary-foreground` | `#131417` | "Hire me" label | **15.20:1** on `#E9E9EC` |
+| `--surface` | `#F3F4F6` | social tile (updated navbar's `bg-gray-100`) | **16.74:1** |
+| `--surface-foreground` | `#5D5A88` | icon glyph on that tile (the snippet's `fill="#5D5A88"`) | **5.81:1** on `#F3F4F6` |
+| `--primary` | `#E9E9EC` | filled CTA label (contact form submit, 404, skip link) | — |
+| `--primary-foreground` | `#131417` | label on that fill | **15.20:1** on `#E9E9EC` |
+| `--lime` | `#C7F464` | the design's lime-300: active nav copy, the "Let's Build" CTA fill, social tile hover | — |
+| `--lime` + `--primary-foreground` | — | "Let's Build" label | **14.52:1** on `#C7F464` |
+| `--lime-hover` | `#A9CF55` | the lime shaded 15% toward black in sRGB (×0.85 per channel, hue unchanged) — the button hover, owner 2026-10-08 | — |
+| `--lime-hover` + `--primary-foreground` | — | lime button label on hover ("Let's Build", Submit) | **10.34:1** on `#A9CF55` |
 
 **The palette is excellent.** Every text pair clears WCAG AA (4.5:1) by more than
 3×, and the wordmark clears AAA. No adjustment needed.
@@ -130,7 +135,7 @@ underline), so it is two tokens rather than one value that passes nowhere.
 **One knock-on change.** Lightening `--destructive` to clear 4.5:1 as *text*
 dropped white-on-red to 3.83:1, so `--destructive-foreground` changed from
 `#ffffff` to `#131417`. A dark label on a light fill is the pattern the design
-already uses twice — the "Hire me" button and the "View Github Repo" pill — so
+already uses twice — the "Let's Build" button and the "View Github Repo" pill — so
 this follows the design rather than inventing a third treatment. This was caught
 by the verifier below, not by inspection.
 
@@ -139,7 +144,7 @@ by the verifier below, not by inspection.
 `pnpm verify:contrast` (`scripts/verify-contrast.mjs`) reads the actual token
 values out of `src/styles/theme.css` and asserts two things:
 
-1. **Every declared usage pairing** meets its requirement — 19 pairings, each
+1. **Every declared usage pairing** meets its requirement — 38 pairings, each
    measured against the background the colour is actually used on, not against
    the page background by default.
 2. **Every correction is a correction** — that it is lighter than the value it
@@ -267,34 +272,45 @@ column, 106px column gap, 688px paragraph column, 431px image height. All
 
 The authored wordmark position is **140px from the frame top**. The header, by
 contrast, occupies normal flow directly above the hero. Padding the hero by the
-full 140 would count the header twice and land the wordmark at 224px.
+full 140 would count the header twice and land the wordmark at 244px.
 
 `theme.css` therefore keeps only the spacing primitives as literals and derives
-everything else:
+everything else. The header is the **updated navbar** (2026-10-08): 20px block
+padding and the 64px logo mark — the mark is now the tallest item in the row, so
+it, not the 40px nav item box, drives the header:
 
 ```
---header-height = (header block padding × 2) + (nav item padding × 2) + nav line
-                = (22 × 2) + (8 × 2) + 24
-                = 84px
+--header-height = (header block padding × 2) + logo mark
+                = (20 × 2) + 64
+                = 104px
 
 --hero-top-pad  = --hero-offset − --header-height
-                = 140 − 84
-                = 56px
+                = 140 − 104
+                = 36px
 
-wordmark top    = --header-height + --hero-top-pad = 84 + 56 = 140px  ← authored
+wordmark top    = --header-height + --hero-top-pad = 104 + 36 = 140px  ← authored
 ```
+
+The nav item box (8px padding × 2 + 24px line = 40px) centres inside the 104px
+row and no longer enters the header-height formula.
+
+The nav-to-logo `gap-40` is the one non-linear spacing primitive:
+`--space-nav-mark-gap: clamp(1rem, calc((100vw − 1120px) / 2), 10rem)` — exactly
+160px at the 1440px frame, 16px at 1024px, so the nav row fits every
+viewport from 1024px up. `pnpm verify:geometry` resolves the `clamp()` at the
+1440px viewport and asserts the authored 160px.
 
 Two consequences worth preserving:
 
-- Changing the header padding, the nav padding, or the nav line box moves the
-  hero with it. The hero cannot drift from the header.
+- Changing the header padding or the logo mark moves the hero with it. The hero
+  cannot drift from the header.
 - `--hero-top-pad` is a *hero-relative* value, not the authored frame offset. The
   snippet positions its navbar absolutely over the frame, so its hero padding is
-  56; ours is in flow, so the arithmetic is identical but the expression differs.
+  36; ours is in flow, so the arithmetic is identical but the expression differs.
 
 The Tailwind spacing utilities are thin aliases of the same custom properties
-(`--spacing-hero-top: var(--hero-top-pad)`, `--spacing-header-pad:
-var(--space-header-pad)`, and so on) so no value is written twice. `pnpm
+(`--spacing-hero-top: var(--hero-top-pad)`, `--spacing-nav-mark-gap:
+var(--space-nav-mark-gap)`, and so on) so no value is written twice. `pnpm
 verify:geometry` resolves the chain from the **built** CSS at a 1440px viewport
 and asserts both the numbers and the indirection; see §8.
 
@@ -304,19 +320,20 @@ and asserts both the numbers and the indirection; see §8.
 
 | Component | Source | Notes |
 | --- | --- | --- |
-| `NavBar` | snippet | desktop row: nav, socials, gradient rule, CTA — extracted from the header |
+| `NavBar` | snippet | desktop row (updated navbar, 2026-10-08): four nav items — "Resume" left the NavBar 2026-10-09 (owner removal) and `/resume` is linked from the footer credit — 121 × 64 logo mark, socials, rule, "Let's Build" CTA |
+| `BrandLogo` | snippet | the design's mark as `baydre-logo.png` (121 × 64); shared by the desktop row and the small-screen disclosure |
 | `ClusterDivider` | snippet | the gradient rule between socials and CTA; `HireMeButton` is the CTA |
 | `SiteHeader` | `DERIVED` | sticky header, mobile disclosure, Escape/route-change close |
-| `SmartLink` | `DERIVED` | renders a `NavItem` as `<Link>` or `<a>`; the only place that distinction lives |
+| `SmartLink` | `DERIVED` | renders a `NavItem` as the router's `<Link>` for both kinds; the only place that distinction lives |
 | `Hero` | snippet | + fluid type, flex/grid instead of absolute positioning |
 | `WorkSection` / `ProjectCard` | snippet | + real heading, card is a link not a button, `<pre>` for the code panel |
 | `ServicesSection` | snippet | + real heading, two rows with the frame's rule between them. The frame's per-card artwork was replaced on 2026-09-26 and then **removed** on 2026-09-27 — the cards carry no mark and no reserved slot |
-| `ContactSection` / `ContactForm` | snippet + `ACCESSIBILITY` | snippet has no form; see below |
-| `SiteFooter` | snippet | replaces the previous generic footer |
+| `ContactSection` / `ContactForm` | snippet + `ACCESSIBILITY` | snippet supplies placeholder rows + chevron (+ submit, 2026-10-08); the form itself is implemented — see the note below |
+| `SiteFooter` | snippet | replaces the previous generic footer; top row resent from a new snippet 2026-10-09 (owner's role/disciplines over the snippet's own labels) |
 | `SectionIntro` | `DERIVED` | shared heading block for Work/Services; size and gap come from the caller because the two frames differ |
 | `SocialLinks` | snippet | + `<a>` elements with accessible names |
 | `TechTile` | snippet | shared by the Work stack panel and the About Tools row; always reserves the 32px icon box |
-| `ProfileSection` | About frame (2026-09-26) | + Tools/Technical Skills owner content, no `capitalize`, `<p>` not `<br/>`, inert tile for the unconfirmed link, three social tiles not five, not sticky |
+| `ProfileSection` | About frame (2026-09-26) | + Tools/Technical Skills owner content, no `capitalize`, `<p>` not `<br/>`, sticky portrait (`lg`+), social row = owner's three networks (two live, one inert) |
 | `Button` | shadcn primitive, **reused** | retinted via tokens, not rewritten |
 
 The snippet renders the header and hero as one absolute-positioned block, so there
@@ -425,36 +442,40 @@ width and a correct gutter at every width below it. The row also stacks
 phone. `SiteFooter.test.tsx` asserts the three Figma artifacts are absent and the
 stacking breakpoint is present.
 
-**The copyright line is 12px, and the credit was already 10px.** The frame's
-copyright bar is `text-xs` (12px) with `leading-4` (16px) on the copyright line
-and `text-[10px]` (10px) with `leading-4` on the credit.
+**The copyright line is 12px; the credit was resupplied at 20px (2026-10-09).**
+The frame's copyright bar is `text-xs` (12px) with `leading-4` (16px) on the
+copyright line and `text-[10px]` (10px) with `leading-4` on the credit.
 
-| Line | Frame | Was | Now |
-| --- | --- | --- | --- |
 | Line | Frame | Before | Now |
 | --- | --- | --- | --- |
 | `© … All rights reserved.` | 12px / 16px | 11px / 15.95px | **12px / 16px** |
-| `Yasir Musa` | 10px / 16px | 10px / 14.5px | **12px / 16px** |
+| `Yasir Musa` | 10px / 16px | 12px / 16px | **12px / 16px, Jura, `tracking-wide`, `--lime`, linked to `/resume`** |
 
-Both bar lines are now **12px / 16px**. The credit's move from the frame's
-`text-[10px]` to 12px is an **owner override (2026-09-26, "for consistency")**, not
-a design-derived value. `--text-tiny` (0.625rem) was retired — that credit line was
-its only consumer.
+Both bar lines sit on 16px line boxes — the credit's `leading-4` and the copyright's
+`--leading-copyright` (1rem). The credit's move from the frame's `text-[10px]` to
+12px was an owner override (2026-09-26, "for consistency"). The resupplied
+2026-10-09 snippet then gave the credit its own design — Jura, `font-normal`,
+`tracking-wide`, in `--lime`, now **a link to the Resume page** — implying a 20px
+`text-xl`; the owner REVERTED that size the same day ("the 20px is too obvious"),
+so the credit renders 12px while the lime, the tracking and the link stay.
+`--text-tiny` (0.625rem) was retired — the credit line's original 10px was its only
+consumer.
 
 `--text-micro` was `0.6875rem` (11px), which matched nothing in the frame; it is
 now `0.75rem`.
 
-**The credit's size is an owner override, and its leading was a real bug.**
+**The credit's earlier 12px was an owner override, and its leading was a real bug.**
 `--leading-caption` is *unitless* 1.45, so it resolves against each element's own
 size rather than the frame's `leading-4`. It happened to give the copyright's 16px
 at 11px (11 × 1.45 = 15.95) and gave the credit only 14.5px. Both bar lines now use
-the length-based `--leading-copyright: 1rem` (16px). Chasing the copyright's
-11px → 12px change is what exposed this; the credit inherited the same latent error
-from the same token.
+length-based line boxes — `--leading-copyright: 1rem` (16px) on the copyright and
+the snippet's `leading-4` on the credit. Chasing the copyright's 11px → 12px change
+is what exposed this; the credit inherited the same latent error from the same token.
 
 **Deviations in this bar still recorded, not fixed:** the frame's
-`tracking-tight` (copyright) and `tracking-wide` (credit) are not implemented, and
-the bar is 48px tall against the frame's 66px (`py-4` where the frame has `py-6`).
+`tracking-tight` on the copyright line is not implemented (the credit now carries
+its `tracking-wide`), and the bar is 48px tall against the frame's 66px (`py-4`
+where the frame has `py-6`).
 
 **The footer wordmark's FACE is an owner override (2026-09-26).** The snippet sets
 `baydre_africa` in the body face; the owner asked for it to match the hero
@@ -597,19 +618,24 @@ the credit sit directly on the page background. A `border-t border-rule` there i
 removed, like the one above the footer. The footer's one authored rule — below
 the role row — stays.
 
-**The contact form does not exist in the design.** The Contact frame supplies four
-underlined rows of placeholder text and a chevron — no field elements, no labels,
-and no submit control. What is implemented instead is a real form with visible
-labels, a native `<select>`, a submit button, and a real
-`idle → submitting → success | error` state machine behind a `ContactTransport`
-interface. A placeholder-as-label fails WCAG 3.3.2, and a form with no submit
-button does not send anything, so this is `ACCESSIBILITY` + functionality rather
-than interpretation of the design. See `docs/INTERACTION_SPEC.md` §4.
+**The contact form is implemented, not copied.** The Contact frame supplies four
+`p-6 border-b` rows of placeholder text and a chevron — no field elements, no
+labels, and (until the 2026-10-08 refresh) no submit control. What is
+implemented instead is a real form: the placeholder-only rows per the refreshed
+snippet, with the labels kept as `sr-only` so every control still has an
+accessible name (owner decision 2026-10-08, superseding visible labels), a
+native `<select>`, a lime Submit button with a darker-lime hover, and a real
+`idle → submitting → success | error` state machine behind a
+`ContactTransport` interface. A placeholder alone fails WCAG 3.3.2, and a form
+with no submit button does not send anything, so the labels and the button are
+`ACCESSIBILITY` + functionality rather than interpretation of the design. See
+`docs/INTERACTION_SPEC.md` §6.
 
 Accessibility additions the snippet does not contain — each required, none
 optional: semantic `<a>`/`<button>`/`<h1>`/`<h2>`/`<h3>`, accessible names on icon
 links, a skip link, visible focus rings, hover and active navigation states, one
-`h1` per page, visible form labels, and `aria-live` status regions.
+`h1` per page, accessible form labels (visually hidden behind the placeholder
+rows, owner 2026-10-08), and `aria-live` status regions.
 
 **Section headers.** Each section opens with a 40px `#E9E9EC` heading in the
 display face, beside its description in a row 344px wide, above a full-bleed 1px
@@ -844,12 +870,15 @@ tracks real available space rather than the viewport.
 The `<img>` branch is exercised by `sections.test.tsx` with an injected artwork
 path — the only project has no artwork — so both branches stay covered.
 
-**The nav's right cluster.** The snippet's `SocialsAndHireButton` fragment is
-`flex items-center gap-4` — a `w-fit` group of three 40px tiles, the rule, then
+**The nav's right cluster.** The updated snippet's `SocialsAndHireButton` fragment
+is `flex items-center gap-4` — a `w-fit` group of three 40px tiles, the rule, then
 the button — wrapped in `min-w-screen min-h-screen absolute left-[1087px]
 top-[22px]`. That wrapper is Figma canvas placement for the extracted fragment,
-not layout, and is discarded; `justify-between` already puts the cluster flush
-right at 84px.
+not layout, and is discarded. The cluster is `flex-1 justify-end` rather than the
+old `justify-between`: with the nav and the logo present, `justify-between`
+would have to allocate the full `gap-40` between the nav and the mark, which
+cannot fit below ~1290px — so spare space grows the cluster instead, and the row
+fits every viewport from 1024px up.
 
 The **rule** is a vertical line, and Figma's own CSS export for it is
 authoritative:
@@ -1230,17 +1259,19 @@ gate nothing. Stated instead: near-white on glass, the same relationship as
 
 ### A tile with no destination is not a link
 
-**The row is five tiles, and the frame's five were not these.** The frame drew four
-networks plus a **phone** tile — that fifth glyph is two half-paths meeting on a
+**The row is three tiles, and none of the frame's five is among them.** The frame drew
+four networks plus a **phone** tile — that fifth glyph is two half-paths meeting on a
 vertical centre line, which draws a handset, so it is not a network and was never a
 `SocialLink`, having no `network` to fill that field. It was dropped on the owner's
-instruction 2026-09-26 along with **Behance**, taking the row to three tiles. Later
-the same day the owner asked for **GitHub and YouTube to be added to the profile
-card**, so the count is back to five by coincidence only. `behance` was dropped from
-the `SocialNetwork` union and from `common/icons.tsx` rather than left as an unused
-glyph: it had no other consumer, and neither the header nor the footer links Behance.
-The phone has not come back as a tile — it is a contact-card row now, which is where
-the frame put contact details.
+instruction 2026-09-26 along with **Behance**. The row then carried the owner's
+**LinkedIn, X, Instagram, GitHub, YouTube**, and on 2026-10-08 the owner replaced that
+whole set with **Facebook, Instagram, Telegram, Discord, YouTube**, then on 2026-10-09
+removed **Facebook and Telegram**, leaving **Instagram, Discord, YouTube**. `behance`
+was dropped from the `SocialNetwork` union and from `common/icons.tsx` rather than
+left as an unused glyph: it had no other consumer, and neither the header nor the
+footer links Behance. Facebook and Telegram followed the same rule on 2026-10-09 —
+a network with no consumer keeps no glyph key. The phone has not come back as a tile
+— it is a contact-card row now, which is where the frame put contact details.
 
 **YouTube is on the profile card ONLY.** The owner's scope was explicit, and it is
 asserted from both sides: `aboutSocialLinks` contains `youtube` and
@@ -1250,51 +1281,47 @@ is in the `SocialNetwork` union — that union is a *glyph* key, and membership 
 of the two arrays is what puts a network on a page.
 
 **Inertness follows an EMPTY `href`, not the `unverified` flag.** `unverified` is a
-review flag: it keeps a guessed URL greppable. The owner supplied **Instagram**
-(`https://instagram.com/baydre_africa`) and **YouTube**
-(`https://www.youtube.com/@bay_dre`) on 2026-09-26, which cleared the flag on both
-and left the row with **no inert tile at all** for the first time. Both addresses
-are stored **verbatim**, including Instagram's bare host and YouTube's `@bay_dre`
-handle — which is *not* the `baydre_africa` the other networks use, so normalising
-either one to match the others would break a real link. The inert branch in
-`AboutSocialRow` is kept for the next network that arrives without a URL, and
-asserted on the source rather than on a fixture. Of the five:
+review flag. Of the current three, **Instagram** (`https://instagram.com/baydre_africa`)
+and **YouTube** (`https://www.youtube.com/@bay_dre`) are live — owner-supplied
+2026-09-26, stored **verbatim**, including Instagram's bare host and YouTube's
+`@bay_dre` handle, which is *not* the `baydre_africa` the other networks use, so
+normalising either one to match the others would break a real link.
 
-- **LinkedIn, X** — live, owner-confirmed.
-- **Instagram, YouTube** — live, owner-supplied 2026-09-26.
-- **GitHub** — live, and **still flagged `unverified`**: the owner gave the other
-  two and no GitHub address, so the inherited guess stands. Its `href` is reused
-  verbatim from `profile.socialLinks`, so the card and the header/footer cannot
-  drift, and one confirmation clears the flag in both files. Supplying Instagram
-  and YouTube does **not** confirm it by implication.
-
-`href="#"` is a link to the top of the page and an invented URL is a link to
+**Discord arrived with only a username (2026-10-09).** The owner supplied
+`@baydre_africa`, but a Discord USERNAME is not a URL: Discord links profiles by
+numeric user ID (`https://discord.com/users/<id>`) and servers by invite
+(`https://discord.gg/<code>`), so there is nothing linkable to store. Its `href` is
+empty and `unverified` is flagged, so it renders as an INERT tile ("link not
+confirmed yet"): dimmed, not focusable, not announced as a link. The inert branch in
+`AboutSocialRow` is asserted on the source rather than on a fixture. Supplying an
+invite link or user ID is a one-line data change and the tile becomes a live link — no
+component change, and no invented address should be inserted to avoid the inert
+state. `href="#"` is a link to the top of the page and an invented URL is a link to
 somewhere wrong — both are worse than an inert tile that keeps the frame's shape
 and admits the gap. The page is asserted never to emit an empty or `#` href.
 
 `/about`'s social row is a **separate array** from `profile.socialLinks` because the
-two genuinely differ: the frame's row adds Instagram and, now, YouTube.
+two genuinely differ: the card's three (Instagram, Discord, YouTube) are all
+About-only, and the header/footer's LinkedIn, GitHub, X are none of them.
 
 `common/SocialLinks` is still not reused for this row — it is 40 × 40 tiles filled
 with `--surface` carrying a dark glyph, and this row is 36 × 36, outlined, with a
 light glyph. Same `SocialIcon` glyphs, different object. Sharing the component would
 have meant a variant prop for a second geometry used once.
 
-### Two of the five glyphs here are authored, not transcribed
+### All three of the row's glyphs come from simple-icons
 
-`instagram` in `common/icons.tsx` is marked AUTHORED, NOT TRANSCRIBED. The frame
-draws a real brand path for it, but that path is not in the working copy of the
-frame, so it was rebuilt from the mark's official construction on the shared 24 × 24
-grid — which is how the first three glyphs got here too, the frame having supplied
-only three identical placeholder squares. Behance was in the same position and was
-removed with the tile.
-
-`youtube` is the same idea with a stronger case: the frame draws **no** YouTube
-glyph at all, so there is nothing to transcribe. Its path comes from `simple-icons`
-(CC0, already a dependency for the Tools row) rather than a hand-drawn play button —
-the identical trade-off made for KiCad, where an existing CC0 brand source beats an
-unaudited redraw. **Neither glyph has been seen rendered**; no browser is available
-in this environment.
+`instagram` / `discord` / `youtube` in `common/icons.tsx` all come from
+`simple-icons` (CC0, already a dependency for the Tools row). Instagram
+was marked AUTHORED, NOT TRANSCRIBED — the frame draws a real brand path for it, but
+that path is not in the working copy, so it was rebuilt from the mark's official
+construction, and eventually replaced by the CC0 source (`instagram: siInstagram.path`,
+`discord: siDiscord.path`). The `youtube` entry is the same CC0 path written inline.
+The other networks have no path in the frame at all, so there is nothing to transcribe;
+the same CC0 source beats a hand-drawn reconstruction — the identical trade-off made
+for KiCad, where an existing CC0 brand source beats an unaudited redraw. Facebook and
+Telegram left the file with their tiles on 2026-10-09. **None of the three has been
+seen rendered**; no browser is available in this environment.
 
 ### Tools and Technical Skills carry owner content, not frame content
 
@@ -1664,11 +1691,15 @@ workflow, so a local build is byte-for-byte what ships and the two cannot drift.
 
 ### In-page anchors
 
-`SmartLink`, `HireMeButton` and `SiteFooter` resolve their `/#fragment` hrefs
-through `siteUrl()` in `src/lib/site-url.ts`. A raw `href="/#work"` resolves
-against the *host* root, so under `/portfolio/` it would land on the 404 page —
-a link that still looks correct and goes somewhere else. `siteUrl` reads
-`BASE_URL`, so there is no second source of truth to drift, and it returns
+`SmartLink`'s anchors (`/#work`, `/#contact`, `/#main` in `navItems` /
+`footerNavItems`) render as react-router `<Link>`s, so the basename is the
+router's job and the provider applies `/portfolio/` automatically; the layout's
+scroll manager then handles the landing. `HireMeButton` and the footer's
+"View Work" link still resolve their `/#fragment` hrefs through `siteUrl()` in
+`src/lib/site-url.ts`. A raw `href="/#work"` resolves against the *host* root, so
+under `/portfolio/` it would land on the 404 page — a link that still looks
+correct and goes somewhere else. `siteUrl` reads `BASE_URL`, so there is no second
+source of truth to drift, and it returns
 `mailto:`/`tel:`/absolute URLs untouched.
 
 The helper was written after a test caught it prefixing `mailto:`: the first
@@ -1721,13 +1752,13 @@ input from the owner or a new snippet.
 | About skill roles | `OWNER SUPPLIED` | The frame's four cards are languages as 120 × 120 logos; the owner's four are roles with technology lists. The frame's `01`–`04` are kept; its "Services" heading is **owner-renamed "Technical Skills"** (2026-09-26), since a role is a capability, not a service. Headings now live in `aboutHeadings`. The frame's stack and its biography disagree about TypeScript; both left as supplied. **Each role also carries a mark — `stack[0]`'s real brand glyph, owner-requested 2026-09-26**; see "The mark is the lead technology, not a logo for the role". |
 | About portrait | `PARTIAL` | `src/assets/profile.svg` is the frame's own card but holds **only the photograph**. The frame overlays two text layers on it and the owner has now supplied markup for both: the **contact card is built** (see the next row), while the name and role — "YASIR MUSA", "SOFTWARE ENGINEER", "BAYDREAFRICA" plus a blurred pill — are **still absent from the supplied markup** and so are not reproduced. `alt` is empty because nothing names the person in it — supply real alternative text before launch. **Not viewed**: no browser and no image input in this environment. |
 | About contact card | `PARTIAL` | The card is **built** as a 304 × 104 glass overlay at the portrait's bottom-left, in `cqw` against a `@container` on the portrait wrapper so it scales with the photo. Built as HTML, not pasted from the frame, because the frame's three labels are vector outlines. Its **three values are `PENDING`** — the card ships the frame's own placeholder strings ("Phone Number", "Email Address", "Location") and no `href` at all, so no `tel:` or `mailto:` can ship by accident. Supplying a value in `aboutContact` makes the row a link with no component change. Its colours are **deliberately not gated** by `verify:contrast`: glass over a photograph has no computable ratio. Glyphs are lucide at a derived `strokeWidth`; **never rendered** — no browser here. |
-| About social URLs | `PARTIAL` | The row is **five** tiles — LinkedIn, X, Instagram, GitHub, YouTube — after the owner asked for GitHub and YouTube on the profile card on 2026-09-26. The count matches the frame's five by coincidence only: the frame drew four networks plus a **phone** tile, which was removed with Behance and has instead become a contact-card row. **YouTube is on the profile card only**, asserted absent from `profile.socialLinks`, so it cannot reach the header or footer. LinkedIn and X are owner-confirmed; **Instagram and YouTube are owner-supplied** (2026-09-26) and stored verbatim — bare host, and the `@bay_dre` handle that differs from the other networks. All five tiles are live links, so the row has no inert tile for the first time; the inert branch is kept for the next URL-less network. **GitHub is still `unverified`** — no address was supplied for it, and giving the other two does not confirm it. |
-| Instagram and YouTube glyphs | `UNVERIFIED` | Both AUTHORED, not transcribed — see §6.1. Instagram was rebuilt from the mark's official construction; the frame's own path was not in the working copy. **YouTube has no frame path at all**, so it comes from **simple-icons** (CC0) — the same trade-off as KiCad. Neither has ever been rendered. Behance was in the same position and was removed with its tile. |
+| About social URLs | `PARTIAL` | The row is **three** tiles — **Instagram, Discord, YouTube** — the owner's set: replaced wholesale 2026-10-08 with Facebook, Instagram, Telegram, Discord, YouTube, then trimmed 2026-10-09 as **Facebook and Telegram were removed** with their tiles and glyphs. **Instagram and YouTube are owner-supplied and live** (2026-09-26), stored verbatim — bare host, and the `@bay_dre` handle that differs from the other networks. **YouTube is on the profile card only**, asserted absent from `profile.socialLinks`, so it cannot reach the header or footer. **Discord has NO URL**: the owner supplied only the username `@baydre_africa` (2026-10-09), which is not a linkable address — a Discord link needs the numeric user ID (`/users/<id>`) or a server invite (`/discord.gg/<code>`) — so its `href` is empty, `unverified` is flagged, and the tile renders inert ("link not confirmed yet"). Supplying an invite link or user ID is a one-line data change. LinkedIn, X and GitHub left the card on 2026-10-08 and remain live in the header/footer row only. |
+| Instagram and YouTube glyphs | `UNVERIFIED` | Both AUTHORED, not transcribed — see §6.1. Instagram was rebuilt from the mark's official construction; the frame's own path was not in the working copy. **YouTube has no frame path at all**, so it comes from **simple-icons** (CC0) — the same trade-off as KiCad. Neither has ever been rendered. Behance was in the same position and was removed with its tile, as were Facebook and Telegram on 2026-10-09. |
 | About biography tracking | `CONFIRMED` | The frame sets the biography `tracking-widest` = 0.1em, which is **1.4px at 14px** — unusually loose for a face this design otherwise sets tight. It was long marked `UNVERIFIED` because the frame had not been seen; the owner supplied the frame's own markup on 2026-09-26 and it does specify `tracking-widest`, so the value is confirmed rather than assumed. Held in `--tracking-about-bio`; deleting that one declaration returns the copy to default tracking. |
 | About skill stacks | `OWNER AMENDED` | Three positional amendments, 2026-09-27: `C` added to **Backend Engineering** and **Unit testing** added **last**; `CI/CD` added **after Linux** on `DevOps & Cloud`. C was placed FIRST, then reversed the same day at the owner's request to sit **behind Python**, so the settled backend order is `Python, C, Django, FastAPI, REST APIs, PostgreSQL, Unit testing`. Additions only — no entry removed or reworded. `GitHub Actions` was left beside the new `CI/CD` entry rather than merged into it: they are the tooling and the practice, and the request was to add a term, not to combine two. |
 | Backend role mark follows `stack[0]` | `CLOSED` | A real coupling, not an incidental one, and it moved twice in one day. A role's mark is `stack[0]` (`ProfileSection` renders `<TechIcon tool={role.stack[0]}>`), so the tile's logo is whatever LEADS its stack. C was put first, which moved the logo off Python onto C; the owner then put Python back in front, which moved it back. The mark therefore tracks the owner's ordering rather than being pinned to a language independently of it — the settled mark is **Python**, at its corrected fill `#458ac3`. `--brand-python` is gated on BOTH `--tech-tile` (its Tools tile) and `--background` (its role tile): two real surfaces, not a duplicate. |
 | `--brand-c` is not a corrected value | `CLOSED` | simple-icons' C is `#a8b9cc`, which is **9.19:1** on `--background` — far above the 3:1 a graphic needs. So unlike Python, Django, Git and KiCad it is **not** lightened, and is absent from the integrity map that asserts corrections are lightness-only under 5° hue drift. C is `stack[1]`, so nothing draws it today; the token and its gate are kept anyway, on the surface a role mark would use, because the `TechIcon` entry is deliberately retained so a C-first order cannot break the tile. |
-| About closing call-to-action | `ASSUMED` | Not in the frame. The previous page's panel, kept on the owner's instruction 2026-09-26 ("keep this for now"). Its heading and body are not transcribed from anything, and its gradient uses `--secondary` and `--accent`, both DERIVED. Its two actions were repaired to real destinations. Treat as unapproved until a frame exists. |
+| About closing call-to-action | `REMOVED` | Was `ASSUMED`: not in the frame, the previous page's panel. **Removed 2026-10-08** on the owner's request. About now closes with the same shared `ContactSection` as the homepage, so the two pages cannot diverge again. The section's gradient (`--secondary`/`--accent`, both DERIVED), `aboutCta` in `content/about.ts` and its tests are gone. |
 | ~~Six service descriptions~~ | **SUPERSEDED** | Closed 2026-09-26 by transcribing all six verbatim from the frame, plus the section description. **Superseded 2026-09-27**: all six titles and descriptions are now **OWNER-SUPPLIED** copy and none of them is the frame's. The `index` labels `01`–`06` are the frame's and are unchanged. See "The service copy is the owner's, not the frame's". |
 | Secondary services line | **CLOSED** | Owner-supplied 2026-09-27, amended twice the same day. Final form: a 1px `bg-rule` above the line (the grid container now holds two `bg-rule`s, the frame's between its rows and this one), the label set in the heading face, and a closing **full stop** added. The label is `font-heading` (**Outfit**), NOT Maison Neue — that face is commercial Klim and unlicensed, and §2 records Outfit as its `TEMPORARY` substitute for this role; it is also the token the six service titles already use, so the label matches the cards rather than adding a fourth family. Items remain Jura at 24px. The full stop is composed in the component, not stored on the last item. |
 | `font-body` is not a defined class | **PARTIAL** | The six Services card indices (`01`–`06`) carry `font-body`, but no such utility is emitted — `@theme inline` maps `--font-sans` and `--font-heading` only. The indices render in Jura by inheritance from `body { @apply font-sans }`, so this is a silent no-op rather than a visible fault. The secondary-services line deliberately uses `font-sans`. Left unfixed as out of scope; the fix is to change `font-body` to `font-sans` in `ServicesSection`. |
@@ -1750,11 +1781,12 @@ input from the owner or a new snippet.
 | Work card imagery | `PENDING` | The design's `/Frame1539*.png` are not in the repository. Every local PNG is already claimed by another page, so a labelled placeholder renders instead. |
 | Product Page layout | `PENDING` | Block order is known (Description, Stack & Tools, The Challenge, The Solution) but no snippet was supplied. `ProjectPage` renders only blocks present in the data. |
 | Hero image | `PENDING` | Design uses an external placeholder URL. A local asset stands in. |
-| Social networks and URLs | `PARTIAL` | The footer's Connect column names GitHub, LinkedIn and X — the first evidence of what the header's three identical placeholder tiles are. Order differs between header and footer; header order is used. **LinkedIn and X URLs are owner-confirmed** (2026-09-26, including the underscore in the X handle). GitHub remains a guess and stays flagged `unverified`. The About frame adds Instagram, which the header and footer do not have; Behance was in the frame too and has since been removed; YouTube is on the profile card only — see §6.1. |
-| Footer credit line | `PENDING` | The design shows a personal name beside the copyright. Reproduced verbatim. Confirm it is a credit and not leftover content. |
+| Social networks and URLs | `PARTIAL` | The footer's Connect column names GitHub, LinkedIn and X — the first evidence of what the header's three identical placeholder tiles are. Order differs between header and footer; header order is used. **LinkedIn and X URLs are owner-confirmed** (2026-09-26, including the underscore in the X handle). GitHub remains a guess and stays flagged `unverified`. Behance was in the frame and has since been removed. The About profile card's three (**Instagram, Discord, YouTube**, trimmed to that set 2026-10-09) are About-only — none is in the header/footer set, and one remains URL-less — see §6.1. |
+| Footer top row | `DERIVED` | **Resupplied 2026-10-09**: a new snippet lays the title over discipline chips on the left ("Technologist & Software Engineer" / "Software • AI • Digital Prototypes") against "Open for work" and "View Work" on the right, drawn `justify-between items-center` at `lg` and stacked below it. The owner's strings REPLACE the snippet's own "Developer & Designer / Software • Web • Brand" text and live in `profile.ts`; geometry and type styles (Outfit font-light copy, Jura font-medium `leading-4` on the label, lime-300 underline, 12px lime chip dots) come from the snippet and render in `SiteFooter`. The snippet's gray-200 copy reads `--foreground` (no gray-200 token in the palette — see §2.3). The snippet's `w-64` left column was DROPPED: it is sized for the snippet's three short words and the owner's longer disciplines wrap mid-chip inside it — the column runs natural width instead. |
+| Footer credit line | **OWNER DESIGN** | "Yasir Musa" was resupplied 2026-10-09 as its own snippet: Jura, `font-normal`, `tracking-wide`, in the design's lime (`--lime` on `--background` — the pairing verify-contrast already gates) and it now **LINKS to the Resume page** via `creditLink` (`profile.ts`) — the owner removed "Resume" from the NavBar item list the same day, so the credit is `/resume`'s only entry point. The snippet's `text-xl` (20px) was **owner-reverted the same day** ("the 20px is too obvious") — the credit renders `--text-micro` (12px), the copyright line's size, while the lime, the tracking and the link stay. Supersedes the 2026-09-26 "12px for consistency" owner decision only in treatment, not in size. The earlier "confirm this is a credit and not leftover content" flag is now CLOSED. |
 | Orphaned footer paragraph | `PENDING` | The location copy appears in both the Contact frame and the footer. In the footer it has no heading above it. Reproduced as designed; may be a design duplication. |
 | Footer column gap | `PENDING` | Navigate and Connect stop ~290px short of the right gutter, suggesting a deleted third column. Laid out in normal flow, which closes the gap. No third column invented. |
-| Header nav vs footer nav | Open | Header has Work/About/Contact; footer has Home/Work/Services/Contact. Services is unlinked in the header. Reproduced as designed. |
+| Header nav vs footer nav | Open | Header has Home/Work/About/Contact (Resume left the NavBar 2026-10-09); footer has Home/Work/Services/Contact. Services is unlinked in the header. `/resume` is reached from the footer's credit (`creditLink`). Reproduced as designed. |
 | Maison Neue | `TEMPORARY` | Substituted with Outfit. Revisit only if a licence is bought. |
 | Formspree form ID | `TEMPORARY` | Transport is an interface (`src/lib/contact/`); swapping to a personal API is one file. Set `VITE_FORMSPREE_FORM_ID` — until then the form refuses to submit and says why. |
 | Contact header block | `OWNER OVERRIDE` | Set in Outfit; the frame specifies Jura for both lines. See above. |
@@ -1763,5 +1795,5 @@ input from the owner or a new snippet.
 | Contact section copy | `PARTIAL` | `contactIntro` proofread against the frame 2026-09-26 and **corrected** — see below. `contactBlurb` still unverified. |
 | Mobile and tablet layout | `PENDING` | No responsive design supplied. See §3.2 and §5. |
 | Sticky vs absolute header | Open | The design positions the navbar absolutely over the frame. Kept `sticky` so nav is reachable on a long page; visually identical at rest. |
-| Resume route | Open | Content exists, design does not, and the header's three items do not include it. Route retained, unlinked. |
+| Resume route | `CLOSED` | The updated navbar snippet (2026-10-08) listed Resume as one of its five entries (`/resume`, which `ResumePage` already served but nothing previously linked). The **owner REMOVED "Resume" from the NavBar item list 2026-10-09**; `/resume` still serves `ResumePage` and is now reached only from the footer's credit (`creditLink`). The old "unlinked route" reading is closed twice over: first by the snippet's entry, then by the credit link that outlived it. |
 | Mobile-menu focus management | Open | Focus is not moved into the disclosure on open, nor trapped while open. |

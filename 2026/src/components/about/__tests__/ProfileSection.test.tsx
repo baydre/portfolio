@@ -906,7 +906,7 @@ describe("About page — technical skills", () => {
 
 describe("About page — social row", () => {
   /**
-   * The row of five tiles, as a `<ul>`.
+   * The row of three tiles, as a `<ul>`.
    *
    * Scoped to the sticky column's own `<ul>` child, because there is now a second
    * three-row `<ul>` on the page: the contact card inside the portrait. Both are
@@ -928,18 +928,20 @@ describe("About page — social row", () => {
     ) as HTMLElement;
   };
 
-  it("carries the owner's five networks, in the frame's order", () => {
+  it("carries the owner's three networks, in the owner's order", () => {
+    // The About card set was replaced wholesale on 2026-10-08 — the previous
+    // linkedin/x/instagram/github/youtube is gone — and trimmed again on
+    // 2026-10-09, when the owner removed Facebook and Telegram from it. What
+    // remains is instagram, discord, youtube.
     expect(aboutSocialLinks.map((link) => link.network)).toEqual([
-      "linkedin",
-      "x",
       "instagram",
-      "github",
+      "discord",
       "youtube",
     ]);
   });
 
-  it("renders exactly five tiles", () => {
-    expect(socialRow().querySelectorAll("li")).toHaveLength(5);
+  it("renders exactly three tiles", () => {
+    expect(socialRow().querySelectorAll("li")).toHaveLength(3);
   });
 
   it("sizes both section heads above the 16px they used to be", () => {
@@ -987,10 +989,9 @@ describe("About page — social row", () => {
   });
 
   it("adds YouTube to the PROFILE CARD only, never to the header or footer", () => {
-    // The owner was explicit about the scope: GitHub and YouTube go on the Profile
-    // Card. YouTube is the assertion that carries it, because the header and
-    // footer are rendered from a different array and would pick the network up
-    // silently the moment `youtube` was added to `socialLinks`.
+    // The owner's scope kept YouTube About-only. The header and footer are
+    // rendered from a different array and would pick the network up silently the
+    // moment `youtube` was added to `socialLinks`.
     expect(aboutSocialLinks.some((link) => link.network === "youtube")).toBe(true);
     expect(socialLinks.some((link) => link.network === "youtube")).toBe(false);
 
@@ -999,27 +1000,53 @@ describe("About page — social row", () => {
     expect(icons).toMatch(/^\s*youtube:/m);
   });
 
-  it("keeps GitHub in the header and footer set as well", () => {
-    // Not a regression check for its own sake: it is the assertion that the two
-    // lists are genuinely separate, which is why they are two arrays.
-    expect(socialLinks.some((link) => link.network === "github")).toBe(true);
-  });
-
-  it("takes GitHub's address from the header and footer set, so the two cannot drift", () => {
-    const card = aboutSocialLinks.find((link) => link.network === "github");
-    const header = socialLinks.find((link) => link.network === "github");
-
-    expect(card?.href).toBe(header?.href);
-    // Still a guess, so still flagged. One address in two files, not two guesses.
-    expect(card?.unverified).toBe(true);
-  });
-
-  it("links every network, because all five now have a destination", () => {
-    for (const link of aboutSocialLinks) {
-      expect(link.href).toMatch(/^https:\/\//);
+  it("leaves LinkedIn, X and GitHub on the header and footer set only", () => {
+    // The old card set linked all three; the 2026-10-08 replacement dropped them
+    // from the card but not from the header/footer row (`profile.socialLinks`),
+    // where LinkedIn, X and GitHub are still the design's Connect column.
+    for (const dropped of ["linkedin", "x", "github"]) {
+      expect(aboutSocialLinks.some((link) => link.network === dropped)).toBe(false);
+      expect(socialLinks.some((link) => link.network === dropped)).toBe(true);
     }
+  });
 
-    expect(aboutSocialLinks.filter((link) => !link.href)).toEqual([]);
+  it("carries the Discord, Instagram and YouTube glyphs, since a tile without a mark is a gap", () => {
+    const icons = readFileSync("src/components/common/icons.tsx", "utf8");
+    expect(icons).toMatch(/discord: siDiscord\.path/);
+    expect(icons).toMatch(/instagram: siInstagram\.path/);
+    // The YouTube glyph was authored before the brand-mark rule, so it is a path
+    // literal, not a simple-icons reference — assert the entry, not the source.
+    expect(icons).toMatch(/^\s*youtube:/m);
+
+    const types = readFileSync("src/content/types.ts", "utf8");
+    expect(types).toMatch(/SocialNetwork =/);
+    expect(types).not.toMatch(/behance/);
+  });
+
+  it("renders Instagram and YouTube as live links and Discord as the inert tile", () => {
+    // The replacement set arrived with URLs for Instagram and YouTube only.
+    // Discord carries only the owner's username `@baydre_africa` (2026-10-09),
+    // which is not a URL, so its `href` is empty and it must render as a dimmed
+    // span — never as a link to a guessed address, per AGENTS.md §4.
+    const row = socialRow();
+
+    expect(row.querySelectorAll("a")).toHaveLength(2);
+    const links = [...row.querySelectorAll("a")].map(
+      (a) => a.getAttribute("href"),
+    );
+    expect(links.sort()).toEqual([
+      "https://instagram.com/baydre_africa",
+      "https://www.youtube.com/@bay_dre",
+    ]);
+
+    const inert = [...row.querySelectorAll("li")].filter((li) =>
+      li.textContent?.includes("link not confirmed yet"),
+    );
+    expect(inert).toHaveLength(1);
+    for (const tile of inert) {
+      expect(tile.querySelector("a")).toBeNull();
+      expect(tile.querySelector("span[title]")).not.toBeNull();
+    }
   });
 
   it("uses the owner's Instagram and YouTube addresses exactly as supplied", () => {
@@ -1041,22 +1068,12 @@ describe("About page — social row", () => {
     expect(byNetwork.youtube?.unverified).toBeUndefined();
   });
 
-  it("still leaves GitHub flagged, since no GitHub address was supplied", () => {
-    // The owner gave Instagram and YouTube and not GitHub, so the inherited guess
-    // is still a guess. Asserted so that supplying the other two URLs cannot be
-    // read as having confirmed this one by implication.
-    const github = aboutSocialLinks.find((link) => link.network === "github");
-
-    expect(github?.unverified).toBe(true);
-  });
-
   it("keeps the inert-tile branch, so a network without a URL is never a link", () => {
-    // No entry is inert today — all five have addresses — so this branch is
-    // currently unexercised by the data. It is kept and asserted on the source
-    // because it is the guard that stopped a guessed Instagram and an absent
-    // YouTube from becoming links, and because the next network added without a
-    // URL is exactly when it matters. Asserted on the source rather than on a
-    // fixture, because a fixture would be asserting the fixture.
+    // Discord exercises this branch today — the guard that once stopped a
+    // guessed Instagram and an absent YouTube from becoming links is what keeps
+    // the URL-less Discord from becoming a fake link now. Asserted both on the
+    // source and against the rendered row (in the live-link test above), because
+    // a fixture would be asserting the fixture.
     const source = readFileSync(
       "src/components/about/ProfileSection.tsx",
       "utf8",
@@ -1080,7 +1097,11 @@ describe("About page — social row", () => {
   });
 
   it("marks every tile without a destination as unconfirmed in the content", () => {
-    for (const link of aboutSocialLinks.filter((l) => !l.href)) {
+    // Discord carries the review flag as well as an empty `href`, so a reviewer
+    // cannot mistake a pending URL for a deliberate dead end.
+    const pending = aboutSocialLinks.filter((l) => !l.href);
+    expect(pending.map((l) => l.network).sort()).toEqual(["discord"]);
+    for (const link of pending) {
       expect(link.unverified).toBe(true);
     }
   });
@@ -1096,31 +1117,35 @@ describe("About page — social row", () => {
     expect(row.textContent).not.toMatch(/Phone/);
   });
 
-  it("drops Behance from the shared network union and the glyph map too", () => {
-    // Leaving the union member and the glyph in place after removing their only
+  it("drops networks with no consumer from the shared union and the glyph map", () => {
+    // Leaving a union member and a glyph in place after removing their only
     // consumer would be dead code, and a `SocialNetwork` value nothing renders
-    // reads as support that does not exist.
+    // reads as support that does not exist. Behance went the same way on
+    // 2026-09-26; Facebook and Telegram followed their tiles on 2026-10-09.
     const socialNetworks: string[] = [
       "linkedin",
       "github",
       "x",
       "instagram",
+      "discord",
       "youtube",
     ];
     expect(socialNetworks).not.toContain("behance");
+    expect(socialNetworks).not.toContain("facebook");
+    expect(socialNetworks).not.toContain("telegram");
 
-    // Scoped to the union and the glyph map. The module docstrings mention
-    // Behance deliberately, to record that it was removed, so a file-wide search
-    // would fail on the documentation of its own removal.
+    // Scoped to the union and the glyph map. The module docstrings mention the
+    // dropped networks deliberately, to record that they were removed, so a
+    // file-wide search would fail on the documentation of their own removal.
     const types = readFileSync("src/content/types.ts", "utf8");
     const union = types.slice(
       types.indexOf("export type SocialNetwork"),
       types.indexOf(";", types.indexOf("export type SocialNetwork")),
     );
-    expect(union).not.toMatch(/behance/);
+    expect(union).not.toMatch(/behance|facebook|telegram/);
 
     const icons = readFileSync("src/components/common/icons.tsx", "utf8");
-    expect(icons).not.toMatch(/^\s*behance:/m);
+    expect(icons).not.toMatch(/^\s*(behance|facebook|telegram):/m);
   });
 });
 
@@ -1283,90 +1308,39 @@ describe("About page — removed placeholders", () => {
   });
 });
 
-describe("About page — closing call to action", () => {
-  it("keeps the panel the owner asked to retain", () => {
-    render(
+describe("About page — contact section", () => {
+  function renderAbout() {
+    return render(
       <MemoryRouter>
         <AboutPage />
       </MemoryRouter>,
     );
+  }
 
+  it("uses the same ContactSection the homepage closes with", () => {
+    renderAbout();
+
+    // The invented "Let's Build Something Great Together!" panel is gone. The
+    // two pages now share one contact block, so they cannot diverge again —
+    // this asserts the shared heading string and the absence of the old one.
     expect(
-      screen.getByRole("heading", { name: /Let's Build Something Great Together/i }),
+      screen.getByRole("heading", {
+        name: /turn the next idea into something real/i,
+      }),
     ).toBeDefined();
+    expect(screen.queryByText(/Something Great Together/i)).toBeNull();
+
+    const section = document.getElementById("contact");
+    expect(section).not.toBeNull();
+    expect(section?.getAttribute("aria-labelledby")).toBe("contact-heading");
   });
 
-  it("breaks the body so the 'If …' sentence starts on the second line", () => {
-    // Owner instruction 2026-09-26. Asserted as two `<p>`s rather than a `<br/>`
-    // for the reason the biography gives: a hardcoded break is only correct at the
-    // width it was measured at. The copy itself is unchanged, so both sentences
-    // are still present and still in order.
-    const { container } = render(
-      <MemoryRouter>
-        <AboutPage />
-      </MemoryRouter>,
-    );
-    const cta = container.querySelector(
-      'section[aria-labelledby="about-cta-heading"]',
-    ) as HTMLElement;
-    const items = [...cta.querySelectorAll("p")];
-    const paragraphs = items.map((p) => p.textContent);
+  it("carries the real contact section, not a panel of invented actions", () => {
+    renderAbout();
 
-    expect(paragraphs).toHaveLength(2);
-    expect(paragraphs[0]).toMatch(/^I'm open to collaborations/);
-    expect(paragraphs[0]).not.toMatch(/\bIf you/);
-    expect(paragraphs[1]).toMatch(/^If you're looking for a developer/);
-    // No `<br/>` reintroduced — the paragraphs are the mechanism.
-    expect(cta.querySelector("br")).toBeNull();
-
-    // The two sentences are wrapped so their gap can be tightened without
-    // touching the section's own `gap-8`, which still spaces the heading off this
-    // block and the block off the two actions.
-    const wrapper = items[0].parentElement as HTMLElement;
-
-    expect(wrapper.tagName).toBe("DIV");
-    expect(wrapper.className).toContain("gap-2");
-    expect(wrapper.className).not.toMatch(/gap-3|gap-8/);
-    expect(cta.className).toContain("gap-8");
-    expect(wrapper.querySelectorAll("p")).toHaveLength(2);
-  });
-
-  it("says X, not Twitter — the last place still using the old name", () => {
-    const { container } = render(
-      <MemoryRouter>
-        <AboutPage />
-      </MemoryRouter>,
-    );
-
-    expect(screen.getByRole("link", { name: /Connect on X/i })).toBeDefined();
-    expect(container.innerHTML).not.toContain("Twitter");
-  });
-
-  it("gives both actions real destinations", () => {
-    // The old panel's two `<button>`s had no handler at all. AGENTS.md §4: never
-    // fake functionality.
-    render(
-      <MemoryRouter>
-        <AboutPage />
-      </MemoryRouter>,
-    );
-
-    const contact = screen.getByRole("link", { name: /Contact me/i });
-    const x = screen.getByRole("link", { name: /Connect on X/i });
-
-    expect(contact.getAttribute("href")).toBe("/#contact");
-    expect(x.getAttribute("href")).toBe("https://x.com/baydre_africa");
-    expect(x.getAttribute("rel")).toContain("noopener");
-  });
-
-  it("does not use a button that pretends to do something", () => {
-    const { container } = render(
-      <MemoryRouter>
-        <AboutPage />
-      </MemoryRouter>,
-    );
-
-    expect(container.querySelectorAll("button")).toHaveLength(0);
+    expect(screen.getByRole("heading", { name: /let.s talk/i })).toBeDefined();
+    // The shared block ends in the real form rather than a promised button.
+    expect(document.querySelector("form")).not.toBeNull();
   });
 });
 

@@ -38,32 +38,58 @@ export const profile: Profile = {
     height: 3684,
   },
   heroImageAlt: "",
-  role: "Developer & Designer",
-  disciplines: ["Software", "Web", "Brand"],
+  // OWNER REPLACEMENT 2026-10-09: the footer's top row is now transcribed from a
+  // new snippet, and the owner's text supersedes the snippet's own labels. The
+  // snippet still reads "Developer & Designer" / "Software • Web • Brand" in its
+  // text nodes; the strings below are what the owner asked to ship instead (see
+  // SiteFooter). Same address for `role` and `disciplines` as before — the footer
+  // is their only consumer.
+  role: "Technologist & Software Engineer",
+  disciplines: ["Software", "AI", "Digital Prototypes"],
   availability: "Open for work",
   credit: "Yasir Musa",
 };
 
 /**
- * Primary navigation: Work, About, Contact — the three items the header shows.
+ * Primary navigation: Home, Work, About, Contact — the items the updated navbar
+ * snippet (supplied 2026-10-08) shows. OWNER REMOVAL 2026-10-09: "Resume" left
+ * the NavBar item list, so the header no longer lists it.
  *
  * Work and Contact are Home SECTIONS, not pages. The design's footer Navigate
  * column lists Home, Work, Services, Contact, and the Figma file contains no
- * separate work or contact screen. The supplied snippet emits all three as
- * `<button>` elements because Figma Make does not know what a link is; the
+ * separate work or contact screen. The supplied snippet emits all items as
+ * `<div>` elements because Figma Make does not know what a link is; the
  * intended behaviour is that Work scrolls to `#work` and Contact to `#contact`.
  *
- * About is a real page and keeps a router path.
+ * Home and About are real pages (routes). Resume is a page too (`/resume` →
+ * `ResumePage`), but after the owner REMOVED it from the NavBar item list it is
+ * reached from the footer's "Yasir Musa" credit link (`creditLink` below), not
+ * the header.
  *
- * Services is in the footer but not the header. The header's three items are
- * reproduced exactly — see docs/ARCHITECTURE.md §3 for the open question of
- * whether Services should be promoted into the header.
+ * Services is in the footer but not the header. The header's items are
+ * reproduced exactly — see docs/ARCHITECTURE.md §"The nav follows the snippet".
  */
 export const navItems: NavItem[] = [
+  { label: "Home", kind: "route", to: "/" },
   { label: "Work", kind: "anchor", to: "/#work" },
   { label: "About", kind: "route", to: "/about" },
   { label: "Contact", kind: "anchor", to: "/#contact" },
 ];
+
+/**
+ * The footer credit's destination — `/resume`, so the "Yasir Musa" credit
+ * links to the Resume page (OWNER DESIGN 2026-10-09).
+ *
+ * A standalone item, deliberately NOT part of `navItems`: the owner REMOVED
+ * "Resume" from the NavBar item list the same day, so the header no longer
+ * links `/resume` while the route (`ResumePage`) stays. `creditLink` is the
+ * page's only entry point, and `SiteFooter` is its only consumer.
+ */
+export const creditLink: NavItem = {
+  label: profile.credit,
+  kind: "route",
+  to: "/resume",
+};
 
 /**
  * Three social tiles.
@@ -72,16 +98,17 @@ export const navItems: NavItem[] = [
  * do not identify their networks. This is now confirmed from the snippet rather
  * than inferred: all three are the same 20 × 20 three-dimensional box glyph,
  * byte-identical `d` path (`M10.0003 1.6665…`) and byte-identical
- * `fill="#344054"`, differing in nothing but their position. The footer's
+ * `fill="#5D5A88"`, differing in nothing but their position. The footer's
  * "Connect" column is the only evidence of what they stand for, and it names
  * them GitHub, LinkedIn, X — in that order, which is the reverse of the order
  * used here. The order below follows the header's, since the header is the
  * primary instance; see docs/DESIGN_SYSTEM.md §9.
  *
- * The real network glyphs are substituted for the placeholder cube, on the
- * design's own `--surface-foreground` (#344054) and 40 × 40 `#F0F2F5` tile. The
- * design's `#344054` is confirmed as the intended glyph colour by its use on all
- * three tiles.
+ * The real network glyphs are substituted for the placeholder cubes, on the
+ * design's own glyph colour `#5D5A88` and 40 × 40 `#F3F4F6` tile — the values
+ * the updated navbar snippet (2026-10-08) actually carries. The design's
+ * `#5D5A88` is confirmed as the intended glyph colour by its use on all three
+ * tiles.
  *
  * The GitHub account is the one confirmed handle: the previous site linked to
  * baydre.github.io. The other two URLs are still guesses and are marked
@@ -111,8 +138,8 @@ export const socialLinks: SocialLink[] = [
   },
 ];
 
-/** The header call to action. */
-export const hireMeLabel = "Hire me";
+/** The header call to action: "Let's Build" (the updated navbar snippet). */
+export const ctaLabel = "Let’s Build";
 
 /**
  * Footer Navigate column: Home, Work, Services, Contact.
