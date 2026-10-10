@@ -10,19 +10,22 @@ import { SmartLink } from "./SmartLink";
  * The navigation bar row, matching the Figma `NavBar` component as resupplied
  * 2026-10-08.
  *
- * AUTHORITATIVE geometry from that snippet: `py-5` (20px block padding), a left
- * nav with a 12px gap, a `gap-40` (160px at 1440) to the 121 × 64 logo mark,
- * then a right cluster — three social tiles, the rule, then the filled "Let's
- * Build" button — with a 16px gap. The snippet's root is a fixed `w-[1440px]
- * px-20` frame; those are canvas placement, and the horizontal edge stays on
- * `container-site` (84px at 1440) so the header and the hero keep one content
- * column. The design's `px-20` is 80px and would desynchronise the two by 4px.
+ * AUTHORITATIVE geometry from that snippet: a left nav with a 12px gap, the
+ * 121 × 64 logo mark, then a right cluster — three social tiles, the rule, then
+ * the filled "Let's Build" button — with a 16px gap. The snippet's root is a
+ * fixed `w-[1440px] px-20` frame; those are canvas placement, and the
+ * horizontal edge stays on `container-site` (84px at 1440) so the header and
+ * the hero keep one content column. The design's `px-20` is 80px and would
+ * desynchronise the two by 4px.
  *
- * The `gap-40` is `--space-nav-mark-gap`, a `clamp()` that resolves to the
- * authored 160px at 1440 and shrinks to 16px at 1024, because a fixed 160px
- * cannot fit the nav + logo + cluster inside a 1024px viewport. Laying
- * the row with the cluster as `flex-1 justify-end` rather than `justify-between`
- * is what lets the spare space grow the cluster instead of the gap.
+ * OWNER CENTERING 2026-10-10: the snippet spaces the nav and the mark with a
+ * `gap-40` (160px at 1440), which pins the mark left of the row's centre. The
+ * owner asked for the logo to sit in the middle, so the row is laid out with
+ * the nav as a `flex-1` flank on the left and the right cluster as a `flex-1`
+ * flank on the right — the mark lands on the row's exact centre at every
+ * width. The authored `gap-40` (and its `--space-nav-mark-gap` clamp) is gone;
+ * the flanking `flex-1` columns put variable space around the mark instead of
+ * a fixed gap, so the row can never overflow below 1024px.
  *
  * Height: 20 (block padding ×2) + 64 (logo mark) = 104px, and `min-h-header`
  * pins `--header-height` to the same value the hero subtracts. The nav items
@@ -49,12 +52,12 @@ export function NavBar({ className }: { className?: string }) {
 
   return (
     <div
-      className={`container-site flex min-h-header items-center gap-nav-mark-gap py-header-pad ${
+      className={`container-site flex min-h-header items-center py-header-pad ${
         className ?? ""
       }`}
     >
-      <nav aria-label="Primary">
-        <ul className="flex items-center gap-nav-gap">
+      <nav aria-label="Primary" className="flex-1">
+        <ul className="flex w-fit items-center gap-nav-gap">
           {navItems.map((item) => {
             // A section anchor is only "current" while its fragment is showing,
             // which react-router's NavLink cannot express — it compares

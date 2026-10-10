@@ -22,9 +22,9 @@ import { SmartLink } from "./SmartLink";
  * neither and they produced a visible seam over the hero.
  *
  * The design has no mobile variant, so below `lg` the row is replaced by a
- * disclosure — the nav plus the logo mark does not fit below the
- * 1024px content gutter (see `--space-nav-mark-gap`). See
- * docs/INTERACTION_SPEC.md §2.2.
+ * disclosure — the nav + logo + right cluster cannot fit under the 1024px
+ * content gutter, so the row hides and the brand mark and a menu button take
+ * the 56px bar (see docs/INTERACTION_SPEC.md §2.2).
  */
 export function SiteHeader() {
   const [open, setOpen] = useState(false);

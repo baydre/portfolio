@@ -294,11 +294,15 @@ wordmark top    = --header-height + --hero-top-pad = 104 + 36 = 140px  ← autho
 The nav item box (8px padding × 2 + 24px line = 40px) centres inside the 104px
 row and no longer enters the header-height formula.
 
-The nav-to-logo `gap-40` is the one non-linear spacing primitive:
-`--space-nav-mark-gap: clamp(1rem, calc((100vw − 1120px) / 2), 10rem)` — exactly
-160px at the 1440px frame, 16px at 1024px, so the nav row fits every
-viewport from 1024px up. `pnpm verify:geometry` resolves the `clamp()` at the
-1440px viewport and asserts the authored 160px.
+**OWNER CENTERING 2026-10-10: the logo mark is centred in the row.** The snippet
+spaced the nav and the mark with a `gap-40` (160px at 1440) that pinned the mark
+left of the row's centre. The owner asked for the logo in the middle, so the row
+now lays the nav out as a `flex-1` flank on the left and the right cluster as a
+`flex-1` flank on the right, landing the mark on the row's exact centre at every
+width. The authored `gap-40` and its non-linear clamp
+(`--space-nav-mark-gap`) are gone — retired from `theme.css`, the utilities
+(`--spacing-nav-mark-gap`), and `verify-geometry`. Headings, the 104px height and
+the hero clearance are unaffected.
 
 Two consequences worth preserving:
 
@@ -309,8 +313,8 @@ Two consequences worth preserving:
   36; ours is in flow, so the arithmetic is identical but the expression differs.
 
 The Tailwind spacing utilities are thin aliases of the same custom properties
-(`--spacing-hero-top: var(--hero-top-pad)`, `--spacing-nav-mark-gap:
-var(--space-nav-mark-gap)`, and so on) so no value is written twice. `pnpm
+(`--spacing-hero-top: var(--hero-top-pad)`, `--spacing-nav-gap:
+var(--space-nav-gap)`, and so on) so no value is written twice. `pnpm
 verify:geometry` resolves the chain from the **built** CSS at a 1440px viewport
 and asserts both the numbers and the indirection; see §8.
 
@@ -320,7 +324,7 @@ and asserts both the numbers and the indirection; see §8.
 
 | Component | Source | Notes |
 | --- | --- | --- |
-| `NavBar` | snippet | desktop row (updated navbar, 2026-10-08): four nav items — "Resume" left the NavBar 2026-10-09 (owner removal) and `/resume` is linked from the footer credit — 121 × 64 logo mark, socials, rule, "Let's Build" CTA |
+| `NavBar` | snippet | desktop row (updated navbar, 2026-10-08): four nav items — "Resume" left the NavBar 2026-10-09 (owner removal) and `/resume` is linked from the footer credit — 121 × 64 logo mark **centred in the row** (OWNER 2026-10-10; the fixed `gap-40` was replaced by `flex-1` flanks), socials, rule, "Let's Build" CTA |
 | `BrandLogo` | snippet | the design's mark as `baydre-logo.png` (121 × 64); shared by the desktop row and the small-screen disclosure |
 | `ClusterDivider` | snippet | the gradient rule between socials and CTA; `HireMeButton` is the CTA |
 | `SiteHeader` | `DERIVED` | sticky header, mobile disclosure, Escape/route-change close |
@@ -874,11 +878,11 @@ path — the only project has no artwork — so both branches stay covered.
 is `flex items-center gap-4` — a `w-fit` group of three 40px tiles, the rule, then
 the button — wrapped in `min-w-screen min-h-screen absolute left-[1087px]
 top-[22px]`. That wrapper is Figma canvas placement for the extracted fragment,
-not layout, and is discarded. The cluster is `flex-1 justify-end` rather than the
-old `justify-between`: with the nav and the logo present, `justify-between`
-would have to allocate the full `gap-40` between the nav and the mark, which
-cannot fit below ~1290px — so spare space grows the cluster instead, and the row
-fits every viewport from 1024px up.
+not layout, and is discarded. The cluster is the row's `flex-1` right flank
+(`justify-end`), mirroring the nav's `flex-1` left flank so the logo mark sits
+on the row's exact centre (OWNER CENTERING 2026-10-10 — the fixed `gap-40` and
+its clamp that the old `justify-between`/`gap` arrangement existed to contain
+are gone).
 
 The **rule** is a vertical line, and Figma's own CSS export for it is
 authoritative:
@@ -1787,6 +1791,7 @@ input from the owner or a new snippet.
 | Orphaned footer paragraph | `PENDING` | The location copy appears in both the Contact frame and the footer. In the footer it has no heading above it. Reproduced as designed; may be a design duplication. |
 | Footer column gap | `PENDING` | Navigate and Connect stop ~290px short of the right gutter, suggesting a deleted third column. Laid out in normal flow, which closes the gap. No third column invented. |
 | Header nav vs footer nav | Open | Header has Home/Work/About/Contact (Resume left the NavBar 2026-10-09); footer has Home/Work/Services/Contact. Services is unlinked in the header. `/resume` is reached from the footer's credit (`creditLink`). Reproduced as designed. |
+| Header logo centering | **OWNER OVERRIDE** | 2026-10-10: the owner found the mark "a bit more aligned to the left" and asked it centred. The snippet's `gap-40` (160px at 1440) between the nav and the mark pinned the mark left of the row's centre; the row now uses `flex-1` flanks (nav left, right cluster right) so the 121 × 64 mark lands on the exact centre at every width. The `gap-40` clamp token `--space-nav-mark-gap` (and its utility alias, its `verify-geometry` resolution, and the §5.1 "non-linear spacing primitive" paragraph) are retired. Header height (104px) and hero clearance (36px) are untouched. |
 | Maison Neue | `TEMPORARY` | Substituted with Outfit. Revisit only if a licence is bought. |
 | Formspree form ID | `TEMPORARY` | Transport is an interface (`src/lib/contact/`); swapping to a personal API is one file. Set `VITE_FORMSPREE_FORM_ID` — until then the form refuses to submit and says why. |
 | Contact header block | `OWNER OVERRIDE` | Set in Outfit; the frame specifies Jura for both lines. See above. |

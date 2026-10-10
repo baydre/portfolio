@@ -126,8 +126,9 @@ function resolve(name, seen = new Set()) {
   const value = decls[name];
   if (value === undefined) throw new Error(`undefined custom property: ${name}`);
 
-  // clamp(min, pref, max). The one CSS-only clamp in the system is the nav's
-  // logo gap: --space-nav-mark-gap resolves to the authored 160px at 1440px.
+  // clamp(min, pref, max). The remaining clamp()s in the system are the fluid
+  // type sizes (--text-display and friends), all shaped like the nav's retired
+  // logo gap used to be: clamp(min, pref, max) with 100vw in the preference.
   if (value.startsWith("clamp(")) {
     const m = value.match(/^clamp\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^)]+)\)$/);
     if (!m) throw new Error(`unsupported clamp(): ${value}`);
@@ -171,7 +172,6 @@ const headerPad = resolve("--space-header-pad");
 const navPad = resolve("--space-nav-pad");
 const navLine = resolve("--size-nav-line");
 const navMark = resolve("--size-nav-mark");
-const navMarkGap = resolve("--space-nav-mark-gap");
 const header = resolve("--header-height");
 const heroTop = resolve("--hero-top-pad");
 const offset = resolve("--hero-offset");
@@ -186,8 +186,7 @@ input("header block padding", headerPad, 20);
 input("logo mark height", navMark, 64);
 input("nav item padding x2", navPad * 2, 16);
 input("nav line box", navLine, 24);
-console.log(`  ${"nav item height".padEnd(36)}${String(px(navPad * 2 + navLine)).padStart(8)}px`);
-console.log(`  ${"nav -> logo gap (clamp at 1440)".padEnd(36)}${String(px(navMarkGap)).padStart(8)}px\n`);
+console.log(`  ${"nav item height".padEnd(36)}${String(px(navPad * 2 + navLine)).padStart(8)}px\n`);
 
 console.log("  derived");
 check("header height = pad x2 + mark", header, 104);
@@ -243,7 +242,6 @@ const utilities = {
   "p-nav-pad": "--space-nav-pad",
   "gap-nav-gap": "--space-nav-gap",
   "gap-cluster-gap": "--space-cluster-gap",
-  "gap-nav-mark-gap": "--space-nav-mark-gap",
   "h-nav-mark": "--size-nav-mark",
   "pt-hero-top": "--hero-top-pad",
   "pb-hero-tail": "--space-hero-tail",

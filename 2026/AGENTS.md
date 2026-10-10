@@ -62,7 +62,13 @@ Contact (921), footer (728) and a 66px copyright bar.
   2026-10-09: "Resume" left the NavBar item list** — the header now lists
   **Home / Work / About / Contact**. `/resume` still exists (`ResumePage`) and
   is linked from the footer's "Yasir Musa" credit (`creditLink` in
-  `profile.ts`), which is the page's only entry point.
+  `profile.ts`), which is the page's only entry point. **OWNER CENTERING
+  2026-10-10: the 121 × 64 logo mark is centred in the row** — the snippet's
+  `gap-40` (160px) between the nav and the mark pinned it left of centre, so the
+  row now uses `flex-1` flanks (nav left, right cluster right) with the mark
+  between them; the `--space-nav-mark-gap` clamp token and its
+  `verify-geometry` resolution are retired (see AGENTS/`docs/DESIGN_SYSTEM.md`
+  §5.1 and the provenance ledger).
 
 - `docs/DESIGN_SYSTEM.md` §2–§5 are **authoritative** for the palette,
   typography, radii and layout. §2.3 records six accessibility corrections to the

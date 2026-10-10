@@ -29,9 +29,10 @@
 `AUTHORITATIVE` geometry, from the **updated navbar snippet** supplied
 2026-10-08: 84px side gutters (on `container-site`, matching the hero's column —
 the snippet's fixed `w-[1440px] px-20` is canvas placement), 20px block padding
-(`py-5`), a left nav with a 12px gap, a 121 × 64 logo mark, and a `gap-40` (160px
-at 1440) from the nav to the mark, then a right cluster — three social tiles, the
-rule, then a filled **"Let's Build"** button — with a 16px gap. Nav entries are
+(`py-5`), a left nav with a 12px gap, a 121 × 64 logo mark (snippet: a `gap-40`
+/ 160px at 1440 between the nav and the mark), then a right cluster — three
+social tiles, the rule, then a filled **"Let's Build"** button — with a 16px gap.
+Nav entries are
 **Home, Work, About, Contact** — the snippet's fifth, Resume, left the NavBar on
 the owner's removal (2026-10-09) and is now linked from the footer credit.
 
@@ -41,14 +42,14 @@ wordmark sits at 104 + 36 = 140px, exactly the frame's value.
 
 `DERIVED` behaviour, built but not specified by the design:
 
-- The authored `gap-40` cannot fit the nav + logo + cluster inside a
-  1024px viewport, so it is expressed as `--space-nav-mark-gap`:
-  `clamp(1rem, calc((100vw - 1120px) / 2), 10rem)` — the authored 160px at
-  1440px, shrinking to 16px at 1024px. The cluster is `flex-1 justify-end` rather
-  than the snippet's `justify-between`, so spare space grows the cluster instead
-  of the gap and the row can never overflow. **[D]** the clamp deliberately
-  compresses the design's fixed gap below `container-site`'s 1440px max-width;
-  the row fits from exactly 1024px up.
+- **[O] logo mark centred in the row (OWNER 2026-10-10).** The snippet's `gap-40`
+  (160px at 1440) pinned the mark left of the row's centre — the owner asked for
+  it "in the centre". The nav is the row's `flex-1` left flank (`w-fit` list,
+  items start at the gutter) and the right cluster the `flex-1` right flank
+  (`justify-end`), so the 121 × 64 mark lands on the row's exact centre at every
+  width. The `gap-40` clamp (`--space-nav-mark-gap`) and the old
+  `justify-between`/gap reasoning below are retired; the flanking columns absorb
+  the spare space instead, so the row still fits and can never overflow.
 - The logo mark is the design's own `baydre.svg` rasterised to
   `assets/baydre-logo.png` (483 × 256, ~76 KB); the SVG contains no vector
   geometry, only an embedded 3244 × 1705 PNG. Rendered 121 × 64 via
@@ -106,9 +107,9 @@ wordmark sits at 104 + 36 = 140px, exactly the frame's value.
 **The design has no mobile variant.** A menu has to be designed. Built as a
 baseline, subject to confirmation:
 
-- The desktop row shows down to `lg`; the nav + logo does not fit below
-  the 1024px content gutter (`--space-nav-mark-gap` shrinks to its 16px floor
-  and the row still needs ~656px of the 856px gutter).
+- The desktop row shows down to `lg`; the nav + logo + right cluster needs the
+  full 856px gutter at the mid breakpoint and cannot fit below the 1024px
+  content gutter, so the row hides below `lg`.
 - Below `lg`, the text nav and right cluster hide; a menu button appears in a
   56px-tall row that keeps the brand mark beside it, so the small-screen header
   is not blank.
@@ -473,8 +474,9 @@ Answered by the HomePage snippet, and updated by the revised navbar snippet
 them), which resolved the `/resume` question below — the route exists, and the
 owner's removal of "Resume" from the NavBar item list (2026-10-09) moved its
 only link to the footer credit — the "Let's Build" label, the header geometry
-(the 104px row, the logo mark, and the `gap-40` to it), the social tile
-treatment, and the three type sizes.
+(the 104px row and the logo mark; the snippet's `gap-40` to the mark was
+replaced by centred `flex-1` flanks on the owner's 2026-10-10 request), the
+social tile treatment, and the three type sizes.
 
 Still open:
 
