@@ -41,7 +41,7 @@ export function ContactSection({
     <section
       id="contact"
       aria-labelledby="contact-heading"
-      className={`container-site scroll-mt-header py-20 ${className ?? ""}`}
+      className={`container-site scroll-mt-header py-section-y ${className ?? ""}`}
     >
       {/* `font-heading` (Outfit) — OWNER DECISION 2026-09-26, and it OVERRIDES the
           frame, which sets this line `font-['Jura']` along with the line below it.
@@ -84,9 +84,12 @@ export function ContactSection({
           rather than Tailwind's #e5e7eb. The Work description was corrected to
           #E9E9EC on that evidence, so muted here was the odd one out; it also
           lifts contrast from 7.74:1 to 15.2:1. */}
-      {/* `text-description` / `leading-description` = 20px/40px, matching the
-          Work and Services section descriptions. Was `text-lead` (24px). Owner
-          request 2026-09-26: all three section descriptions now share one size.
+      {/* `text-description` / `leading-description` = 20px — the authored 40px
+          line (2.0) at 1440, but `--leading-description` is fluid since the
+          2026-10-13 Phase 2 audit, so the mobile line tightens to 28px. The pair
+          matches the Work and Services section descriptions. Was `text-lead`
+          (24px). Owner request 2026-09-26: all three section descriptions now
+          share one size.
 
           Side effect, in the frame's favour: at 20px the sentence is ~975px
           rather than ~1170px, so the single-line property has more headroom

@@ -8,7 +8,10 @@
 > Project, Contact and Resume remain sections or screens with no frame of their
 > own — Work, Project and Contact are homepage sections, so the HomePage snippet
 > already covers them. **Resume** is the one screen still built entirely on
-> **assumptions**, marked `ASSUMED` below and not covered by any design.
+> **assumptions**, marked `ASSUMED` below and not covered by any design, and it has
+> been **UNPUBLISHED 2026-10-13** (removed from `routes.tsx`, `ResumePage.tsx`
+> kept but unreferenced) until a verified résumé exists — see §9 and
+> `AGENTS.md` §3.
 >
 > The previous Figma Make export in `src/imports/` is **SUPERSEDED**. Its values
 > are recorded in §7 for reference only and must not be cited as the design.
@@ -221,6 +224,13 @@ the two large sizes are fluid:
 | `text-display` | `clamp(2.75rem, 12vw, 11.25rem)` | 45px | **180px** (cap) |
 | `text-tagline` | `clamp(1.5rem, 3.4vw, 2.5rem)` | 24px | **40px** (cap) |
 
+**`leading-description` is fluid too — the only leading on the scale that is.**
+`clamp(1.75rem, 1.8vw + 1rem, 2.5rem)`. At 20px the authored 40px line (2.0) is
+the most airy on the site and wraps to six lines at 360px; the fluid form is
+28px (1.4) on phones, rises to the authored 40px by 1333px, and is capped there.
+`DERIVED`, 2026-10-13 (Phase 2 audit); it applies to the section descriptions
+(`SectionIntro`) and the Contact intro.
+
 Both resolve to the authored value at 1440px, so desktop fidelity is exact.
 `PENDING`: confirmation of the small-screen design.
 
@@ -318,13 +328,34 @@ var(--space-nav-gap)`, and so on) so no value is written twice. `pnpm
 verify:geometry` resolves the chain from the **built** CSS at a 1440px viewport
 and asserts both the numbers and the indirection; see §8.
 
+### 5.2 Section rhythm — the shared padding token and its exceptions
+
+`DERIVED`, added 2026-10-13 (Phase 2 audit). The snippet states no vertical
+section padding for a screen under 1440, and the sections shipped uniformly
+`py-20` (80px) at every width. The audit measured a page of identical 80px
+boundaries. Work, Services, Contact, the About page and the ProjectPage article
+now use one token:
+
+```
+--space-section-y: clamp(4rem, 6vw, 5rem)     64px mobile →  80px ≥ 1333px
+```
+
+Two deliberate exceptions, recorded so they are not "fixed" into uniformity:
+
+- **`SiteFooter` keeps `py-20`** (80px) — its top row is its own snippet with its
+  own geometry, and a section-padding token is not its rhythm.
+- **`NotFoundPage` keeps `py-24 md:py-32`** — it is a centred 404, not a section.
+
+No `<main>` wrapper, header, or hero uses the token; the hero rhythm is its own
+derived formula (§5.1).
+
 ---
 
 ## 6. Components built so far
 
 | Component | Source | Notes |
 | --- | --- | --- |
-| `NavBar` | snippet | desktop row (updated navbar, 2026-10-08): four nav items — "Resume" left the NavBar 2026-10-09 (owner removal) and `/resume` is linked from the footer credit — 121 × 64 logo mark **centred in the row** (OWNER 2026-10-10; the fixed `gap-40` was replaced by `flex-1` flanks), socials, rule, "Let's Build" CTA |
+| `NavBar` | snippet | desktop row (updated navbar, 2026-10-08): four nav items — "Resume" left the NavBar 2026-10-09 (owner removal) and `/resume` has been **UNPUBLISHED 2026-10-13** (the footer credit no longer links it either; see §9) — 121 × 64 logo mark **centred in the row** (OWNER 2026-10-10; the fixed `gap-40` was replaced by `flex-1` flanks), socials, rule, "Let's Build" CTA |
 | `BrandLogo` | snippet | the design's mark as `baydre-logo.png` (121 × 64); shared by the desktop row and the small-screen disclosure |
 | `ClusterDivider` | snippet | the gradient rule between socials and CTA; `HireMeButton` is the CTA |
 | `SiteHeader` | `DERIVED` | sticky header, mobile disclosure, Escape/route-change close |
@@ -334,7 +365,7 @@ and asserts both the numbers and the indirection; see §8.
 | `ServicesSection` | snippet | + real heading, two rows with the frame's rule between them. The frame's per-card artwork was replaced on 2026-09-26 and then **removed** on 2026-09-27 — the cards carry no mark and no reserved slot |
 | `ContactSection` / `ContactForm` | snippet + `ACCESSIBILITY` | snippet supplies placeholder rows + chevron (+ submit, 2026-10-08); the form itself is implemented — see the note below |
 | `SiteFooter` | snippet | replaces the previous generic footer; top row resent from a new snippet 2026-10-09 (owner's role/disciplines over the snippet's own labels) |
-| `SectionIntro` | `DERIVED` | shared heading block for Work/Services; size and gap come from the caller because the two frames differ |
+| `SectionIntro` | `DERIVED` | shared heading block for Work/Services; sizes come from the caller because the two headings differ. The fixed 344px/320px header gap was **retired 2026-10-13** — see "The section description" below |
 | `SocialLinks` | snippet | + `<a>` elements with accessible names |
 | `TechTile` | snippet | shared by the Work stack panel and the About Tools row; always reserves the 32px icon box |
 | `ProfileSection` | About frame (2026-09-26) | + Tools/Technical Skills owner content, no `capitalize`, `<p>` not `<br/>`, sticky portrait (`lg`+), social row = owner's three networks (two live, one inert) |
@@ -453,15 +484,18 @@ copyright line and `text-[10px]` (10px) with `leading-4` on the credit.
 | Line | Frame | Before | Now |
 | --- | --- | --- | --- |
 | `© … All rights reserved.` | 12px / 16px | 11px / 15.95px | **12px / 16px** |
-| `Yasir Musa` | 10px / 16px | 12px / 16px | **12px / 16px, Jura, `tracking-wide`, `--lime`, linked to `/resume`** |
+| `Yasir Musa` | 10px / 16px | 12px / 16px | **12px / 16px, Jura, `tracking-wide`, `--lime`, INERT TEXT (no link, since 2026-10-13)** |
 
 Both bar lines sit on 16px line boxes — the credit's `leading-4` and the copyright's
 `--leading-copyright` (1rem). The credit's move from the frame's `text-[10px]` to
 12px was an owner override (2026-09-26, "for consistency"). The resupplied
 2026-10-09 snippet then gave the credit its own design — Jura, `font-normal`,
-`tracking-wide`, in `--lime`, now **a link to the Resume page** — implying a 20px
+`tracking-wide`, in `--lime` — implying a 20px
 `text-xl`; the owner REVERTED that size the same day ("the 20px is too obvious"),
-so the credit renders 12px while the lime, the tracking and the link stay.
+so the credit renders 12px while the lime and the tracking stay. The credit's
+**LINK to the Resume page is GONE since 2026-10-13**: `/resume` is unpublished
+pending verified résumé content (owner decision), so the name renders as inert
+lime text — styling unchanged, `creditLink` removed (nothing to link to).
 `--text-tiny` (0.625rem) was retired — the credit line's original 10px was its only
 consumer.
 
@@ -642,8 +676,19 @@ links, a skip link, visible focus rings, hover and active navigation states, one
 rows, owner 2026-10-08), and `aria-live` status regions.
 
 **Section headers.** Each section opens with a 40px `#E9E9EC` heading in the
-display face, beside its description in a row 344px wide, above a full-bleed 1px
-rule. `SectionIntro` reproduces that at `lg` and above and stacks it below that.
+display face, beside its description in a row, above a full-bleed 1px rule.
+`SectionIntro` puts the two in a row at `lg` and above and stacks them below that.
+
+> **The header gap is responsive, not a fixed 344px (owner decision 2026-10-13).**
+> The snippet lays the heading 344px from the description inside a 2562px
+> composite frame — a gap authored for a canvas nearly twice the site's real
+> 1440px container. Rendered 1:1, at 1024px the heading plus the fixed gap left a
+> 440px description, and at 1440/1920 the gap sat frozen while everything else
+> grew. The row is now `lg:justify-between` with a `lg:gap-x-8` minimum, and the
+> description carries a `lg:max-w-[40rem]` cap, so the separation comes from the
+> width actually available and the description's measure tops out at ~64ch at
+> 20px (it ran 83ch before). Work's former 344px and Services' 320px are both
+> gone; `gapClassName` is removed from `SectionIntro`.
 
 > **The snippets' positional wrapper is not layout.** Work's header snippet is
 > `<p class="… min-w-screen min-h-screen absolute left-0 top-0 text-center">Work</p>`.
@@ -683,7 +728,7 @@ Four of those corrected the implementation:
 | --- | --- | --- | --- |
 | `color` | `--muted-foreground` `#a8a7b0` | `#E9E9EC` | `text-foreground` |
 | `font-size` | 24px | **20px** | `text-description` |
-| `line-height` | 32px | **40px** | `leading-description` |
+| `line-height` | 32px | **40px at 1440** | `leading-description` (fluid — §3.2) |
 | `flex` | `max-width: 65ch` | **`1 0 0`** | `grow basis-0 shrink-0` |
 
 Notes:
@@ -691,14 +736,14 @@ Notes:
 - **New tokens, not retuned ones.** `--text-lead`/`--leading-lead` (24px/32px)
   are shared with `Hero` and `ContactSection`, so the description needed its own
   `--text-description` / `--leading-description` pair.
-- **`flex: 1 0 0` replaces the `max-w-prose` cap.** Basis `0` + grow means the
-  description's width is exactly whatever the heading and the 344px gap leave
-  over — which makes that gap *exact* rather than emergent from natural widths.
-  It cannot overflow either: the items' bases total 0, so `flex-shrink` never
-  engages and the description just gets narrower. At the 1440 canvas it renders
-  ~818px, i.e. roughly an 80-character measure, which is longer than the 45–75ch
-  usually recommended. That is the design's call, not a defect, but it is the
-  reason the measure is recorded here.
+- **`flex: 1 0 0` plus a `lg:max-w-[40rem]` cap.** Basis `0` + grow means the
+  description takes whatever the row leaves over; the cap (40rem ≈ 64ch at 20px)
+  replaces both the old fixed 344px gap and the even older `max-w-prose` cap.
+  With `lg:justify-between`, the heading/description separation is whatever width
+  is actually available — 64ch was the *uncapped* measurement at 1440 (818px,
+  80ch+), which the audit recorded as longer than the recommended 45–75ch. The
+  two 2026-10-13 changes (responsive gap + fluid leading) are both Phase 2; see
+  §3.2 and "Section headers" above.
 - **Contrast improves.** `#E9E9EC` on the `#131417` section surface is **15.2:1**,
   against the 4.5:1 that 20px normal weight requires. The previous `#A8A7B0` was
   7.74:1. `--muted-foreground` stays in use elsewhere, so the token is not
@@ -945,17 +990,18 @@ stretching — only `04` and `05` carry an explicit `self-stretch` while the row
 container is `items-start` — but `items-stretch` is clearly intended, since
 without it the dividers stop at each card's own height and the row reads broken.
 
-**The section heading is 36px, not the 40px Work uses.** This is the fourth
-separate way the two frames disagree (heading size, description size, horizontal
-gap, and the card scale), and it is why `SectionIntro` takes `titleSizeClassName`,
-`descriptionSizeClassName` and `gapClassName` from the caller instead of assuming
-one scale. All three default to the Work values, so the Work call site is
+**The section heading is 36px, not the 40px Work uses.** This is one of the two
+remaining ways the two frames differ (heading size and the card scale — the
+once-different description sizes were aligned on 2026-09-26, and the one-time
+344px/320px header gap was retired 2026-10-13), and it is why `SectionIntro`
+takes `titleSizeClassName` and `descriptionSizeClassName` from the caller instead
+of assuming one scale. Both default to the Work values, so the Work call site is
 unchanged.
 
-| Frame | Heading | Description | Row gap | Card title |
-| --- | --- | --- | --- | --- |
-| Work | 40px `clamp` | 20px | 344px | 32px `clamp` |
-| Services | **36px** `--text-section-compact` | **20px** — owner correction, was 24px | **320px** | **30px** `--text-service` |
+| Frame | Heading | Description | Card title |
+| --- | --- | --- | --- |
+| Work | 40px `clamp` | 20px | 32px `clamp` |
+| Services | **36px** `--text-section-compact` | **20px** — owner correction, was 24px | **30px** `--text-service` |
 
 **The Services description is 20px, matching Work.** Owner correction 2026-09-26;
 the frame shows `text-2xl` (24px) and this departs from it deliberately. Only that
@@ -1766,7 +1812,7 @@ input from the owner or a new snippet.
 | ~~Six service descriptions~~ | **SUPERSEDED** | Closed 2026-09-26 by transcribing all six verbatim from the frame, plus the section description. **Superseded 2026-09-27**: all six titles and descriptions are now **OWNER-SUPPLIED** copy and none of them is the frame's. The `index` labels `01`–`06` are the frame's and are unchanged. See "The service copy is the owner's, not the frame's". |
 | Secondary services line | **CLOSED** | Owner-supplied 2026-09-27, amended twice the same day. Final form: a 1px `bg-rule` above the line (the grid container now holds two `bg-rule`s, the frame's between its rows and this one), the label set in the heading face, and a closing **full stop** added. The label is `font-heading` (**Outfit**), NOT Maison Neue — that face is commercial Klim and unlicensed, and §2 records Outfit as its `TEMPORARY` substitute for this role; it is also the token the six service titles already use, so the label matches the cards rather than adding a fourth family. Items remain Jura at 24px. The full stop is composed in the component, not stored on the last item. |
 | `font-body` is not a defined class | **PARTIAL** | The six Services card indices (`01`–`06`) carry `font-body`, but no such utility is emitted — `@theme inline` maps `--font-sans` and `--font-heading` only. The indices render in Jura by inheritance from `body { @apply font-sans }`, so this is a silent no-op rather than a visible fault. The secondary-services line deliberately uses `font-sans`. Left unfixed as out of scope; the fix is to change `font-body` to `font-sans` in `ServicesSection`. |
-| `servicesSectionDescription` is stale | **PENDING** | Still the frame's verbatim paragraph, and it no longer matches the services it introduces: it offers "Digital experiences, brands, and technical solutions" and there is no longer a brand or digital-experience service. Left as supplied rather than rewritten — inventing marketing prose is not this file's call. Needs one owner decision. |
+| `servicesSectionDescription` is stale | `CLOSED` (2026-10-13) | Was the frame's verbatim paragraph — "Digital experiences, brands, and technical solutions" — which no longer matched the services it introduces. **OWNER APPROVED replacement copy** in `services.ts`: "Practical engineering support for digital products, backend systems, deployment workflows, and early-stage technology ideas." The section intro and the code now read the same source. |
 | ~~Service illustrations~~ | **CLOSED** | The frame's per-card artwork was **deleted** on owner request 2026-09-26 and replaced by `ServiceIcon`, six lucide marks keyed by title. That set was reviewed the same day as consumer-creative shorthand, re-picked as six "instrument, structure or measurement" marks, and then **removed entirely** on owner request 2026-09-27: six 192px pictograms read as illustration, not as capabilities. Five panels of transcribed `gray-200` geometry and one 12%-opacity holding rect were placeholders, and `01` (Web Design) was a placeholder *by construction*, having no geometry in the frame at all. `ServiceArtwork.tsx` and `ServiceIcon.tsx` are both removed. The 384 × 384 **slot is gone with the mark** — cards are index, title, description, and the suite fails if `aspect-square` or any `svg`/`img` reappears in one. See "There is no per-service mark". |
 | ~~Service artwork sizes~~ | **MOOT** | The `UNVERIFIED` Tailwind-utility size readings only ever described the deleted geometry. Nothing depends on them now — the icon scales from a 24-unit lucide grid. |
 | ~~`02` diagonal line~~ | **MOOT** | The one deliberate `ADAPTED` departure — a `w-40 h-0` div drawn as a 1px stroke — described deleted geometry. |
@@ -1775,22 +1821,27 @@ input from the owner or a new snippet.
 | Service artwork width | `ADAPTED` | The frame's artwork is a fixed 384px, but a 1272 content width makes the card's content box 369.67px — the authored 384 would have to bleed 14.33px into the card's padding. `w-full` renders 369.67px (3.7% under) and never overflows; a fixed 384px overflows the card outright below ~1400px. |
 | ~~Four real projects~~ | **SUPERSEDED** | Closed 2026-09-27. The frame's four identical IdCardify cards are no longer the shape of the section. What replaced it is recorded on the two rows below. |
 | Hero photograph and favicon | **CLOSED** | Both owner-supplied 2026-09-27, replacing the `placehold.co` stand-in. The photograph is 5530×3684 / 2.7 MB, so two derivatives are committed (1280w 155 KB, 2048w 357 KB — 7–18× smaller) and the source is deliberately **not** imported; `srcset` + `sizes` picks one per device. `width`/`height` carry the *source* ratio (1.501:1, against the placeholder's 1.778:1) because that is what reserves the box before the bytes land, and `object-cover` absorbs the difference. The favicon source is 158×173 — **not square** — so each size is padded, never cropped, since a crop could cut the subject; `apple-touch-icon` is padded on `--background` because iOS renders transparency as black.
-| Five real projects added | **CLOSED** | 2026-09-27, on the owner's names. Each entry is built from verifiable public data rather than authored copy: `summary` is the repository's own GitHub description, **verbatim**; `stack` holds only the detected language plus technologies the description names in prose; `repositoryUrl` was confirmed public. So these read thinner than IdCardify and that is correct — writing case-study prose around `A Backend Service for Digital Wallet Management` would mean inventing architecture, users and outcomes nobody has stated. None is flagged `provisional`: that flag means placeholder content, which IdCardify's five `React.js` tiles are, and these are not. |
-| Ansible Deployment is a Gist, not a repository | **CLOSED** | `repositoryUrl` carries a gist URL, because that is where the work lives; the field is documented as "external repository, if public" rather than as a git remote. The summary is the **owner's** description, supplied on request. Worth flagging: the gist is itself titled "Beginner's Guide to Multi-Environment Application Deployment with Ansible" and holds a single Markdown file, so the gist reads as a written guide while the owner's description describes a deployable system. Both are the owner's; neither is invented, and the owner's framing is what ships. |
+| Five real projects added | **CLOSED** | 2026-09-27, on the owner's names. Each entry is built from verifiable public data rather than authored copy: `summary` is the repository's own GitHub description, **verbatim**; `stack` holds only the detected language plus technologies the description names in prose; `repositoryUrl` was confirmed public. So these read thinner than IdCardify and that is correct — writing case-study prose around `A Backend Service for Digital Wallet Management` would mean inventing architecture, users and outcomes nobody has stated. None is flagged `provisional`: that flag means placeholder content, which IdCardify's five `React.js` tiles are, and these are not. **SUPERSEDED 2026-10-13** by the Work content model below. |
+| Work content model (three layers) | `CLOSED` (2026-10-13) | Owner directive: the Work section carries **Overview / Engineering details / Evidence**, with missing evidence omitted rather than padded, and *evidence must distinguish what a README documents from what was independently validated*. The card stays scannable — `summary` is now the owner's README-grounded one-sentence description of each project — and the depth lives on the detail page: `ProjectDetail.engineering` (bulleted, README-grounded) and `ProjectDetail.evidence` (`EvidenceItem: label + optional link + note`, where "production-ready" / zero-downtime / AWS-EC2 statements are recorded AS repository claims, and the Ansible gist is documented as documentation). Added for all five written works 2026-10-13; IdCardify (provisional) has none, and the blocks render only when present. |
+| Ansible Deployment is a Gist, not a repository | **CLOSED** | `repositoryUrl` carries a gist URL, because that is where the work lives; the field is documented as "external repository, if public" rather than as a git remote. The summary is the **owner's** description, supplied on request. Worth flagging: the gist is itself titled "Beginner's Guide to Multi-Environment Application Deployment with Ansible" and holds a single Markdown file, so the gist reads as a written guide while the owner's description describes a deployable system. Both are the owner's; neither is invented, and the owner's framing is what ships. **RECONCILED 2026-10-13**: the owner directed the card match the artifact — the gist is *documentation* (a single Markdown tutorial whose playbook, roles and templates are the worked example), so the summary now reads "A written guide…" and `detail.evidence` states the documentation-vs-repo distinction. |
 | `BG-Deployment-Strategy` is `blue-green-deployment-strategy` | **CLOSED** | Owner-confirmed 2026-09-27. The full repository name is used as the title rather than the abbreviation, and NGINX and Docker are in its stack because its own description names both. |
 | Work carousel | **CLOSED** | Owner request 2026-09-27, corrected three times the same day: a single slider over all six on a 6s interval; then the Play/Pause and previous/next buttons removed; then the `1 / 6` counter and dot row removed. Nothing visible is left to click — it advances by itself and stops for hover, focus, or press-and-hold. Two of those three latched in the first attempts and both presented as the same symptom, "it pauses, then never resumes": a press released *outside* the container never ended because the listener was on the element, and hover could not tell a tap from a cursor, so a phone latched it permanently and autoplay was dead after the first touch. Fixed with a window-level pointerup and `pointerType` checks; both pinned by regression tests. Removing the manual controls also made suppressing autoplay actively harmful, so `prefers-reduced-motion` now renders all six stacked with no timer, no fade and nothing hidden — the design's own shape. All of it is itemised in `INTERACTION_SPEC.md` §4.3 |
 | Four more brand marks for the Work projects | **CLOSED** | Shell, NGINX, Docker and Ansible, all from simple-icons like every other mark and all named because a repository states them. Three are **uncorrected** — Shell 9.15:1, Docker 4.13:1, NGINX 3.36:1 on `--tech-tile` already clear the 3:1 a graphic needs. Ansible is the fifth lightness-only correction: `#ee0000` is 2.87:1 there, lightened to `#ff2d2d` (3.51:1) with hue 0.0° and saturation 1.000 both unchanged. Their surface is `--tech-tile` like the other card marks, NOT the `--background` the About role marks sit on. |
 | Four real projects | `PENDING` | The Work frame repeats one project across all four cards with identical copy and an all-`React.js` stack. One entry is modelled and flagged `provisional` in the data, and its five-tile `React.js` stack is kept as drawn so the panel's authored geometry is real. Replacing `src/content/projects.ts` is a data change only. |
 | Stack glyph | `PENDING` | The card's two exports disagree: the Tailwind one has a React logo path, the styled-components one a flat `#61DAFB` rect. The logo is used and is **unverified** — see §6. Real brand SVGs are needed per tool. |
 | Work card imagery | `PENDING` | The design's `/Frame1539*.png` are not in the repository. Every local PNG is already claimed by another page, so a labelled placeholder renders instead. |
-| Product Page layout | `PENDING` | Block order is known (Description, Stack & Tools, The Challenge, The Solution) but no snippet was supplied. `ProjectPage` renders only blocks present in the data. |
+| Product Page layout | `PARTIAL` | Block order was known (Description, Stack & Tools, The Challenge, The Solution) but no snippet was supplied. `ProjectPage` renders only blocks present in the data. **2026-10-13**: two evidence-grounded blocks — **Engineering details** and **Evidence** (from the Work content model, §"Work content model (three layers)") — render between Stack & Tools and The Challenge, again only when the data exists; their headings and styling are `DERIVED` (the design supplies no block for them). |
+| Section headers' fixed gap | **OWNER OVERRIDE (2026-10-13)** | The 344px (Work) / 320px (Services) heading–description gap was authored inside the 2562px composite frame and rendered 1:1 it strangled the description at 1024px (a 440px column / 4 lines) and froze while the container grew at 1440/1920. Owner Phase 2 directive: replace the fixed gap with a responsive layout adapting to available width, with a sensible maximum description width. `SectionIntro` now uses `lg:justify-between` + `lg:gap-x-8` + a `lg:max-w-[40rem]` cap on the description; `gapClassName` is removed from the component and both call sites. See §6 "Section headers". |
+| Description leading | **DERIVED, fluid (2026-10-13)** | `--leading-description` is now `clamp(1.75rem, 1.8vw + 1rem, 2.5rem)` — the authored 2.0 ratio wrapped section descriptions to six lines at 360px and was the most airy line box on the site. Mobile now 1.4, the authored 40px line resumes at 1333px. Applies to `SectionIntro` descriptions and the Contact intro. See §3.2. |
+| Section rhythm token | **DERIVED (2026-10-13)** | `--space-section-y: clamp(4rem, 6vw, 5rem)` (64px → 80px) pacing Work, Services, Contact, About and ProjectPage, which were uniformly `py-20` at every width. Recorded exceptions: `SiteFooter` keeps `py-20`, `NotFoundPage` keeps `py-24 md:py-32`. See §5.2. |
+| Project card row breakpoint | **CHANGED (2026-10-13)** | The card row formed at `lg` (1024) with a fixed 621px artwork, leaving a 211px text column whose summary ran 13 lines — the audit's single worst breakpoint. The row now forms at `xl` (1280), where the column is 543px+, and 1024–1279 stacks the artwork full-width instead. Authored 621 × 494 desktop proportions are unchanged; the mobile ratio was tested and kept. The tile container query (`@[216px]`) is retained as a panel-width guard. |
 | Hero image | `PENDING` | Design uses an external placeholder URL. A local asset stands in. |
 | Social networks and URLs | `PARTIAL` | The footer's Connect column names GitHub, LinkedIn and X — the first evidence of what the header's three identical placeholder tiles are. Order differs between header and footer; header order is used. **LinkedIn and X URLs are owner-confirmed** (2026-09-26, including the underscore in the X handle). GitHub remains a guess and stays flagged `unverified`. Behance was in the frame and has since been removed. The About profile card's three (**Instagram, Discord, YouTube**, trimmed to that set 2026-10-09) are About-only — none is in the header/footer set, and one remains URL-less — see §6.1. |
 | Footer top row | `DERIVED` | **Resupplied 2026-10-09**: a new snippet lays the title over discipline chips on the left ("Technologist & Software Engineer" / "Software • AI • Digital Prototypes") against "Open for work" and "View Work" on the right, drawn `justify-between items-center` at `lg` and stacked below it. The owner's strings REPLACE the snippet's own "Developer & Designer / Software • Web • Brand" text and live in `profile.ts`; geometry and type styles (Outfit font-light copy, Jura font-medium `leading-4` on the label, lime-300 underline, 12px lime chip dots) come from the snippet and render in `SiteFooter`. The snippet's gray-200 copy reads `--foreground` (no gray-200 token in the palette — see §2.3). The snippet's `w-64` left column was DROPPED: it is sized for the snippet's three short words and the owner's longer disciplines wrap mid-chip inside it — the column runs natural width instead. |
-| Footer credit line | **OWNER DESIGN** | "Yasir Musa" was resupplied 2026-10-09 as its own snippet: Jura, `font-normal`, `tracking-wide`, in the design's lime (`--lime` on `--background` — the pairing verify-contrast already gates) and it now **LINKS to the Resume page** via `creditLink` (`profile.ts`) — the owner removed "Resume" from the NavBar item list the same day, so the credit is `/resume`'s only entry point. The snippet's `text-xl` (20px) was **owner-reverted the same day** ("the 20px is too obvious") — the credit renders `--text-micro` (12px), the copyright line's size, while the lime, the tracking and the link stay. Supersedes the 2026-09-26 "12px for consistency" owner decision only in treatment, not in size. The earlier "confirm this is a credit and not leftover content" flag is now CLOSED. |
+| Footer credit line | **OWNER DESIGN** | "Yasir Musa" was resupplied 2026-10-09 as its own snippet: Jura, `font-normal`, `tracking-wide`, in the design's lime (`--lime` on `--background` — the pairing verify-contrast already gates) and it then **LINKED to the Resume page** via `creditLink` (`profile.ts`) — the owner removed "Resume" from the NavBar item list the same day, so the credit was `/resume`'s only entry point. The snippet's `text-xl` (20px) was **owner-reverted the same day** ("the 20px is too obvious") — the credit renders `--text-micro` (12px), the copyright line's size, while the lime and the tracking stay. **LINK REMOVED 2026-10-13**: `/resume` is unpublished pending verified résumé content (owner decision), so the credit is now INERT lime text — `creditLink` deleted, styling unchanged. Supersedes the 2026-09-26 "12px for consistency" owner decision only in treatment, not in size. The earlier "confirm this is a credit and not leftover content" flag is now CLOSED. |
 | Orphaned footer paragraph | `PENDING` | The location copy appears in both the Contact frame and the footer. In the footer it has no heading above it. Reproduced as designed; may be a design duplication. |
 | Footer column gap | `PENDING` | Navigate and Connect stop ~290px short of the right gutter, suggesting a deleted third column. Laid out in normal flow, which closes the gap. No third column invented. |
-| Header nav vs footer nav | Open | Header has Home/Work/About/Contact (Resume left the NavBar 2026-10-09); footer has Home/Work/Services/Contact. Services is unlinked in the header. `/resume` is reached from the footer's credit (`creditLink`). Reproduced as designed. |
+| Header nav vs footer nav | Open | Header has Home/Work/About/Contact (Resume left the NavBar 2026-10-09); footer has Home/Work/Services/Contact. Services is unlinked in the header. `/resume` is **unpublished 2026-10-13** (removed from the route table; the footer credit no longer links it). Reproduced as designed. |
 | Header logo centering | **OWNER OVERRIDE** | 2026-10-10: the owner found the mark "a bit more aligned to the left" and asked it centred. The snippet's `gap-40` (160px at 1440) between the nav and the mark pinned the mark left of the row's centre; the row now uses `flex-1` flanks (nav left, right cluster right) so the 121 × 64 mark lands on the exact centre at every width. The `gap-40` clamp token `--space-nav-mark-gap` (and its utility alias, its `verify-geometry` resolution, and the §5.1 "non-linear spacing primitive" paragraph) are retired. Header height (104px) and hero clearance (36px) are untouched. |
 | Maison Neue | `TEMPORARY` | Substituted with Outfit. Revisit only if a licence is bought. |
 | Formspree form ID | `TEMPORARY` | Transport is an interface (`src/lib/contact/`); swapping to a personal API is one file. Set `VITE_FORMSPREE_FORM_ID` — until then the form refuses to submit and says why. |
@@ -1800,5 +1851,5 @@ input from the owner or a new snippet.
 | Contact section copy | `PARTIAL` | `contactIntro` proofread against the frame 2026-09-26 and **corrected** — see below. `contactBlurb` still unverified. |
 | Mobile and tablet layout | `PENDING` | No responsive design supplied. See §3.2 and §5. |
 | Sticky vs absolute header | Open | The design positions the navbar absolutely over the frame. Kept `sticky` so nav is reachable on a long page; visually identical at rest. |
-| Resume route | `CLOSED` | The updated navbar snippet (2026-10-08) listed Resume as one of its five entries (`/resume`, which `ResumePage` already served but nothing previously linked). The **owner REMOVED "Resume" from the NavBar item list 2026-10-09**; `/resume` still serves `ResumePage` and is now reached only from the footer's credit (`creditLink`). The old "unlinked route" reading is closed twice over: first by the snippet's entry, then by the credit link that outlived it. |
+| Resume route | `CLOSED` (2026-10-13) | The updated navbar snippet (2026-10-08) listed Resume as one of its five entries (`/resume`, which `ResumePage` already served but nothing previously linked). The **owner REMOVED "Resume" from the NavBar item list 2026-10-09**; the route survived, reached only from the footer's credit. **UNPUBLISHED 2026-10-13**: `/resume` is removed from `routes.tsx` — the page's content was unverified placeholder copy (four identical jobs, one repeated paragraph) and read as contradictory — `ResumePage.tsx` is KEPT (unreferenced, reversible), requests to `/resume` fall through to the 404, and the footer credit renders as inert text. Re-enabled as a one-line route-table + credit data change once verified résumé content exists. |
 | Mobile-menu focus management | Open | Focus is not moved into the disclosure on open, nor trapped while open. |

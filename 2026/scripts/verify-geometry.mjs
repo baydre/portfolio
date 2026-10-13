@@ -126,9 +126,15 @@ function resolve(name, seen = new Set()) {
   const value = decls[name];
   if (value === undefined) throw new Error(`undefined custom property: ${name}`);
 
-  // clamp(min, pref, max). The remaining clamp()s in the system are the fluid
-  // type sizes (--text-display and friends), all shaped like the nav's retired
-  // logo gap used to be: clamp(min, pref, max) with 100vw in the preference.
+  // clamp(min, pref, max). The only clamp()s this script resolves are the
+  // tokens on the read list below, all fluid type sizes shaped like the nav's
+  // retired logo gap used to be: clamp(min, pref, max) with 100vw in the
+  // preference. Values that resolve at 100vw are the only ones reachable here.
+  // The section-rhythm token (--space-section-y, 6vw) and the fluid
+  // description leading (--leading-description, 1.8vw) are NOT on that list and
+  // are deliberately not resolved by this script — a 6vw/1.8vw preference would
+  // substitute nothing and compute to NaN. Do not add a vw-bearing token to the
+  // read list without giving the rem() path viewport-substitution first.
   if (value.startsWith("clamp(")) {
     const m = value.match(/^clamp\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^)]+)\)$/);
     if (!m) throw new Error(`unsupported clamp(): ${value}`);

@@ -29,7 +29,7 @@ import { ProfileSection } from "../../components/about/ProfileSection";
 export function AboutPage() {
   return (
     <>
-      <div className="container-site py-20">
+      <div className="container-site py-section-y">
         <ProfileSection />
       </div>
 

@@ -91,7 +91,7 @@ export function ProjectCard({
   const hasImage = Boolean(project.image);
 
   return (
-    <article className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-6">
+    <article className="flex flex-col gap-6 xl:flex-row xl:items-start xl:gap-6">
       {hasImage ? (
         <img
           src={project.image}
@@ -100,15 +100,15 @@ export function ProjectCard({
           decoding="async"
           // 621 x 494 at border-radius 12 — not `rounded-image` (24px, the
           // HERO image's) and not `rounded-xl`. `aspect-[621/494]` carries the
-          // authored ratio at every width; with lg:w-[38.8125rem] it resolves to
+          // authored ratio at every width; with xl:w-[38.8125rem] it resolves to
           // exactly 621 x 494 at 1440, and it is what stops the placeholder
           // below from collapsing to a bar on narrow screens.
-          className="aspect-[621/494] w-full rounded-lg object-cover lg:w-[38.8125rem] lg:shrink-0"
+          className="aspect-[621/494] w-full rounded-lg object-cover xl:w-[38.8125rem] xl:shrink-0"
         />
       ) : (
         <div
           aria-hidden="true"
-          className="flex aspect-[621/494] w-full items-center justify-center rounded-lg border border-panel-border bg-panel lg:w-[38.8125rem] lg:shrink-0"
+          className="flex aspect-[621/494] w-full items-center justify-center rounded-lg border border-panel-border bg-panel xl:w-[38.8125rem] xl:shrink-0"
         >
           <span className="font-heading text-section leading-section text-panel-foreground">
             {project.title}
@@ -156,85 +156,96 @@ export function ProjectCard({
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-6 self-stretch lg:flex-row lg:items-start">
-          {project.codeSample ? (
-            <div className="flex-1 self-stretch overflow-hidden rounded-lg border border-panel-border bg-panel">
-              <div className="flex items-center gap-2.5 self-stretch border-b border-panel-border px-4 py-3">
-                <p className="w-[6.375rem] text-panel-label uppercase leading-panel-label tracking-[0.0733em] text-foreground">
-                  Project code
-                </p>
+        {/* Both panels are data-gated. The row renders only when at least one
+            exists: IdCardify carries neither a verified stack (2026-10-13, its
+            placeholder React.js tiles were removed) nor a code sample, so the
+            row is omitted entirely instead of leaving an empty column. When it
+            does render, the stack panel is `flex: 1 1 0` — the row's full
+            width, not a 358px cap — with borderRadius 12; the snippet draws
+            its hairline with `outline: 1px solid` + `outline-offset: -1px`, an
+            inset border that consumes no layout, and the `border` here is the
+            same 1px on the same edge stated honestly. */}
+        {project.codeSample || project.stack.length > 0 ? (
+          <div className="flex flex-col gap-6 self-stretch lg:flex-row lg:items-start">
+            {project.codeSample ? (
+              <div className="flex-1 self-stretch overflow-hidden rounded-lg border border-panel-border bg-panel">
+                <div className="flex items-center gap-2.5 self-stretch border-b border-panel-border px-4 py-3">
+                  <p className="w-[6.375rem] text-panel-label uppercase leading-panel-label tracking-[0.0733em] text-foreground">
+                    Project code
+                  </p>
+                </div>
+                <div className="self-stretch px-4 py-2.5">
+                  <pre className="max-h-38 overflow-auto text-caption leading-caption text-code-foreground">
+                    <code>{project.codeSample}</code>
+                  </pre>
+                </div>
               </div>
-              <div className="self-stretch px-4 py-2.5">
-                <pre className="max-h-38 overflow-auto text-caption leading-caption text-code-foreground">
-                  <code>{project.codeSample}</code>
-                </pre>
+            ) : null}
+
+            {project.stack.length > 0 ? (
+              <div className="flex flex-1 self-stretch flex-col items-start gap-3 overflow-hidden rounded-lg border border-panel-border bg-panel">
+                <div className="flex items-center gap-2.5 self-stretch border-b border-panel-border px-4 py-3">
+                  {/* textTransform: uppercase and letter-spacing 0.88px (= 0.0733em
+                      at 12px). Both are in the styled-components export; the label
+                      renders as "BUILT WITH". */}
+                  <p className="w-[6.375rem] text-panel-label uppercase leading-panel-label tracking-[0.0733em] text-foreground">
+                    Built with
+                  </p>
+                </div>
+
+                {/* @container: the tile count must follow the PANEL's width, not the
+                    viewport's. 2026-10-13 (Phase 2 audit): the card's row now forms
+                    at `xl` (1280) instead of `lg` — at 1024 the fixed 621px artwork
+                    left a 211px text column whose summary ran 13 lines, the single
+                    worst breakpoint on the page. Below 1280 the card stacks and the
+                    artwork takes the full width, so the artwork's columns stay
+                    comfortable. At 1280+ the panel body is 543px+, always enough
+                    for the design's 216px tile row; the `@[216px]` guard is kept so
+                    a deliberately narrow panel still halves its tiles correctly. */}
+                <div className="@container flex items-center gap-2.5 self-stretch px-4 py-2.5">
+                  {/* The design's five tiles are TWO rows — three, then two — and each
+                      row distributes its own width, so row 2's two tiles are half
+                      the row each rather than two of three equal columns.
+
+                      `flex-wrap` with a one-third basis inside a wide-enough container
+                      reproduces that for any tool count without a chunking loop: three
+                      tiles fill a row exactly
+                      (3 x basis + 2 x 24px gap = 100%), and a shorter trailing row
+                      grows to fill its own row, so a trailing pair lands at 50% each
+                      — the same result the design's `space-between` + `flex: 1 1 0`
+                      gives. A plain wrapping flex would leave the trailing tiles at
+                      one third width; hardcoding a 3-per-row split would not. The
+                      basis is a third only once the panel can hold three; below
+                      `@[216px]` it is a half, which the pre-2026-10-13 1024-1061px
+                      cramp used to need and a deliberately narrow panel still does.
+
+                      The design nests grid > row > tile; flex-wrap supplies the same
+                      24px between rows and between tiles from the one `gap-6`. It
+                      also keeps `li` as one tool per item, which nesting a row `div`
+                      inside the `ul` would not. */}
+                  <ul className="flex flex-1 flex-wrap items-start gap-6">
+                    {/* Keyed by tool AND position. A tool-only key would collide if
+                        a stack ever repeated a label, which the design's placeholder
+                        stack did; the list is static content that never reorders, so
+                        the index is a safe discriminator. */}
+                    {project.stack.map((tool, index) => (
+                      <li
+                        key={`${tool}-${index}`}
+                        // Two across by default — safe at any panel width — and three
+                        // once the panel body can hold 3 x 56px + 2 x 24px = 216px.
+                        // At 1440 the panel body is 595px, so this resolves to the
+                        // design's 3 + 2: a full row of three, then two at half width.
+                        className="flex flex-1 basis-[calc((100%-1.5rem)/2)] @[216px]:basis-[calc((100%-3rem)/3)] flex-col items-center gap-2"
+                      >
+                        <TechTile tool={tool} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </div>
-          ) : null}
-
-          {/* flex: 1 1 0 — the panel takes the row's full width, not a 358px cap.
-              borderRadius 12. The snippet draws its hairline with
-              `outline: 1px solid` + `outline-offset: -1px`, which is an inset
-              border that does not consume layout; a real `border` is the same
-              1px on the same edge and is the honest way to say so. */}
-          <div className="flex flex-1 self-stretch flex-col items-start gap-3 overflow-hidden rounded-lg border border-panel-border bg-panel">
-            <div className="flex items-center gap-2.5 self-stretch border-b border-panel-border px-4 py-3">
-              {/* textTransform: uppercase and letter-spacing 0.88px (= 0.0733em
-                  at 12px). Both are in the styled-components export; the label
-                  renders as "BUILT WITH". */}
-              <p className="w-[6.375rem] text-panel-label uppercase leading-panel-label tracking-[0.0733em] text-foreground">
-                Built with
-              </p>
-            </div>
-
-            {/* @container: the tile count must follow the PANEL's width, not the
-                viewport's. The card's image is a fixed 621px, so between 1024px
-                (where `lg` turns the row on) and 1061px the right column narrows
-                to 179-215px and a third of it cannot hold `p-3` plus a 32px icon.
-                A viewport breakpoint cannot see that; a container query can. */}
-            <div className="@container flex items-center gap-2.5 self-stretch px-4 py-2.5">
-              {/* The design's five tiles are TWO rows — three, then two — and each
-                  row distributes its own width, so row 2's two tiles are half
-                  the row each rather than two of three equal columns.
-
-                  `flex-wrap` with a one-third basis inside a wide-enough container
-                  reproduces that for any tool count without a chunking loop: three
-                  tiles fill a row exactly
-                  (3 x basis + 2 x 24px gap = 100%), and a shorter trailing row
-                  grows to fill its own row, so a trailing pair lands at 50% each
-                  — the same result the design's `space-between` + `flex: 1 1 0`
-                  gives. A plain wrapping flex would leave the trailing tiles at
-                  one third width; hardcoding a 3-per-row split would not. The
-                  basis is a third only once the panel can hold three; below
-                  `@[216px]` it is a half, which is what the 1024-1061px band
-                  needs.
-
-                  The design nests grid > row > tile; flex-wrap supplies the same
-                  24px between rows and between tiles from the one `gap-6`. It
-                  also keeps `li` as one tool per item, which nesting a row `div`
-                  inside the `ul` would not. */}
-              <ul className="flex flex-1 flex-wrap items-start gap-6">
-                {/* Keyed by tool AND position, not by tool alone. The design's
-                    stack is five entries all labelled "React.js", so a tool-only
-                    key collides — React logs duplicate-key warnings and treats
-                    the reconciliation as unsupported. The list is static content
-                    that never reorders, so the index is a safe discriminator. */}
-                {project.stack.map((tool, index) => (
-                  <li
-                    key={`${tool}-${index}`}
-                    // Two across by default — safe at any panel width — and three
-                    // once the panel body can hold 3 x 56px + 2 x 24px = 216px.
-                    // At 1440 the panel body is 595px, so this resolves to the
-                    // design's 3 + 2: a full row of three, then two at half width.
-                    className="flex flex-1 basis-[calc((100%-1.5rem)/2)] @[216px]:basis-[calc((100%-3rem)/3)] flex-col items-center gap-2"
-                  >
-                    <TechTile tool={tool} />
-                  </li>
-                ))}
-              </ul>
-            </div>
+            ) : null}
           </div>
-        </div>
+        ) : null}
 
         {project.repositoryUrl || project.liveUrl ? (
           <div className="flex flex-wrap items-center gap-3">

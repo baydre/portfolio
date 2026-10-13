@@ -68,7 +68,7 @@ export function ServicesSection() {
     <section
       id="services"
       aria-labelledby="services-heading"
-      className="container-site scroll-mt-header py-20"
+      className="container-site scroll-mt-header py-section-y"
     >
       {/*
         `pb-8` plus the intro's own `mt-8` is the frame's 64px (`gap-16`) between
@@ -87,7 +87,6 @@ export function ServicesSection() {
         // and the heading stays at 36px. `--text-description` + the intro's
         // `leading-description` is exactly Work's 20px/40px pairing.
         descriptionSizeClassName="text-description"
-        gapClassName="lg:gap-[20rem]"
         align="first-line"
         className="pb-8"
       >

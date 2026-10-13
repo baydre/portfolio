@@ -156,7 +156,7 @@ describe("WorkSection", () => {
   it("keeps the description free of the bottom-alignment nudge", () => {
     renderSection(<WorkSection />);
     const section = screen.getByRole("region", { name: "Work" });
-    const description = within(section).getByText(/BaydreAfrica designs and builds/);
+    const description = within(section).getByText(/A selection of software projects/);
 
     // `lg:pb-1` only compensated for bottom-aligning; it would shift the text off
     // the first baseline once the boxes are top-aligned.
@@ -176,7 +176,7 @@ describe("WorkSection", () => {
   it("matches the description's authored computed style", () => {
     renderSection(<WorkSection />);
     const description = within(screen.getByRole("region", { name: "Work" })).getByText(
-      /BaydreAfrica designs and builds/,
+      /A selection of software projects/,
     );
     const classes = description.className.split(/\s+/);
 
@@ -186,14 +186,36 @@ describe("WorkSection", () => {
     // color: #E9E9EC — was --muted-foreground (#a8a7b0)
     expect(classes).toContain("text-foreground");
     expect(classes).not.toContain("text-muted-foreground");
-    // flex: 1 0 0 — was a max-w-prose cap
+    // flex: 1 0 0 — was a max-w-prose cap. The measure is capped at 40rem on
+    // desktop (Phase 2, 2026-10-13 — the fixed 21.5rem gap is gone, see
+    // "keeps the heading/description gap responsive"); below `lg` the block
+    // stacks and the cap is inert.
     expect(classes).toEqual(
       expect.arrayContaining(["grow", "basis-0", "shrink-0"]),
     );
     expect(classes).not.toContain("max-w-prose");
+    expect(classes).toContain("lg:max-w-[40rem]");
     // The 24px/32px lead tokens belong to Hero and Contact, not here.
     expect(classes).not.toContain("text-lead");
     expect(classes).not.toContain("leading-lead");
+  });
+
+  it("keeps the heading/description gap responsive, not the fixed 21.5rem", () => {
+    // Phase 2 audit, 2026-10-13: the snippet's 344px gap was authored for the
+    // 2562px composite frame and strangled the description at 1024px. The row
+    // now separates by available width (justify-between + a minimum gap) and the
+    // description carries the 40rem cap asserted above.
+    renderSection(<WorkSection />);
+    const heading = within(screen.getByRole("region", { name: "Work" })).getByRole(
+      "heading",
+      { level: 2 },
+    );
+    const row = heading.parentElement as HTMLElement;
+
+    expect(row.className).toContain("lg:justify-between");
+    expect(row.className).toContain("lg:gap-x-8");
+    expect(row.className).not.toContain("lg:gap-[21.5rem]");
+    expect(row.className).not.toContain("lg:gap-[20rem]");
   });
 
   it("resolves the description tokens to the authored 20px/40px", () => {
@@ -202,7 +224,12 @@ describe("WorkSection", () => {
     const theme = readFileSync("src/styles/theme.css", "utf8");
 
     expect(theme).toMatch(/--text-description:\s*1\.25rem/);
-    expect(theme).toMatch(/--leading-description:\s*2\.5rem/);
+    // Fluid since the 2026-10-13 Phase 2 audit: the authored 2.5rem cap at
+    // 1333px+, tightening to 1.75rem on phones (the 2.0 ratio wrapped to six
+    // lines at 360px).
+    expect(theme).toMatch(
+      /--leading-description:\s*clamp\(1\.75rem, 1\.8vw \+ 1rem, 2\.5rem\)/,
+    );
   });
 
   /**
@@ -271,11 +298,13 @@ describe("WorkSection", () => {
       renderSection(<ProjectCard project={withArtwork} index={0} />);
       const el = screen.getByRole("article").querySelector(selector);
 
-      // lg:w-[38.8125rem] = 621px. Both exports fix the ratio, so it is carried as
+      // xl:w-[38.8125rem] = 621px. Both exports fix the ratio, so it is carried as
       // aspect-[621/494] rather than a desktop-only height — which is what stops
-      // the placeholder collapsing to a bar below `lg`. With the width this
+      // the placeholder collapsing to a bar below `xl`. The row itself forms at
+      // `xl` (1280), not `lg`, since the 2026-10-13 Phase 2 audit: at 1024 the
+      // fixed 621px artwork left a 211px text column. With the width this
       // resolves to exactly 621 x 494 at 1440.
-      expect(el?.className).toContain("lg:w-[38.8125rem]");
+      expect(el?.className).toContain("xl:w-[38.8125rem]");
       expect(el?.className).toContain("aspect-[621/494]");
       expect(el?.className).not.toContain("lg:h-[30.875rem]");
       expect(el?.className).toContain("rounded-lg");
@@ -283,9 +312,45 @@ describe("WorkSection", () => {
     },
   );
 
-  it("uppercases and tracks the panel label as the export specifies", () => {
+  it("forms the card's row at xl, not lg — the 1024 cramp is gone", () => {
+    // Phase 2 audit, 2026-10-13: at 1024 the row on with a fixed 621px artwork
+    // left a 211px text column and the summary ran 13 lines. The row now forms
+    // at 1280, where the column is 543px+; 1024-1279 stacks full-width instead.
     const { container } = renderSection(<WorkSection />);
-    const card = firstSlide(container);
+    const card = firstSlide(container) as HTMLElement;
+
+    expect(card.className).toContain("xl:flex-row");
+    expect(card.className).not.toContain("lg:flex-row");
+    expect(card.className).toContain("xl:items-start");
+    expect(card.querySelector("[class*='w-[38.8125rem]']")?.className).toContain(
+      "xl:w-[38.8125rem]",
+    );
+  });
+
+  it("paces the sections with the shared py-section-y token", () => {
+    // Phase 2 audit, 2026-10-13: the sections were uniformly py-20 (80px), a
+    // value the snippet never states below 1440. The token is 64px mobile, 80px
+    // desktop; the Footer keeps its own py-20 as the recorded exception.
+    const theme = readFileSync("src/styles/theme.css", "utf8");
+    expect(theme).toMatch(/--space-section-y:\s*clamp\(4rem, 6vw, 5rem\)/);
+
+    const sections = [
+      renderSection(<WorkSection />).container.querySelector("section#work"),
+      renderSection(<ServicesSection />).container.querySelector("section#services"),
+    ];
+    for (const section of sections) {
+      expect(section?.className).toContain("py-section-y");
+      expect(section?.className).not.toContain("py-20");
+    }
+  });
+
+  it("uppercases and tracks the panel label as the export specifies", () => {
+    // IdCardify no longer draws the panel (its stack was unverified and is
+    // empty as of 2026-10-13), so this asserts against a project that has one.
+    renderSection(
+      <ProjectCard project={projects[1]} index={1} />,
+    );
+    const card = screen.getByRole("article");
     const label = within(card).getByText("Built with");
 
     // textTransform: uppercase, letter-spacing 0.88px = 0.0733em at 12px.
@@ -332,12 +397,14 @@ describe("WorkSection", () => {
   });
 
   it("uses 12px on the panel and 8px on the tile box", () => {
-    const { container } = renderSection(<WorkSection />);
-    const card = firstSlide(container);
+    renderSection(
+      <ProjectCard project={projects[1]} index={1} />,
+    );
+    const card = screen.getByRole("article");
     // Scoped to the panel that owns the label — `card.querySelector(".bg-panel")`
     // would return the image placeholder, which is also bg-panel.
     const panel = within(card).getByText("Built with").closest(".bg-panel");
-    const tile = within(card).getAllByText("React.js")[0].parentElement
+    const tile = within(card).getAllByText("Python")[0].parentElement
       ?.querySelector("div");
 
     // --radius-lg is 12px and --radius-md is 8px. The design's raw CSS says
@@ -351,7 +418,13 @@ describe("WorkSection", () => {
   });
 
   it("renders the design's 3 + 2 tile grid, not one stretched tile", () => {
-    renderSection(<ProjectCard project={projects[0]} index={0} />);
+    // The grid GEOMETRY is the design's, so this is exercised with a fixture
+    // carrying the design's five-tile stack shape — no real project has five
+    // entries, and IdCardify's stack is empty since 2026-10-13.
+    const designStack = ["React.js", "React.js", "React.js", "React.js", "React.js"];
+    renderSection(
+      <ProjectCard project={{ ...projects[0], stack: designStack }} index={0} />,
+    );
     const card = screen.getByRole("article");
     const tiles = within(card).getAllByRole("listitem");
     const list = within(card).getByRole("list");
@@ -361,8 +434,7 @@ describe("WorkSection", () => {
     // of the panel — one ~595px bar with a 32px icon in it, not a tile. This
     // is the assertion that would have caught the stack being collapsed to one
     // entry while the component still looked plausible in review.
-    expect(tiles).toHaveLength(5);
-    expect(projects[0].stack).toHaveLength(5);
+    expect(tiles).toHaveLength(designStack.length);
 
     // Two across by default, three once the panel body can hold 3 x 56 + 2 x 24
     // = 216px. At 1440 the body is 595px, so the query matches and the grid is
@@ -376,7 +448,7 @@ describe("WorkSection", () => {
   });
 
   it("scopes the tile count to the panel, not the viewport", () => {
-    renderSection(<ProjectCard project={projects[0]} index={0} />);
+    renderSection(<ProjectCard project={projects[1]} index={1} />);
     const card = screen.getByRole("article");
     // Reached via the list's parent rather than `.@container`: jsdom's selector
     // engine rejects the escaped `@` that Tailwind needs in real CSS.
@@ -390,9 +462,11 @@ describe("WorkSection", () => {
   });
 
   it("builds each stack tile as an icon box above a centred label", () => {
-    const { container } = renderSection(<WorkSection />);
-    const card = firstSlide(container);
-    const tile = within(card).getAllByText("React.js")[0];
+    renderSection(
+      <ProjectCard project={projects[1]} index={1} />,
+    );
+    const card = screen.getByRole("article");
+    const tile = within(card).getAllByText("Python")[0];
     const box = tile.parentElement?.querySelector("div");
 
     expect(tile.className).toContain("text-center");
@@ -438,7 +512,11 @@ describe("WorkSection", () => {
   });
 
   it("stretches the panels with self-stretch, not a stretched parent", () => {
-    renderSection(<ProjectCard project={projects[0]} index={0} />);
+    // A stack-bearing project with the repo row stripped, so the column holds
+    // only the title block and the panel — the two stretch-asserting children.
+    renderSection(
+      <ProjectCard project={{ ...projects[1], repositoryUrl: undefined }} index={1} />,
+    );
     const card = screen.getByRole("article");
 
     // StyledFrame1548 and the panel are both `align-items: flex-start`, and it is
@@ -455,8 +533,10 @@ describe("WorkSection", () => {
   });
 
   it("emits no duplicate SVG clip-path ids across tiles", () => {
-    const { container } = renderSection(<WorkSection />);
-    const card = firstSlide(container);
+    renderSection(
+      <ProjectCard project={projects[1]} index={1} />,
+    );
+    const card = screen.getByRole("article");
     // The snippet repeats clip0_323_427 / clip0_323_437 across its five tiles,
     // which puts duplicate ids in the document. TechIcon drops the no-op clip.
     expect(card.querySelectorAll("clipPath").length).toBe(0);
@@ -775,7 +855,7 @@ describe("ServicesSection", () => {
     const section = screen.getByRole("region", { name: "Services" });
     // The section's own description, beside the heading.
     const desc = Array.from(section.querySelectorAll("p")).find((p) =>
-      (p.textContent ?? "").includes("Digital experiences"),
+      (p.textContent ?? "").includes("Practical engineering support"),
     );
     expect(desc).toBeDefined();
 

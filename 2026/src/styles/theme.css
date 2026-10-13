@@ -165,6 +165,14 @@
   --space-hero-col-gap: 6.625rem; /*  106px tagline -> body       */
   --space-hero-image: 26.9375rem; /*  431px image height         */
   --space-hero-tail: 8.6875rem;  /*  139px below the image      */
+  /* Shared section rhythm — 64px on phones rising to the existing 80px by
+     1333px. DERIVED 2026-10-13 (Phase 2 audit): the Work, Services, Contact
+     and page slots were uniformly `py-20` (80px), a value the snippet never
+     states for a screen < 1440. The token applies to the four section/page
+     slots and the ProjectPage article; the Footer keeps its own `py-20` and
+     the NotFound page its `py-24 md:py-32` as explicit exceptions (recorded
+     in docs/DESIGN_SYSTEM.md §5.2). */
+  --space-section-y: clamp(4rem, 6vw, 5rem);
   --size-nav-line: 1.5rem;  /*   24px nav line box           */
   --size-nav-mark: 4rem;    /*   64px logo mark height — the tallest item in
                                  the row, so it drives --header-height */
@@ -367,11 +375,16 @@
   --text-footer-mark: clamp(2.5rem, 8.333vw, 7.5rem); /* 40px … 120px BaydreAfrica */
   --text-service: 1.875rem; /*   30px service card title          */
   /* Services frame. Its heading is 36px against Work's 40px, and its card and
-     section copy are 24px against Work's 20px — four values differ between the
-     two frames, so `SectionIntro` takes size and gap from the caller rather than
-     assuming a single scale. The 30px card title under the 36px section heading
-     is what keeps a card from out-weighing its own section; both were previously
-     28px, which inverted the hierarchy. See docs/DESIGN_SYSTEM.md §3.2. */
+     section copy were 24px against Work's 20px — the section description was
+     walked down to 20px on owner request 2026-09-26, so the two frames now
+     differ only in the heading size and the card scale. `SectionIntro`
+     therefore takes size from the caller rather than assuming a single scale.
+     (The two frames' one-time 344px/320px header GAP is gone entirely:
+     2026-10-13 the fixed gap was replaced by the responsive row in
+     `SectionIntro`; see docs/DESIGN_SYSTEM.md §6.) The 30px card title under
+     the 36px section heading is what keeps a card from out-weighing its own
+     section; both were previously 28px, which inverted the hierarchy. See
+     docs/DESIGN_SYSTEM.md §3.2. */
   --text-section-compact: 2.25rem; /*   36px "Services" heading     */
   --text-service-body: 1.5rem; /*   24px service card + section copy  */
   /* Fluid: the card title and its 01 label are DISPLAY type, and a fixed
@@ -442,7 +455,13 @@
   --tracking-about-bio: 0.1em;
 
   --leading-lead: 2rem; /*   32px authored  */
-  --leading-description: 2.5rem; /*   40px authored (200%)  */
+  /* 40px authored (200%) at --text-description's 20px. The 2.0 ratio is the
+     single most airy line box on the site and wraps to six lines at 360px, so
+     its leading is fluid like the display sizes: 28px (1.4) on phones, rising
+     to the authored 40px by 1333px. DERIVED 2026-10-13 (Phase 2 audit);
+     applies to the section descriptions and the Contact intro — anything else
+     that claims --text-description additionally --leading-description. */
+  --leading-description: clamp(1.75rem, 1.8vw + 1rem, 2.5rem);
   --leading-cta: 1.45; /* 20.30px authored  */
   /* Explicit line-heights only — never leave a line box to `normal`, whose
      height depends on the font file's internal metrics. The nav item's 40px box
@@ -501,6 +520,7 @@
   --spacing-hero-image: var(--space-hero-image);
   --spacing-hero-tail: var(--space-hero-tail);
   --spacing-hero-top: var(--hero-top-pad);
+  --spacing-section-y: var(--space-section-y);
 
   /* About page profile section. Exposed through `--spacing-*` rather than
      `--size-*` so these become `w-portrait-w` / `h-portrait-h`, not a `size-*`

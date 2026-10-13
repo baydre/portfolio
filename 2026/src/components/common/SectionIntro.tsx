@@ -7,8 +7,19 @@
  *
  * The snippet implements every one of those as absolutely positioned elements at
  * fixed offsets inside a fixed-height frame. Here they are a flow layout, so the
- * block reflows and the 344px gap collapses on narrow viewports. The desktop
- * geometry is reproduced at `lg` and above.
+ * block reflows and the 344px gap collapses on narrow viewports.
+ *
+ * **The fixed 344px (Services 320px) gap is GONE (owner decision 2026-10-13,
+ * Phase 2).** The snippet's composite frame is 2562px wide, so its 344px gap
+ * was authored for a canvas nearly twice the site's real 1440px container. Rendered
+ * 1:1 it produced exactly the failure the owner described: at 1024px the heading
+ * plus 344px of gap left a 440px description, and at 1440/1920 the gap sat fixed
+ * while everything else grew. The row is now `lg:justify-between` with a minimum
+ * `lg:gap-x-8`, and the description carries a `lg:max-w-[40rem]` cap, so: the
+ * heading and description stay visually connected at laptop widths, the gap is
+ * whatever width is actually available (not a fixed constant), and the
+ * description's measure tops out at ~64ch at 20px instead of the 83ch it ran at
+ * 1440. Below `lg` the block stacks with a 1.5rem gap, as before.
  *
  * The rule's colour is passed in because the design is inconsistent here: the
  * Services rule is `--rule` (#e9e9ec) while the Work rule is darker. The Work
@@ -22,8 +33,8 @@
  * Work and Services grids is content and is unaffected — that still uses
  * `text-index` via `WorkSection` and `ServicesSection`.
  *
- * The heading sits bottom-aligned with the description beside it, in a row with
- * a 344px gap at `lg` and above. The Work header's own snippet is
+ * The heading sits bottom-aligned with the description beside it, in a row at
+ * `lg` and above. The Work header's own snippet is
  * `<p class="… absolute left-0 top-0 text-center">Work</p>`, but that
  * `min-w-screen min-h-screen absolute left-0 top-0` wrapper is the same
  * per-element export wrapper the hero snippet uses, and is discarded whole. Its
@@ -41,7 +52,6 @@ export function SectionIntro({
   className,
   titleSizeClassName,
   descriptionSizeClassName,
-  gapClassName,
 }: {
   title: string;
   /**
@@ -72,23 +82,20 @@ export function SectionIntro({
    * Size overrides for the two frames that share this component.
    *
    * The Work and Services headings are **not** the same size — 40px against 36px
-   * — and their descriptions differ too, 20px against 24px. The horizontal gap
-   * between them differs as well, 344px against 320px. Rather than pick one
-   * frame's values and quietly mis-render the other, the caller states which
-   * frame it is building. All three are optional and default to the Work values,
-   * so Work's call site is unchanged.
+   * — and their descriptions were once 20px against 24px too; the description
+   * was walked down to 20px on owner request 2026-09-26. The two no longer have
+   * different horizontal gaps: the fixed 344px/320px pair was retired 2026-10-13
+   * (see the file comment). Callers only override the two sizes now, both
+   * optional and defaulting to the Work values, so Work's call site is
+   * unchanged.
    */
   titleSizeClassName?: string;
   descriptionSizeClassName?: string;
-  /** Replaces the `lg:gap-[21.5rem]` between heading and description. */
-  gapClassName?: string;
 }) {
   const toFirstLine = align === "first-line";
 
   const layout =
-    "flex flex-col gap-6 lg:flex-row lg:justify-between " +
-    (gapClassName ?? "lg:gap-[21.5rem]") +
-    " " +
+    "flex flex-col gap-6 lg:flex-row lg:justify-between lg:gap-x-8 " +
     (toFirstLine ? "lg:items-start" : "lg:items-end");
 
   return (
@@ -116,14 +123,20 @@ export function SectionIntro({
         {children ? (
           <p
             className={
-              // `flex: 1 0 0` as authored: basis 0, grow into whatever the
-              // heading and the gap leave over, never shrink. Basis 0 means the
-              // two items' bases total 0, so shrink never engages and the row
-              // cannot overflow on narrow viewports — the description simply
-              // gets narrower. This replaces a `max-w-prose` cap, which made the
-              // 344px gap emergent from natural widths rather than exact.
+              // `flex: 1 0 0` as authored: basis 0, grow into whatever space the
+              // row leaves over, never shrink. The `lg:max-w-[40rem]` cap is the
+              // 2026-10-13 replacement for the fixed 344px gap — basis 0 + grow
+              // with justify-between makes the separation come from the width
+              // that is ACTUALLY available, and the cap stops the measure running
+              // 83ch wide at 1440. Both together mean the description takes a
+              // readable 40rem maximum and the heading never drifts off it. Basis
+              // 0 means the row cannot overflow on narrow viewports — the
+              // description simply gets narrower — and below `lg` (stacked,
+              // column direction) basis 0 + grow is inert because the container
+              // is content-sized.
               "grow basis-0 shrink-0 leading-description text-foreground " +
               (descriptionSizeClassName ?? "text-description") +
+              " lg:max-w-[40rem]" +
               // The 4px nudge only made sense while bottom-aligning.
               (toFirstLine ? "" : " lg:pb-1")
             }
