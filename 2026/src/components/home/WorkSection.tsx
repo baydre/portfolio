@@ -1,4 +1,4 @@
-import { projects } from "../../content/projects";
+import { projects, workIntro } from "../../content/projects";
 import { SectionIntro } from "../common/SectionIntro";
 import { ProjectCarousel } from "./ProjectCarousel";
 
@@ -38,9 +38,14 @@ import { ProjectCarousel } from "./ProjectCarousel";
  * `align="first-line"` puts the heading beside the *opening* line of the
  * description rather than beside its last one. The description wraps to two
  * lines at the design's 1440 canvas, so the default bottom-alignment left
- * "Work" stranded down beside "…who care about the difference." Services keeps
+ * "Work" stranded down beside the description's final line. Services keeps
  * the default: it has no header snippet, and the bottom-aligned form is what
  * the composite frame supports.
+ *
+ * The description is OWNER-APPROVED copy (`workIntro`, 2026-10-13), read from
+ * `content/projects.ts` — the section previously inlined a copy of
+ * `profile.description`, so the hero and the section said the same thing
+ * twice. The approved string is a distinct intro; see `workIntro`.
  *
  * The Work header snippet's `min-w-screen min-h-screen absolute left-0 top-0
  * text-center` is the per-element export wrapper — the same one that puts
@@ -51,16 +56,14 @@ import { ProjectCarousel } from "./ProjectCarousel";
  */
 export function WorkSection() {
   return (
-    <section id="work" aria-labelledby="work-heading" className="container-site scroll-mt-header py-20">
+    <section id="work" aria-labelledby="work-heading" className="container-site scroll-mt-header py-section-y">
       <SectionIntro
         title="Work"
         headingId="work-heading"
         ruleClassName="bg-rule-work"
         align="first-line"
       >
-        BaydreAfrica designs and builds brands, websites, and software that hold
-        up in the real world, not just on a moodboard. Work made to perform, for
-        founders who care about the difference.
+        {workIntro}
       </SectionIntro>
 
       {/*

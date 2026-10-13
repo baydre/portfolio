@@ -40,7 +40,11 @@ async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText(/email address/i), "ada@example.com");
   await user.type(screen.getByLabelText(/tell me a little/i), "A small analytics tool.");
   // The topic is a native <select>, so `selectOptions` is the right driver.
-  await user.selectOptions(screen.getByLabelText(/what are you working on/i), "Web Development");
+  // One of the eight owner-aligned options (2026-10-13).
+  await user.selectOptions(
+    screen.getByLabelText(/what are you working on/i),
+    "Backend & API Engineering",
+  );
 }
 
 describe("ContactForm", () => {
@@ -107,7 +111,10 @@ describe("ContactForm", () => {
     await user.type(screen.getByLabelText(/your name/i), "Ada");
     await user.type(screen.getByLabelText(/email address/i), "not-an-email");
     await user.type(screen.getByLabelText(/tell me a little/i), "Hello.");
-    await user.selectOptions(screen.getByLabelText(/what are you working on/i), "Web Design");
+    await user.selectOptions(
+      screen.getByLabelText(/what are you working on/i),
+      "AI & Automation",
+    );
     await user.click(screen.getByRole("button", { name: /^submit$/i }));
 
     expect(await screen.findByText(/valid email address/i)).toBeInTheDocument();
@@ -127,7 +134,7 @@ describe("ContactForm", () => {
       expect.objectContaining<Partial<ContactFields>>({
         name: "Ada Lovelace",
         email: "ada@example.com",
-        topic: "Web Development",
+        topic: "Backend & API Engineering",
         message: "A small analytics tool.",
       }),
     );

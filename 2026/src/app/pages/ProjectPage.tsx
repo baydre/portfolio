@@ -16,6 +16,13 @@ import { findProject, projects } from "../../content/projects";
  * section and footer are shared, so this composes `ContactSection`; `Layout`
  * already renders the footer.
  *
+ * BLOCKS THE DESIGN NEVER SUPPLIED: the Work content model the owner set
+ * 2026-10-13 puts the depth on the detail page in two evidence-grounded blocks —
+ * Engineering details and Evidence (see `docs/ARCHITECTURE.md` §content and
+ * `docs/DESIGN_SYSTEM.md` §9). They are data-driven like everything else here:
+ * a project renders them only when its `detail` carries the data, and neither
+ * block exists to be filled with prose when it does not.
+ *
  * WHY THIS PAGE WAS REWRITTEN
  * The previous version ignored `useParams` entirely, so every URL under
  * `/projects/*` rendered the same hardcoded content, and that content was
@@ -43,7 +50,7 @@ export function ProjectPage() {
 
   return (
     <>
-      <article className="container-site py-20">
+      <article className="container-site py-section-y">
         <h1 className="font-heading text-section leading-section text-foreground">
           {project.title}
         </h1>
@@ -98,6 +105,69 @@ export function ProjectPage() {
                   className="rounded-md bg-tech-tile px-3 py-2 text-caption leading-caption text-tech-tile-foreground"
                 >
                   {tool}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {/* Engineering details — the evidence-grounded layer from the 2026-10-13
+            content model. Bullets only state what the repositories document. */}
+        {detail?.engineering && detail.engineering.length > 0 ? (
+          <section aria-labelledby="project-engineering" className="mt-16">
+            <h2
+              id="project-engineering"
+              className="font-heading text-service leading-service text-foreground"
+            >
+              Engineering details
+            </h2>
+            <ul className="mt-4 max-w-prose list-disc space-y-3 pl-5">
+              {detail.engineering.map((point, index) => (
+                <li
+                  key={index}
+                  className="text-body leading-body text-muted-foreground"
+                >
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {/* Evidence — what of this project can be inspected or reproduced. A
+            README's "production-ready"/"zero-downtime" promises are recorded
+            HERE as the repository's claims, and nothing is padded when a kind
+            of proof does not exist. */}
+        {detail?.evidence && detail.evidence.length > 0 ? (
+          <section aria-labelledby="project-evidence" className="mt-16">
+            <h2
+              id="project-evidence"
+              className="font-heading text-service leading-service text-foreground"
+            >
+              Evidence
+            </h2>
+            <ul className="mt-4 max-w-prose space-y-5">
+              {detail.evidence.map((item, index) => (
+                <li key={index} className="flex flex-col items-start gap-1">
+                  {item.href ? (
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="text-about-section leading-about-section text-foreground underline underline-offset-4 hover:text-foreground"
+                    >
+                      {item.label}
+                    </a>
+                  ) : (
+                    <p className="text-about-section leading-about-section text-foreground">
+                      {item.label}
+                    </p>
+                  )}
+                  {item.note ? (
+                    <p className="text-body leading-body text-muted-foreground">
+                      {item.note}
+                    </p>
+                  ) : null}
                 </li>
               ))}
             </ul>

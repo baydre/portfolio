@@ -115,12 +115,23 @@ describe("About page — biography", () => {
     }
   });
 
-  it("stores the frame's copy verbatim, including its title case", () => {
-    // The frame applies CSS `capitalize`, but its text is already title-cased, so
-    // the class is a no-op that would additionally rewrite any lowercase term
-    // after an apostrophe or hyphen. The string must stay exactly as authored.
-    expect(aboutBio[0]).toMatch(/^Hi, I'm Yasir — A Software Developer/);
-    expect(aboutBio[1]).toContain("Node.Js");
+  it("replaces the frame's placeholder copy with the evidence-based draft", () => {
+    // The frame's original bio made claims this repository cannot back
+    // ("A Software Developer With A Passion For...", "Node.Js", several web
+    // applications). REVISED 2026-10-13 to the OWNER-APPROVED direction: a
+    // technologist identity, engineering claims that cite the public work, and
+    // AI/robotics/IoT framed as exploration — not experience. The old claims
+    // must not return.
+    expect(aboutBio[0]).toMatch(/^I'm Yasir — a technologist and software engineer/);
+    expect(aboutBio[1]).toContain("Python and FastAPI");
+    expect(aboutBio[2]).toContain("explore");
+    for (const oldClaim of [
+      "A Software Developer With A Passion For",
+      "Node.Js",
+      "Modern Technologies Like",
+    ]) {
+      expect(aboutBio.join(" ")).not.toContain(oldClaim);
+    }
   });
 
   it("does not apply CSS capitalize", () => {

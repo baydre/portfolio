@@ -37,7 +37,7 @@ src/
 │   ├── pages/                   # one file per route
 │   │   ├── HomePage.tsx
 │   │   ├── AboutPage.tsx
-│   │   ├── ResumePage.tsx
+│   │   ├── ResumePage.tsx        # kept but UNREFERENCED since 2026-10-13 (/resume unpublished)
 │   │   ├── ProjectPage.tsx
 │   │   └── NotFoundPage.tsx
 │   ├── __tests__/               # route + page tests
@@ -93,26 +93,49 @@ component.
 
 Portfolio content must not be embedded in page components.
 
-**This is a studio, not an individual.** The HomePage snippet describes
-"BaydreAfrica designs and builds brands, websites, and software", so the model is
-project- and service-shaped. The previous personal-portfolio model
+**Technologist-first, not a personal CV.** The HomePage hero now describes
+"Software, systems, and digital products built to solve practical problems"
+(owner-approved copy, 2026-10-13; it replaces the older "designs and builds
+brands, websites, and software" framing), but the content is still project- and
+service-shaped. The previous personal-portfolio model
 (`experience`, `education`, `skills`, `certifications`) describes an individual
-CV and is **not** appropriate here. What a studio actually needs is
-`services`, `case studies`, `clients` and `testimonials` — the previous site
+CV and is **not** appropriate here. What the design's sections need is
+`projects`, `services` and contact — the previous site
 already had testimonial and counter imagery, which supports this.
 
 Current state — three files exist, covering only what the design supplied:
 
 ```text
 content/
-├── types.ts        # Profile, NavItem, SocialLink, HeroImage
+├── types.ts        # Profile, NavItem, SocialLink, HeroImage, Project, Service
 ├── profile.ts      # wordmark, tagline, description, nav, socials, CTA label
-└── projects.ts     # work index (titles recovered, copy still placeholder)
+├── projects.ts     # work index + owner-approved intro; README-grounded summaries + detail
+├── services.ts     # services + owner-approved section description
+└── about.ts        # About frame transcription (portrait, contact card, bio, roles)
 ```
 
+**Project detail content model (2026-10-13).** The Work section's three layers
+live in the data, with the homepage card scannable and the depth on the detail
+page:
+
+- **Overview** — `Project.summary`, the owner's README-grounded one-sentence
+  description, on the card and the page's Description block.
+- **Engineering details** — `ProjectDetail.engineering`, bullets that state only
+  what each repository's documentation records.
+- **Evidence** — `ProjectDetail.evidence`, a list of `EvidenceItem`
+  (`label`, optional `href`, optional `note`) recording what can be inspected or
+  reproduced. Where the owner's rule bites: "the description is not a claim of
+  independent production validation" — a README's "production-ready" /
+  zero-downtime / AWS-EC2 statements are recorded AS repository claims, and the
+  Ansible gist is described as documentation. Missing evidence is omitted, never
+  padded.
+
+Everything above is data, so a future CMS or API can supply the same shape.
+
 `experience.ts`, `education.ts`, `skills.ts` and `certifications.ts` are **not
-created**. Do not create them speculatively. `ResumePage` still holds that
-placeholder content inline until a decision is made about the resume route.
+created**. Do not create them speculatively. `ResumePage.tsx` still holds that
+placeholder content inline, and the resume route is **UNPUBLISHED 2026-10-13** —
+see §5's route table.
 
 Do not invent marketing claims. Where a snippet gives copy, use it verbatim.
 Where it does not, leave the gap visible rather than filling it with plausible
@@ -213,7 +236,7 @@ export const router = createBrowserRouter(routes);
 | --- | --- | --- |
 | `/` | `HomePage` | index: Hero, Work, Services, Contact |
 | `/about` | `AboutPage` | built from the **About frame** (2026-09-26): profile section + the shared `ContactSection` |
-| `/resume` | `ResumePage` | retained; linked from the footer's "Yasir Musa" credit (`creditLink`) after the owner removed "Resume" from the NavBar item list 2026-10-09 |
+| `/resume` | — | **UNPUBLISHED 2026-10-13** (owner decision): removed from `routes.tsx` until a verified résumé exists — `ResumePage.tsx` is kept but unreferenced, requests fall through to the 404 (`*`), and the footer's "Yasir Musa" credit renders as inert text. It previously survived under the footer credit after "Resume" left the NavBar 2026-10-09 |
 | `/projects/:projectId` | `ProjectPage` | dynamic; the design file calls this the "Product Page" |
 | `*` | `NotFoundPage` | catch-all |
 
@@ -255,8 +278,10 @@ logo mark and a **"Let's Build"** call to action. The items are transcribed
 exactly — see "The nav follows the snippet" in `INTERACTION_SPEC.md`
 §2.1. Home and About are routes; Work and Contact are Home sections
 (`/#work`, `/#contact`). **OWNER REMOVAL 2026-10-09: "Resume" left the NavBar
-item list**, so the header no longer links `/resume`; the route survives and is
-reached from the footer's credit (`creditLink`). The design's own header and
+item list**, so the header no longer links `/resume`; the route then survived via
+the footer's credit (`creditLink`) until **UNPUBLISHED 2026-10-13**: the route
+and the credit link are both removed until verified résumé content exists (the
+credit renders inert text). The design's own header and
 footer still disagree: the header omits Services, which the footer lists. The
 previous Home / About / Resume / "Contact me" nav is gone.
 
@@ -324,12 +349,12 @@ Measured against the current repository:
 | Area | Current | Target | Gap |
 | --- | --- | --- | --- |
 | `components/` (portfolio) | **4 layers** — `common/`, `home/`, `contact/`, `navigation/` | as snippets arrive | about, resume, product layout |
-| `content/` | **4 modules** — `types`, `profile`, `projects`, `services` | as snippets arrive | service copy, real projects |
+| `content/` | **5 modules** — `types`, `profile`, `projects`, `services`, `about` | as snippets arrive | verified résumé content |
 | `app/components/ui/` | 48 shadcn files, **1 used** (`Button`) | keep, use deliberately | prune the other 47 |
 | Reachable from `main.tsx` | was 14 of 66 | — | header/hero now reachable; ~50 still dead |
 | Runtime dependencies used | **react, react-dom, react-router** only | — | ~40 declared, unused |
 | `src/imports/` | 3,758 lines, **0 imported**, superseded | quarantine | remove once unreferenced |
-| Routes | 5, all working | as design arrives | about is now built from its frame; resume has no design, Product Page layout unbuilt |
+| Routes | 4, all working | as design arrives | `/resume` UNPUBLISHED 2026-10-13 (until verified content); Product Page layout partial — block order + two content-model blocks (Engineering details, Evidence) built, no snippet |
 | Breakpoints in design | **0** | per breakpoint | must be designed |
 | Fonts | 3 self-hosted variable families | as licensed | Maison Neue → Outfit, `TEMPORARY` |
 | 5.4 MB asset | **no longer bundled** | — | fixed; still on disk |

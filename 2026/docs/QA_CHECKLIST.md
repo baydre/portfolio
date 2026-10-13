@@ -38,7 +38,8 @@ pnpm test
 
 - [ ] `/` renders the home page
 - [ ] `/about` renders About
-- [ ] `/resume` renders Resume
+- [ ] `/resume` renders 404 (route UNPUBLISHED 2026-10-13 until verified résumé content)
+- [ ] The footer's "Yasir Musa" credit is NOT a link
 - [ ] `/projects/:projectId` renders the correct project for a valid id
 - [ ] `/projects/<unknown-id>` renders 404, not a broken page
 - [ ] An unmatched path renders 404

@@ -19,8 +19,12 @@ export const profile: Profile = {
   // The design sets this in the body face at 160px, deliberately unlike the
   // hero's "BaydreAfrica". Transcribed verbatim, not normalised.
   tagline: "Built to work in the real world.",
+  // OWNER APPROVED 2026-10-13: drafted as part of the factual-integrity pass and
+  // approved for shipping. The earlier "BaydreAfrica designs and builds brands,
+  // websites, and software..." framed the site as a digital agency; this frames
+  // it as a technologist's work. "Built to work in the real world." is kept.
   description:
-    "BaydreAfrica designs and builds brands, websites, and software that hold up in the real world, not just on a moodboard. Work made to perform, for founders who care about the difference.",
+    "Software, systems, and digital products built to solve practical problems. I explore engineering, AI, and emerging technologies through software development, experimentation, and digital prototypes.",
   email: "baydreafrica@gmail.com",
   // Owner-supplied 2026-09-27, replacing the placehold.co stand-in. The source
   // is 5530x3684 / 2.7 MB, so two derivatives are committed and the full-size
@@ -61,10 +65,12 @@ export const profile: Profile = {
  * `<div>` elements because Figma Make does not know what a link is; the
  * intended behaviour is that Work scrolls to `#work` and Contact to `#contact`.
  *
- * Home and About are real pages (routes). Resume is a page too (`/resume` →
- * `ResumePage`), but after the owner REMOVED it from the NavBar item list it is
- * reached from the footer's "Yasir Musa" credit link (`creditLink` below), not
- * the header.
+ * Home and About are real pages (routes). Resume is a page still — `ResumePage`
+ * exists — but it now has NO path or entry point: the owner REMOVED "Resume"
+ * from the NavBar item list 2026-10-09, and the footer's credit stopped linking
+ * it on 2026-10-13 (UNPUBLISHED pending verified résumé content — see
+ * `SiteFooter`). `Routing` lives in `routes.tsx`, so `/resume` renders the 404
+ * page rather than either site of this record.
  *
  * Services is in the footer but not the header. The header's items are
  * reproduced exactly — see docs/ARCHITECTURE.md §"The nav follows the snippet".
@@ -77,19 +83,16 @@ export const navItems: NavItem[] = [
 ];
 
 /**
- * The footer credit's destination — `/resume`, so the "Yasir Musa" credit
- * links to the Resume page (OWNER DESIGN 2026-10-09).
+ * The footer credit's destination. Once `/resume` (OWNER DESIGN 2026-10-09), so
+ * the "Yasir Musa" credit linked to the Resume page.
  *
- * A standalone item, deliberately NOT part of `navItems`: the owner REMOVED
- * "Resume" from the NavBar item list the same day, so the header no longer
- * links `/resume` while the route (`ResumePage`) stays. `creditLink` is the
- * page's only entry point, and `SiteFooter` is its only consumer.
+ * **REMOVED 2026-10-13 — `/resume` is unpublished.** The route and its footer
+ * link are gone until verified résumé content exists; the owner's decision was
+ * recorded as a temporary content-integrity measure, not an abandonment of the
+ * page. `SiteFooter` now renders the credit as inert lime text, and `routes.tsx`
+ * no longer serves `/resume`. Keeping the NavItem would have been dead config
+ * nothing renders.
  */
-export const creditLink: NavItem = {
-  label: profile.credit,
-  kind: "route",
-  to: "/resume",
-};
 
 /**
  * Three social tiles.
@@ -157,14 +160,24 @@ export const footerNavItems: NavItem[] = [
 /** "Open for work" is paired with a "View Work" link in the footer. */
 export const viewWorkLabel = "View Work";
 
-/** Options for the contact form's topic selector. */
+/**
+ * Options for the contact form's topic selector.
+ *
+ * OWNER-ALIGNED 2026-10-13: the old list ("Web Design", "Brand Development",
+ * "Technical Writing", "Marketing Services"...) matched the frame's superseded
+ * service set. The six primaries now paraphrase the owner-supplied services
+ * verbatim (see `src/content/services.ts`), "Technology Consulting & Training"
+ * is the one secondary service a technical enquiry is likely to be, and
+ * "Something else" is the catch-all. No invented options.
+ */
 export const contactTopics: string[] = [
-  "Web Design",
-  "Web Development",
-  "Brand Development",
-  "Technical Writing",
-  "Consultation Services",
-  "Marketing Services",
+  "Custom Software Development",
+  "Backend & API Engineering",
+  "MVP & SaaS Development",
+  "DevOps & Application Deployment",
+  "AI & Automation",
+  "IoT & Embedded Prototyping",
+  "Technology Consulting & Training",
   "Something else",
 ];
 

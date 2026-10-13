@@ -92,6 +92,18 @@ describe("catch-all route", () => {
       screen.getByRole("heading", { level: 2, name: /page not found/i }),
     ).toBeInTheDocument();
   });
+
+  /**
+   * The resume page was UNPUBLISHED 2026-10-13 (owner decision): its content is
+   * placeholder copy that reads as contradictory, so `/resume` is unreachable
+   * until verified résumé content exists. The route — and the footer credit's
+   * link to it — are removed together; this pins both halves.
+   */
+  it("does not serve /resume and renders no credit link to it", () => {
+    renderAt("/resume");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("404");
+    expect(footer().queryByRole("link", { name: "Yasir Musa" })).toBeNull();
+  });
 });
 
 describe("site header", () => {
@@ -109,8 +121,9 @@ describe("site header", () => {
   it("no longer lists Resume in the header nav (owner removal 2026-10-09)", () => {
     renderAt("/");
     const nav = within(header().getByRole("navigation", { name: "Primary" }));
-    // The route and page survive; the only header link to it went away. The
-    // footer's "Yasir Musa" credit links `/resume` instead (see SiteFooter).
+    // The route and page survived 2026-10-09 — only the header link went away,
+    // with the footer's "Yasir Musa" credit linking `/resume` instead. That
+    // credit is itself GONE as a link since 2026-10-13 (see below).
     expect(nav.queryByRole("link", { name: "Resume" })).toBeNull();
   });
 
@@ -210,7 +223,7 @@ describe("site footer", () => {
 
 describe("page structure", () => {
   it("exposes exactly one level-1 heading per page", () => {
-    for (const path of ["/", "/about", "/resume", `/projects/${projects[0].id}`]) {
+    for (const path of ["/", "/about", `/projects/${projects[0].id}`]) {
       const { container, unmount } = renderAt(path);
       expect(
         container.querySelectorAll("h1"),

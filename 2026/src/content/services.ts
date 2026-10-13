@@ -99,15 +99,12 @@ export const secondaryServices = {
 /**
  * The Services section's own description, beside the heading.
  *
- * Verbatim from the frame. **It is now inconsistent with the six services it
- * introduces** and is left as supplied rather than rewritten, because it is the
- * frame's copy and inventing replacement marketing prose is not this file's call.
- *
- * It still offers "Digital experiences, brands, and technical solutions", and
- * there is no longer a brand or digital-experience service in the list — the six
- * are now software, backend, MVP, DevOps, AI and IoT. Pending an owner decision;
- * see docs/DESIGN_SYSTEM.md §9. Note that the copy problem is confined to this
- * one paragraph: all six card descriptions are owner-supplied and current.
+ * OWNER APPROVED 2026-10-13. The previous value was the frame's verbatim
+ * paragraph — "Digital experiences, brands, and technical solutions..." — which
+ * no longer matched the six services it introduces (there is no brand or
+ * digital-experience service in the list). The owner approved the replacement
+ * below during the factual-integrity pass; it names the actual services in
+ * plain engineering terms.
  */
 export const servicesSectionDescription =
-  "Digital experiences, brands, and technical solutions built with purpose — from the first idea to the final product.";
+  "Practical engineering support for digital products, backend systems, deployment workflows, and early-stage technology ideas.";

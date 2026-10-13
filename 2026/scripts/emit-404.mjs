@@ -1,8 +1,9 @@
 // Emits `404.html` as a copy of `index.html`, so that deep links work on hosts
 // with no SPA fallback — which is exactly what GitHub Pages is.
 //
-// The problem: this is a client-routed app. `/about`, `/resume` and
-// `/projects/:id` exist only in the router, never as files in `dist/`. GitHub
+// The problem: this is a client-routed app. `/about` and `/projects/:id` exist
+// only in the router, never as files in `dist/`. (`/resume` was unpublished
+// 2026-10-13 and no longer exists in the router either.) GitHub
 // Pages serves static files and has no rewrite rule, so a hard refresh or a
 // pasted link on `/portfolio/about` is a server 404 — a broken page for a route
 // that works perfectly when you click into it. The site looks fine and is

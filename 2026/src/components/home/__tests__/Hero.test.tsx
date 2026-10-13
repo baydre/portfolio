@@ -27,9 +27,14 @@ describe("Hero", () => {
     expect(
       screen.getByText("Built to work in the real world."),
     ).toBeInTheDocument();
+    // OWNER APPROVED 2026-10-13: the description is the technologist framing,
+    // not the old agency sentence ("designs and builds brands, websites...").
     expect(
-      screen.getByText(/designs and builds brands, websites, and software/),
+      screen.getByText(/built to solve practical problems/i),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/designs and builds brands, websites, and software/i),
+    ).toBeNull();
   });
 
   it("uses a bundled image with intrinsic dimensions rather than an external placeholder", () => {

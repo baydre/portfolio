@@ -1,4 +1,4 @@
-import { contactBlurb, creditLink, footerNavItems, profile, socialLinks, viewWorkLabel } from "../../content/profile";
+import { contactBlurb, footerNavItems, profile, socialLinks, viewWorkLabel } from "../../content/profile";
 import { ArrowRightIcon } from "./icons";
 import { LocationCopy } from "./LocationCopy";
 import { SmartLink } from "../navigation/SmartLink";
@@ -36,19 +36,21 @@ import { siteUrl } from "../../lib/site-url";
  *   invented.
  *
  * The credit reproduces the design's personal name verbatim; per the resupplied
- * 2026-10-09 snippet it reads a Jura line in the design's lime and links to the
- * Resume page — the size was reverted to 12px the same day (see the copyright
- * bar below). The owner also removed "Resume" from the NavBar item list that day
- * (`creditLink` is a standalone item, and `/resume`'s only entry point).
- * Flagged in docs/DESIGN_SYSTEM.md §9 until then as a possible leftover; that
- * concern is now CLOSED.
+ * 2026-10-09 snippet it reads a Jura line in the design's lime and — until
+ * 2026-10-13 — linked to the Resume page. That LINK is gone: `/resume` is
+ * unpublished pending verified résumé content (owner decision, 2026-10-13), so
+ * the credit renders as inert lime text rather than a link to nowhere. All of
+ * the snippet's styling — 12px (`--text-micro`, the size reverted from the
+ * snippet's 20px the same day it shipped), `font-normal`, `tracking-wide`,
+ * `leading-4`, `--lime` — is unchanged.
  */
 export function SiteFooter() {
   const year = new Date().getFullYear();
-  // The footer credit links to the Resume page. It uses the dedicated
-  // `creditLink` item (profile.ts), not `navItems` — the owner REMOVED "Resume"
-  // from the NavBar item list 2026-10-09, so the header no longer links `/resume`
-  // and this credit is the page's only entry point.
+  // The footer credit renders as INERT TEXT since 2026-10-13: `/resume` is
+  // unpublished (owner decision — see the component docstring and profile.ts),
+  // so there is no destination for the name to link to. Rendering a plain
+  // span keeps the "inert rather than guessed" rule from the About social row;
+  // the link comes back with the verified résumé page.
 
   return (
     // No rule above the footer, and no `mt-20` either. The design supplies the
@@ -224,20 +226,18 @@ export function SiteFooter() {
               own snippet — Jura 20px (`--text-description`), `font-normal`,
               `tracking-wide`, a 16px `leading-4` line box, in the design's lime
               (`text-lime-300` = `--lime` on `--background`, the pairing
-              verify-contrast already gates) — and it now LINKS to the Resume
-              page via `creditLink` (profile.ts): the owner removed "Resume"
-              from the NavBar item list the same day, so this credit is
-              `/resume`'s only entry point. OWNER REVERT same day: the 20px "is
-              too obvious", so the size is back to the previous `--text-micro`
-              (12px) — the copyright line's size — while the lime, the tracking
-              and the link stay. The global `:focus-visible` ring in theme.css
-              gives the link its focus state. */}
-          <SmartLink
-            item={creditLink}
-            className="font-sans text-micro font-normal leading-4 tracking-wide text-lime-300"
-          >
+              verify-contrast already gates) — LINKED to the Resume page until
+              2026-10-13, when `/resume` was unpublished pending verified résumé
+              content (owner decision). The name now renders as INERT text with
+              the same styling: no `<a>` to `/resume`, nothing guessed — the
+              whole reason the route is gone is that the page read as
+              contradictory placeholder copy. OWNER REVERT same day it shipped:
+              the snippet's 20px "is too obvious", so the size is back to the
+              previous `--text-micro` (12px) — the copyright line's size — while
+              the lime and the tracking stay. */}
+          <span className="font-sans text-micro font-normal leading-4 tracking-wide text-lime-300">
             {profile.credit}
-          </SmartLink>
+          </span>
         </div>
       </div>
     </footer>

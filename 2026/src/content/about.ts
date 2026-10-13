@@ -84,31 +84,29 @@ export const aboutContact: ContactRow[] = [
 ];
 
 /**
- * The biography. Four paragraphs, verbatim from the frame.
+ * The biography. Four paragraphs.
  *
- * These sentences were already in the repository, hardcoded in `AboutPage`, and
- * they match the frame word for word — so this is a PROVENANCE UPGRADE, not new
- * copy: what was invented is now transcribed.
+ * **REWRITTEN 2026-10-13.** The frame's copy was transcribed verbatim until the
+ * factual-integrity pass, at which point its loaded claims were unverifiable
+ * ("A Software Developer With A Passion For...", "Modern Technologies Like
+ * React, Node.Js, And TypeScript", "several Web Applications — From Ecommerce
+ * Platforms To Payment Systems"). The owner approved a DIRECTION for the
+ * replacement — introduce the person as a technologist/software engineer, show
+ * the engineering approach with evidence from the public work, name AI,
+ * robotics, IoT and prototyping as areas of EXPLORATION, and close with a
+ * commitment to learning and building. The draft below follows that direction;
+ * every concrete claim cites something in this repository (the owner-supplied
+ * skill roles, tools, and the public project repositories), and nothing stated
+ * as experience rather than exploration is unverified.
  *
- * Two details the frame gets wrong, and what is done about them:
- *
- * 1. **No CSS `capitalize`.** The frame applies Tailwind's `capitalize` to this
- *    run, but the text is ALREADY in title case in the source string — every
- *    word's first letter is capitalised. `capitalize` would therefore be a no-op
- *    on the words and would additionally force a capital after every apostrophe
- *    and hyphen, so "I'm" survives but "User-Friendly" and any lowercase
- *    technical term the owner later adds would be silently rewritten. The
- *    string is stored as authored and capitalisation is left to the copy.
- * 2. **Paragraphs, not `<br/>`.** The frame joins the four sentences with
- *    `<br/>`, i.e. it hardcodes line breaks at one viewport width. They are four
- *    separate sentences and read as four paragraphs, so they are four elements;
- *    a `<br/>` at 375px would strand a line.
+ * Kept from the frame: the four-sentence shape (four paragraphs, no `<br/>`,
+ * no CSS `capitalize`).
  */
 export const aboutBio: string[] = [
-  "Hi, I'm Yasir — A Software Developer With A Passion For Building Clean, Efficient, And User-Friendly Experiences.",
-  "I'm A Results-Driven Software Developer Who Enjoys Creating Seamless User Interfaces Using Modern Technologies Like React, Node.Js, And TypeScript.",
-  "Over The Past Few Years, I've Worked On Several Web Applications — From Ecommerce Platforms To Payment Systems — Focusing On Performance, Accessibility, And Visual Clarity.",
-  "Outside Of Coding, I'm Passionate About Design And Product Thinking, Which Helps Me Collaborate Better With Designers And Understand User Needs More Deeply.",
+  "I'm Yasir — a technologist and software engineer who builds software, systems, and digital products aimed at practical problems.",
+  "My engineering work is out in the open: backend services and APIs in Python and FastAPI, a digital-wallet backend and a dual authentication system, deployment workflows on Docker and NGINX, and a zero-downtime blue/green strategy that routes traffic through an intelligent reverse proxy.",
+  "I also explore robotics, IoT, and embedded systems — Raspberry Pi, Arduino, NVIDIA Jetson, and KiCad appear in my experiments — and I prototype early ideas with AI-assisted development.",
+  "I stay committed to learning and building useful technology, and this portfolio grows with me: new projects, experiments, and disciplines stay welcome as they emerge.",
 ];
 
 /**

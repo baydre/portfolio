@@ -34,7 +34,9 @@ the snippet's fixed `w-[1440px] px-20` is canvas placement), 20px block padding
 social tiles, the rule, then a filled **"Let's Build"** button — with a 16px gap.
 Nav entries are
 **Home, Work, About, Contact** — the snippet's fifth, Resume, left the NavBar on
-the owner's removal (2026-10-09) and is now linked from the footer credit.
+the owner's removal (2026-10-09) and the route was then **UNPUBLISHED 2026-10-13**:
+removed from `routes.tsx` (the footer credit renders inert text), pending verified
+résumé content. Re-enabling is one route row plus a data field.
 
 Height: 20 (block padding ×2) + 64 (logo mark) = 104px. The hero's clearance is
 the authored 140px offset minus that 104px = 36px (`--hero-top-pad`). The
@@ -274,7 +276,13 @@ placeholder. It must look the project up from `content/projects.ts` and render
 
 ---
 
-## 5. Resume
+### 5.0 Status — UNPUBLISHED 2026-10-13
+
+`/resume` is removed from `routes.tsx` (owner decision): the page read as
+placeholder copy and nothing links to it — the footer's "Yasir Musa" credit now
+renders its name as **inert lime text** (`creditLink` deleted). `ResumePage.tsx`
+is kept, unreferenced and reversible. The sections below remain the plan for the
+page's return with verified content.
 
 ### 5.1 Download — **[P]**
 
@@ -297,7 +305,9 @@ expand link URLs, avoid page-breaks inside entries. Recommend adding.
 
 `ResumePage.tsx` hardcodes four identical experience entries, four identical
 education entries, and three identical referees. These are export artefacts, not
-content, and must move to the content model.
+content, and must move to the content model — this is exactly the placeholder
+content that drove the 2026-10-13 unpublish. Another reason the page stays
+unpublished until a real résumé is supplied.
 
 ---
 
@@ -476,7 +486,9 @@ owner's removal of "Resume" from the NavBar item list (2026-10-09) moved its
 only link to the footer credit — the "Let's Build" label, the header geometry
 (the 104px row and the logo mark; the snippet's `gap-40` to the mark was
 replaced by centred `flex-1` flanks on the owner's 2026-10-10 request), the
-social tile treatment, and the three type sizes.
+social tile treatment, and the three type sizes. **The `/resume` question is
+closed again 2026-10-13:** the route is unpublished (removed from `routes.tsx`)
+until a verified résumé exists, so it no longer matters where the link was.
 
 Still open:
 

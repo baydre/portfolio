@@ -60,9 +60,13 @@ Contact (921), footer (728) and a 66px copyright bar.
   section stays highlighted and the layout's scroll manager lands the click
   clear of the sticky header and resets scroll between pages. **OWNER REMOVAL
   2026-10-09: "Resume" left the NavBar item list** — the header now lists
-  **Home / Work / About / Contact**. `/resume` still exists (`ResumePage`) and
-  is linked from the footer's "Yasir Musa" credit (`creditLink` in
-  `profile.ts`), which is the page's only entry point. **OWNER CENTERING
+  **Home / Work / About / Contact**. **UNPUBLISHED 2026-10-13: `/resume` is
+  removed from `routes.tsx`** until verified résumé content exists — the page
+  read as placeholder copy; `ResumePage.tsx` is kept (unreferenced, reversible),
+  requests to `/resume` fall through to the 404. The footer's "Yasir Musa"
+  credit — the page's only entry point since 2026-10-09 — now renders its name
+  as INERT lime text (`creditLink` removed from `profile.ts`) so nothing links
+  to a page with nothing to show. **OWNER CENTERING
   2026-10-10: the 121 × 64 logo mark is centred in the row** — the snippet's
   `gap-40` (160px) between the nav and the mark pinned it left of centre, so the
   row now uses `flex-1` flanks (nav left, right cluster right) with the mark
@@ -126,7 +130,9 @@ Contact (921), footer (728) and a 66px copyright bar.
   the owner's longer disciplines wrap mid-chip inside it) — see `SiteFooter`.
 - The **Resume and Product Page** screens still have no design. They are built on
   assumptions, marked `ASSUMED` in the docs. Do not treat their structure as
-  approved, and do not extend them speculatively.
+  approved, and do not extend them speculatively. **Resume is additionally
+  UNPUBLISHED 2026-10-13** (see the navbar paragraph above) until a verified
+  résumé exists.
 - Everything in `src/imports/` is **superseded** by the HomePage snippet and
   must not be cited as the design. Its palette also failed contrast checks
   (`docs/DESIGN_SYSTEM.md` §7).

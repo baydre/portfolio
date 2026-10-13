@@ -313,17 +313,55 @@ export interface Project {
  * The case-study body of a Project detail page.
  *
  * The design's Product Page frame has four blocks: Description, Stack & Tools,
- * The Challenge, The Solution. Every field is optional so a provisional project
- * can render without inventing copy — `ProjectDetail` reports which blocks are
- * present and the page omits the rest.
+ * The Challenge, The Solution. The content layer adds two evidence-grounded
+ * blocks — Engineering details and Evidence — that the frame never supplied;
+ * see the three-layer content model in `contracts` / `docs/ARCHITECTURE.md`.
+ *
+ * Every field is optional so a provisional project can render without inventing
+ * copy — `ProjectDetail` reports which blocks are present and the page omits
+ * the rest.
  */
 export interface ProjectDetail {
   /** "Description" block. */
   description?: string;
   /** "Stack & Tools" block. Extends the card's `stack` when richer. */
   tools?: string[];
+  /**
+   * "Engineering details": the key components, design choices and documented
+   * constraints, stated as concise bullets.
+   *
+   * These are README-grounded — each bullet states something the repository's
+   * own documentation records. They are not a case study and not marketing
+   * copy: a design choice that the repo does not document does not get a bullet.
+   */
+  engineering?: string[];
+  /**
+   * "Evidence": what of this project can actually be inspected or reproduced.
+   *
+   * "The description is not a claim of independent production validation" is
+   * the rule the owner set for the Work content model: where a README claims
+   * "production-ready" or "zero-downtime", that is recorded AS a repository
+   * claim, never dressed up as an observed result. Evidence is omitted rather
+   * than padded when a kind of proof does not exist.
+   */
+  evidence?: EvidenceItem[];
   /** "The Challenge" block. */
   challenge?: string;
   /** "The Solution" block. */
   solution?: string;
+}
+
+/**
+ * One piece of evidence for a project: a label, an optional link to the
+ * artifact itself, and an optional note stating plainly what the artifact
+ * records — including, where relevant, that a promise made in it is the
+ * repository's claim rather than an independent result.
+ */
+export interface EvidenceItem {
+  /** Short label, e.g. "Project README". */
+  label: string;
+  /** Link to the artifact, where one exists. Absent = text only. */
+  href?: string;
+  /** What this artifact records, in plain words. */
+  note?: string;
 }

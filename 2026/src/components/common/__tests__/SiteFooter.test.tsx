@@ -32,9 +32,11 @@ describe("SiteFooter top edge", () => {
   it("adds no top margin of its own, so every section boundary matches", () => {
     const classes = footerClasses();
 
-    // Every other boundary on the page is Contact/Section `py-20` (80) against
-    // `py-20` (80) = 160px. An `mt-20` here stacked a third 80px on top and made
-    // this the only 240px gap on the page. Separation is the two `py-20`s.
+    // Every other section boundary is the section slots' shared
+    // `py-section-y` — 80px at desktop, the same separation — against the
+    // footer's own `py-20` (80), the recorded exception (docs/DESIGN_SYSTEM.md
+    // §5.2). An `mt-20` here stacked a third 80px on top and made
+    // this the only 240px gap on the page. Separation is the two paddings.
     expect(classes).not.toContain("mt-20");
     expect(classes).not.toContain("mt-16");
     expect(classes).not.toContain("mt-10");
@@ -268,8 +270,10 @@ describe("copyright bar is responsive, not fixed-width", () => {
  *
  * The credit, by contrast, was resupplied 2026-10-09 as its own snippet — Jura,
  * tracking-wide, in the design's lime, linking to the Resume page. The snippet's
- * 20px was owner-reverted that same day ("the 20px is too obvious") — see the
- * credit tests below.
+ * 20px was owner-reverted that same day ("the 20px is too obvious"). The Resume
+ * LINK left on 2026-10-13 when `/resume` was unpublished (owner decision, pending
+ * verified résumé content) — the credit now renders inert with the same styling —
+ * see the credit tests below.
  */
 describe("copyright bar typography", () => {
   it("sets the copyright line at the design's 12px", () => {
@@ -292,14 +296,14 @@ describe("copyright bar typography", () => {
         <SiteFooter />
       </MemoryRouter>,
     );
-    const credit = Array.from(container.querySelectorAll("a")).find((a) =>
-      (a.textContent ?? "").includes("Yasir Musa"),
+    const credit = Array.from(container.querySelectorAll("span")).find((el) =>
+      (el.textContent ?? "").includes("Yasir Musa"),
     );
 
     // OWNER DESIGN 2026-10-09 resupplied the credit at the snippet's `text-xl`
     // (20px); the owner REVERTED the size the same day ("the 20px is too
     // obvious"), so it is back on the copyright line's `--text-micro` (12px).
-    // The lime, the tracking and the Resume link stay.
+    // The lime and the tracking stay; the Resume link is gone (see below).
     expect(credit?.className).toContain("text-micro");
     expect(credit?.className).not.toContain("text-description");
   });
@@ -320,8 +324,8 @@ describe("copyright bar typography", () => {
     const copyright = Array.from(container.querySelectorAll("p")).find((p) =>
       (p.textContent ?? "").includes("All rights reserved"),
     );
-    const credit = Array.from(container.querySelectorAll("a")).find((a) =>
-      (a.textContent ?? "").includes("Yasir Musa"),
+    const credit = Array.from(container.querySelectorAll("span")).find((el) =>
+      (el.textContent ?? "").includes("Yasir Musa"),
     );
 
     // The snippet's credit is `leading-4` (16px) — 12px glyphs on the same box
@@ -331,23 +335,27 @@ describe("copyright bar typography", () => {
     expect(copyright?.className).toContain("leading-copyright");
   });
 
-  it("links the credit to the Resume page and styles it per the snippet", () => {
+  it("renders the credit as inert lime text, with NO Resume link until the page is verified", () => {
     const { container } = render(
       <MemoryRouter>
         <SiteFooter />
       </MemoryRouter>,
     );
-    const credit = Array.from(container.querySelectorAll("a")).find((a) =>
-      (a.textContent ?? "").includes("Yasir Musa"),
-    ) as HTMLAnchorElement;
+    const credit = Array.from(container.querySelectorAll("span")).find((el) =>
+      (el.textContent ?? "").includes("Yasir Musa"),
+    );
 
-    // OWNER 2026-10-09: the name is a LINK to the Resume page. It uses the
-    // dedicated `creditLink` item (profile.ts) — the owner removed "Resume"
-    // from the NavBar item list the same day, so the header no longer links
-    // `/resume` and this credit renders as the router's `<Link>` to it.
-    // Styling is the snippet's: Jura (`font-sans`), font-normal, tracking-wide,
-    // lime.
-    expect(credit?.getAttribute("href")).toBe("/resume");
+    // OWNER DECISION 2026-10-13: `/resume` is unpublished (its page read as
+    // placeholder copy), so the credit must NOT link to it. The name renders
+    // as a plain `<span>` — inert, unguessable, same styling as the old link —
+    // and `creditLink` (profile.ts) is REMOVED so the route has no entry point
+    // until verified résumé content ships.
+    expect(credit?.tagName).toBe("SPAN");
+    expect(
+      Array.from(container.querySelectorAll("a")).some((a) =>
+        (a.textContent ?? "").includes("Yasir Musa"),
+      ),
+    ).toBe(false);
     expect(credit?.textContent).toBe(profile.credit);
     expect(credit?.className).toContain("font-sans");
     expect(credit?.className).toContain("font-normal");

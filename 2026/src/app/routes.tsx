@@ -3,7 +3,6 @@ import { Layout } from "./layouts/Layout";
 import { HomePage } from "./pages/HomePage";
 import { AboutPage } from "./pages/AboutPage";
 import { ProjectPage } from "./pages/ProjectPage";
-import { ResumePage } from "./pages/ResumePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
 /**
@@ -23,10 +22,15 @@ import { NotFoundPage } from "./pages/NotFoundPage";
  * file's term for that same screen, and the application calls it a project.
  * Owner-confirmed 2026-09-26.
  *
- * `/resume` is retained because the ResumePage content still exists, but it is
- * not linked from the nav: the design's header has exactly three items and none
- * is Resume. Removing the route and its content is a content decision, not an
- * implementation one.
+ * `/resume` is UNPUBLISHED on 2026-10-13 (removed from the route table, so an
+ * unknown-path request for it falls through to the 404 page): the Résumé page
+ * content still exists in `ResumePage`, but it carries too many contradictory
+ * and placeholder claims to repair safely through editing, and the owner chose
+ * to stop serving it until verified résumé information is available — a
+ * temporary content-integrity measure, not an abandonment of the page. The
+ * header never listed Resume after the owner removed it from the NavBar item
+ * list 2026-10-09, and the footer's "Yasir Musa" credit stopped linking
+ * `/resume` the same day this route left.
  */
 export const routes = [
   {
@@ -35,7 +39,6 @@ export const routes = [
     children: [
       { index: true, Component: HomePage },
       { path: "about", Component: AboutPage },
-      { path: "resume", Component: ResumePage },
       { path: "projects/:projectId", Component: ProjectPage },
       { path: "*", Component: NotFoundPage },
     ],
